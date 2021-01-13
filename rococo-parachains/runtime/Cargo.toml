@@ -4,11 +4,12 @@ version = '0.1.0'
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = '2018'
 
-[dependencies.substratee-registry]
-default-features = false
-git = " https://github.com/scs/pallet-substratee-registry.git"
-branch = "rococo"
-package = 'pallet-substratee-registry'
+# TEE 
+#[dependencies.substratee-registry]
+#default-features = false
+#git = " https://github.com/scs/pallet-substratee-registry.git"
+#branch = "rococo"
+#package = 'pallet-substratee-registry'
 
 [dependencies]
 serde = { version = "1.0.119", optional = true, features = ["derive"] }
@@ -88,5 +89,9 @@ std = [
 	"xcm-executor/std",
 	"xcm-handler/std",
 # TEE	
+<<<<<<< HEAD
 	"substratee-registry/std"
+=======
+#	"substratee-registry/std"
+>>>>>>> disabling substratee-registry pallet because of #1
 ]
