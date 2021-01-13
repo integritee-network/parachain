@@ -136,12 +136,20 @@ pub fn rococo_test_net(id: ParaId) -> ChainSpec {
 			)
 		},
 		Vec::new(),
-		None,
-		None,
-		None,
+		// telemetry endpoints
+		None, 
+		// protocol id
+		Some("integritee-rococo-v1"),
+		// properties
+		Some(serde_json::from_str(
+		r#"{
+			"ss58Format": 42,
+			"tokenDecimals": 12,
+			"tokenSymbol": "ITY"
+			}"#).unwrap()),
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: id.into(),
+			para_id: 1983,
 		},
 	)
 }
