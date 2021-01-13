@@ -19,3 +19,10 @@ members = [
 
 [profile.release]
 panic = 'unwind'
+
+#[patch."https://github.com/scs/pallet-substratee-registry"]
+#pallet-substratee-registry = { path = "../pallet-substratee-registry" }
+#ias-verify = { path = "../pallet-substratee-registry/ias-verify" }
+
+#[patch.crates-io]
+#ring = { git = "https://github.com/scs/webpki-nostd.git", tag ="v0.21.0-nostd" }

@@ -49,7 +49,8 @@ pub use frame_support::{
 use frame_system::limits::{BlockLength, BlockWeights};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
-pub use substratee_registry::Call as SubstrateeRegistryCall;
+// TEE
+//pub use substratee_registry::Call as SubstrateeRegistryCall;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -296,6 +297,8 @@ impl xcm_handler::Config for Runtime {
 	type HrmpMessageSender = ParachainSystem;
 }
 
+// TEE
+/*
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
 }
@@ -306,6 +309,7 @@ impl substratee_registry::Config for Runtime {
 	type Currency = pallet_balances::Module<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
 }
+*/
 
 construct_runtime! {
 	pub enum Runtime where
@@ -322,7 +326,8 @@ construct_runtime! {
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		ParachainInfo: parachain_info::{Module, Storage, Config},
 		XcmHandler: xcm_handler::{Module, Event<T>, Origin},
-		SubstrateeRegistry: substratee_registry::{Module, Call, Storage, Event<T>},
+// TEE
+//		SubstrateeRegistry: substratee_registry::{Module, Call, Storage, Event<T>},
 	}
 }
 
