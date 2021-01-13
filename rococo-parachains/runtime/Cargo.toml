@@ -4,12 +4,11 @@ version = '0.1.0'
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = '2018'
 
-# TEE 
-#[dependencies.substratee-registry]
-#default-features = false
-#git = " https://github.com/scs/pallet-substratee-registry.git"
-#branch = "rococo"
-#package = 'pallet-substratee-registry'
+[dependencies.substratee-registry]
+default-features = false
+git = " https://github.com/scs/pallet-substratee-registry.git"
+branch = "rococo"
+package = 'pallet-substratee-registry'
 
 [dependencies]
 serde = { version = "1.0.119", optional = true, features = ["derive"] }
@@ -89,5 +88,5 @@ std = [
 	"xcm-executor/std",
 	"xcm-handler/std",
 # TEE	
-#	"substratee-registry/std"
+	"substratee-registry/std"
 ]

@@ -50,7 +50,7 @@ use frame_system::limits::{BlockLength, BlockWeights};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 // TEE
-//pub use substratee_registry::Call as SubstrateeRegistryCall;
+pub use substratee_registry::Call as SubstrateeRegistryCall;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -311,6 +311,17 @@ impl substratee_registry::Config for Runtime {
 }
 */
 
+parameter_types! {
+	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
+}
+
+/// added by SCS
+impl substratee_registry::Config for Runtime {
+	type Event = Event;
+	type Currency = pallet_balances::Module<Runtime>;
+	type MomentsPerDay = MomentsPerDay;
+}
+
 construct_runtime! {
 	pub enum Runtime where
 		Block = Block,
@@ -327,7 +338,7 @@ construct_runtime! {
 		ParachainInfo: parachain_info::{Module, Storage, Config},
 		XcmHandler: xcm_handler::{Module, Event<T>, Origin},
 // TEE
-//		SubstrateeRegistry: substratee_registry::{Module, Call, Storage, Event<T>},
+		SubstrateeRegistry: substratee_registry::{Module, Call, Storage, Event<T>},
 	}
 }
 
