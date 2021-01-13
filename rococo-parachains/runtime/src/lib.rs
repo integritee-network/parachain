@@ -49,6 +49,8 @@ pub use frame_support::{
 use frame_system::limits::{BlockLength, BlockWeights};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
+pub use substratee_registry::Call as SubstrateeRegistryCall;
+
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
@@ -93,6 +95,9 @@ pub const EPOCH_DURATION_IN_BLOCKS: u32 = 10 * MINUTES;
 pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
+
+/// A timestamp: milliseconds since the unix epoch.
+pub type Moment = u64;
 
 // 1 in 4 blocks (on average, not counting collisions) will be primary babe blocks.
 pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
@@ -291,6 +296,17 @@ impl xcm_handler::Config for Runtime {
 	type HrmpMessageSender = ParachainSystem;
 }
 
+parameter_types! {
+	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
+}
+
+/// added by SCS
+impl substratee_registry::Config for Runtime {
+	type Event = Event;
+	type Currency = pallet_balances::Module<Runtime>;
+	type MomentsPerDay = MomentsPerDay;
+}
+
 construct_runtime! {
 	pub enum Runtime where
 		Block = Block,
@@ -306,6 +322,7 @@ construct_runtime! {
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		ParachainInfo: parachain_info::{Module, Storage, Config},
 		XcmHandler: xcm_handler::{Module, Event<T>, Origin},
+		SubstrateeRegistry: substratee_registry::{Module, Call, Storage, Event<T>},
 	}
 }
 

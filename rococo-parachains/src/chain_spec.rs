@@ -121,6 +121,31 @@ pub fn staging_test_net(id: ParaId) -> ChainSpec {
 	)
 }
 
+pub fn rococo_test_net(id: ParaId) -> ChainSpec {
+	ChainSpec::from_genesis(
+		"IntegriTEE Rococo",
+		"integritee-rococo-v1",
+		ChainType::Live,
+		move || {
+			testnet_genesis(
+				hex!["7a7ff92b215258d2441e041425693e2f0c73da4a813db166d7c4018db8d16153"].into(),
+				vec![
+					hex!["7a7ff92b215258d2441e041425693e2f0c73da4a813db166d7c4018db8d16153"].into(),
+				],
+				id,
+			)
+		},
+		Vec::new(),
+		None,
+		None,
+		None,
+		Extensions {
+			relay_chain: "rococo".into(),
+			para_id: id.into(),
+		},
+	)
+}
+
 fn testnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
