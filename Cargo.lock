@@ -314,7 +314,7 @@ dependencies = [
  "futures-core",
  "futures-io",
  "rustls 0.19.0",
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "webpki-roots",
 ]
 
@@ -386,6 +386,12 @@ name = "base58"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5024ee8015f02155eee35c711107ddd9a9bf3cb689cf2a9089c97e79b6e1ae83"
+
+[[package]]
+name = "base64"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
 
 [[package]]
 name = "base64"
@@ -1257,6 +1263,7 @@ dependencies = [
  "frame-system",
  "pallet-balances",
  "pallet-randomness-collective-flip",
+ "pallet-substratee-registry",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -2534,7 +2541,23 @@ dependencies = [
  "rustls-native-certs",
  "tokio 0.2.24",
  "tokio-rustls",
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "ias-verify"
+version = "0.1.4"
+source = "git+https://github.com/scs/pallet-substratee-registry.git?branch=rococo#89a6acad1c784676670dc895e5f27ba8ece88502"
+dependencies = [
+ "base64 0.11.0",
+ "chrono",
+ "frame-support",
+ "parity-scale-codec",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-std",
+ "webpki 0.21.4 (git+https://github.com/briansmith/webpki.git?rev=9cf9f459233116568fd32a540e8f388fa25361d3)",
 ]
 
 [[package]]
@@ -3532,7 +3555,7 @@ dependencies = [
  "rw-stream-sink",
  "soketto",
  "url 2.2.0",
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "webpki-roots",
 ]
 
@@ -4587,6 +4610,22 @@ dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
  "syn 1.0.58",
+]
+
+[[package]]
+name = "pallet-substratee-registry"
+version = "0.6.15"
+source = "git+https://github.com/scs/pallet-substratee-registry.git?branch=rococo#89a6acad1c784676670dc895e5f27ba8ece88502"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "ias-verify",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6904,7 +6943,7 @@ dependencies = [
  "log",
  "ring",
  "sct",
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -6917,7 +6956,7 @@ dependencies = [
  "log",
  "ring",
  "sct",
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -9676,7 +9715,7 @@ dependencies = [
  "futures-core",
  "rustls 0.18.1",
  "tokio 0.2.24",
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -10491,12 +10530,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "webpki"
+version = "0.21.4"
+source = "git+https://github.com/briansmith/webpki.git?rev=9cf9f459233116568fd32a540e8f388fa25361d3#9cf9f459233116568fd32a540e8f388fa25361d3"
+dependencies = [
+ "ring",
+ "untrusted",
+]
+
+[[package]]
 name = "webpki-roots"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82015b7e0b8bad8185994674a13a93306bea76cf5a16c5a181382fd3a5ec2376"
 dependencies = [
- "webpki",
+ "webpki 0.21.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
