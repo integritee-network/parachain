@@ -89,9 +89,5 @@ std = [
 	"xcm-executor/std",
 	"xcm-handler/std",
 # TEE	
-<<<<<<< HEAD
 	"substratee-registry/std"
-=======
-#	"substratee-registry/std"
->>>>>>> disabling substratee-registry pallet because of #1
 ]
