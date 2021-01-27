@@ -298,32 +298,14 @@ impl xcm_handler::Config for Runtime {
 }
 
 // TEE
-/*
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
 }
-
-/// added by SCS
 impl substratee_registry::Config for Runtime {
 	type Event = Event;
 	type Currency = pallet_balances::Module<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
 }
-*/
-
-// TEE
-/*
-parameter_types! {
-	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
-}
-
-/// added by SCS
-impl substratee_registry::Config for Runtime {
-	type Event = Event;
-	type Currency = pallet_balances::Module<Runtime>;
-	type MomentsPerDay = MomentsPerDay;
-}
-*/
 
 construct_runtime! {
 	pub enum Runtime where
