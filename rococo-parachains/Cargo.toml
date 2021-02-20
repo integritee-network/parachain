@@ -1,13 +1,13 @@
 [package]
-name = "rococo-collator"
-version = "0.1.0"
+name = 'integritee-collator'
+version = '0.2.0'
 authors = ["Parity Technologies <admin@parity.io>"]
 build = "build.rs"
 edition = "2018"
 
 [[bin]]
-name = "rococo-collator"
-path = "src/main.rs"
+name = 'integritee-collator'
+path = 'src/main.rs'
 
 [dependencies]
 derive_more = "0.15.0"
@@ -20,9 +20,10 @@ codec = { package = "parity-scale-codec", version = "2.0.0" }
 structopt = "0.3.3"
 serde = { version = "1.0.119", features = ["derive"] }
 hex-literal = "0.2.1"
+serde_json = "1.0.41"
 
 # Parachain dependencies
-parachain-runtime = { package = "cumulus-test-parachain-runtime", path = "runtime" }
+parachain-runtime = { package = "integritee-parachain-runtime", path = "runtime" }
 rococo-parachain-primitives = { path = "primitives" }
 
 # Substrate dependencies

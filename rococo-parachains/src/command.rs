@@ -42,6 +42,8 @@ fn load_spec(
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 	match id {
 		"staging" => Ok(Box::new(chain_spec::staging_test_net(para_id))),
+		"integritee-rococo" => Ok(Box::new(chain_spec::integritee_spec(para_id, false))),
+		"integritee-local" => Ok(Box::new(chain_spec::integritee_spec(para_id, true))),
 		"tick" => Ok(Box::new(chain_spec::ChainSpec::from_json_bytes(
 			&include_bytes!("../res/tick.json")[..],
 		)?)),

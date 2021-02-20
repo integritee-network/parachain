@@ -1,8 +1,17 @@
 [package]
-name = 'cumulus-test-parachain-runtime'
-version = '0.1.0'
+name = 'integritee-parachain-runtime'
+# minor revision must match node/client
+# patch revision must match runtime spec_version
+version = '0.2.4'
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = '2018'
+
+# TEE 
+[dependencies.substratee-registry]
+default-features = false
+git = "https://github.com/scs/pallet-substratee-registry.git"
+branch = "rococo"
+package = 'pallet-substratee-registry'
 
 [dependencies]
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
@@ -79,4 +88,6 @@ std = [
 	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+# TEE	
+	"substratee-registry/std"
 ]
