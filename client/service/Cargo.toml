@@ -9,7 +9,7 @@ edition = "2018"
 cumulus-client-consensus-common = { path = "../consensus/common" }
 cumulus-client-collator = { path = "../collator" }
 cumulus-client-pov-recovery = { path = "../pov-recovery" }
-cumulus-primitives-core = { path = "../../primitives/core" }
+cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.4" }
 
 # Substrate dependencies
 sc-chain-spec = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
