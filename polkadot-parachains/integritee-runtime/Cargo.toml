@@ -65,7 +65,7 @@ hex = "0.4.3"
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.7" }
 
 # TEE
-[dependencies.substratee-registry]
+[dependencies.pallet-teerex]
 default-features = false
 git = "https://github.com/scs/pallet-substratee-registry.git"
 branch = "polkadot-v0.9.7"
@@ -113,5 +113,5 @@ std = [
 	"pallet-aura/std",
 	"sp-consensus-aura/std",
 	# TEE
-	"substratee-registry/std"
+	"pallet-teerex/std"
 ]

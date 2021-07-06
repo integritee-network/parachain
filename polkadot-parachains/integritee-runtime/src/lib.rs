@@ -54,7 +54,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 // TEE
-pub use substratee_registry::Call as SubstrateeRegistryCall;
+pub use pallet_teerex::Call as TeerexCall;
 
 // XCM imports
 use pallet_xcm::{EnsureXcm, IsMajorityOfBody, XcmPassthrough};
@@ -453,7 +453,7 @@ impl pallet_aura::Config for Runtime {
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
 }
-impl substratee_registry::Config for Runtime {
+impl pallet_teerex::Config for Runtime {
 	type Event = Event;
 	type Currency = pallet_balances::Pallet<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
@@ -487,7 +487,7 @@ construct_runtime! {
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 		Spambot: cumulus_ping::{Pallet, Call, Storage, Event<T>} = 39,
 
-		SubstrateeRegistry: substratee_registry::{Pallet, Call, Storage, Event<T>} = 50,
+		Teerex: pallet_teerex::{Pallet, Call, Storage, Event<T>} = 50,
 	}
 }
 
