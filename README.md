@@ -117,6 +117,14 @@ extrinsics tab in polkadot-js/apps.
 * Don't forget to add the argument `--chain integritee-rococo-local-dev` for the custom chain config. This argument is omitted in the [Cumulus Workshop](https://substrate.dev/cumulus-workshop/).
 * The relay chain and the collator need to be about equally recent. This might require frequent rebasing of this repository on the corresponding release branch.
 
+## Benchmark
+This parachain as benchmarking implemented. Run benchmarks with the following command:
+
+```shell
+./scripts/benchmark.sh
+```
+
+
 ### More Resources
 * Thorough Readme about Rococo and Collators in general in the original [repository](https://github.com/paritytech/cumulus) of this fork.
 * Parachains on Rococo in the [Polkadot Wiki](https://wiki.polkadot.network/docs/en/build-parachains-rococo#rococo-v1-parachain-requirements)

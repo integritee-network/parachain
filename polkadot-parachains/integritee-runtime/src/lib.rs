@@ -648,7 +648,7 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 
-			// Adding the pallet you will perform thee benchmarking
+			// Adding the pallet you will perform the benchmarking
 			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
 			// add_benchmark!(params, batches, pallet_teerex, Teerex);
 			// add_benchmark!(params, batches, pallet_balances, Balances);
