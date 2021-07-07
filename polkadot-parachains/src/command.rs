@@ -305,6 +305,10 @@ pub fn run() -> Result<()> {
 			if cfg!(feature = "runtime-benchmarks") {
 				let runner = cli.create_runner(cmd)?;
 
+				if runner.config().chain_spec.is_shell() {
+					return Err("Benchmarking is not enabled in shell".into())
+				};
+
 				Ok(runner.sync_run(|config| {
 					cmd.run::<rococo_parachain_runtime::Block, RococoParachainRuntimeExecutor>(config)
 				})?)
