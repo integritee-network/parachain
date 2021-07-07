@@ -269,10 +269,11 @@ impl RelayChain {
 		}
 	}
 
+	/// full name extension, which is displayed in polkadot-js to disambiguate chains.
 	fn name_ext(&self) -> String {
 		match self.chain_type() {
-			ChainType::Local => " (Local)".into(),
-			ChainType::Development => " (Dev)".into(),
+			ChainType::Local => format!(" ({})", self.to_string()),
+			ChainType::Development => format!( "{} (Dev)", self.to_string()),
 			ChainType::Live => "".into(),
 			ChainType::Custom(custom) => format!(" ({})", custom),
 		}
