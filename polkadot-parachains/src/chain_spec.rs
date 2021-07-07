@@ -101,7 +101,7 @@ pub fn shell_chain_spec(id: ParaId, genesis_keys: GenesisKeys, relay_chain: Rela
 		GenesisKeys::WellKnown => (WellKnownKeys::root(), WellKnownKeys::endowed(), WellKnownKeys::authorities()),
 	};
 
-	let chain_name = format!("IntegriTEE Shell{}", get_chain_name_ext(&relay_chain.chain_type()));
+	let chain_name = format!("IntegriTEE Shell{}", relay_chain.name_ext());
 
 	chain_spec(
 		&chain_name,
@@ -123,7 +123,7 @@ pub fn integritee_chain_spec(id: ParaId, genesis_keys: GenesisKeys, relay_chain:
 		GenesisKeys::WellKnown => (WellKnownKeys::root(), WellKnownKeys::endowed(), WellKnownKeys::authorities())
 	};
 
-	let chain_name = format!("IntegriTEE Network{}", get_chain_name_ext(&relay_chain.chain_type()));
+	let chain_name = format!("IntegriTEE Network{}", relay_chain.name_ext());
 
 	chain_spec(
 		&chain_name,
@@ -235,15 +235,6 @@ fn shell_genesis_config(
 	}
 }
 
-fn get_chain_name_ext(chain_type: &ChainType) -> String {
-	match chain_type {
-		ChainType::Local => " (Local)".into(),
-		ChainType::Development => " (Dev)".into(),
-		ChainType::Live => "".into(),
-		ChainType::Custom(custom) => format!(" ({})", custom),
-	}
-}
-
 pub enum RelayChain {
 	RococoLocal,
 	KusamaLocal,
@@ -275,6 +266,15 @@ impl RelayChain {
 			RelayChain::Rococo => ChainType::Live,
 			RelayChain::Kusama => ChainType::Live,
 			RelayChain::Polkadot => ChainType::Live,
+		}
+	}
+
+	fn name_ext(&self) -> String {
+		match self.chain_type() {
+			ChainType::Local => " (Local)".into(),
+			ChainType::Development => " (Dev)".into(),
+			ChainType::Live => "".into(),
+			ChainType::Custom(custom) => format!(" ({})", custom),
 		}
 	}
 }
