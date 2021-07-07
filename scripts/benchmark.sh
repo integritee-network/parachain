@@ -1,6 +1,11 @@
 #!/bin/bash
 
+INTEGRITEE_RUNTIME_WEIGHT_DIR=polkadot-parachains/integritee-runtime/src/weights
 COLLATOR=./target/release/integritee-collator
+
+mkdir -p $INTEGRITEE_RUNTIME_WEIGHT_DIR
+
+echo benchmarking frame_system...
 
 $COLLATOR \
   benchmark \
@@ -12,4 +17,4 @@ $COLLATOR \
   --execution=wasm \
   --wasm-execution=compiled \
   --heap-pages=4096 \
-  --output=./weights.rs
+  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/frame_system.rs
