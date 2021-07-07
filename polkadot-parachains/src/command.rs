@@ -304,6 +304,10 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::Benchmark(cmd)) => {
 			if cfg!(feature = "runtime-benchmarks") {
 				let runner = cli.create_runner(cmd)?;
+
+				Ok(runner.sync_run(|config| {
+					cmd.run::<rococo_parachain_runtime::Block, RococoParachainRuntimeExecutor>(config)
+				})?)
 			} else {
 				Err("Benchmarking wasn't enabled when building the node. \
 				You can enable it with `--features runtime-benchmarks`."
