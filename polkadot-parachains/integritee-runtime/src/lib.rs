@@ -650,7 +650,7 @@ impl_runtime_apis! {
 
 			// Adding the pallet you will perform the benchmarking
 			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
-			// add_benchmark!(params, batches, pallet_teerex, Teerex);
+			add_benchmark!(params, batches, pallet_teerex, Teerex);
 			// add_benchmark!(params, batches, pallet_balances, Balances);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }

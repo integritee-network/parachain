@@ -18,3 +18,17 @@ $COLLATOR \
   --wasm-execution=compiled \
   --heap-pages=4096 \
   --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/frame_system.rs
+
+echo benchmarking pallet_teerex...
+
+$COLLATOR \
+  benchmark \
+  --chain=integritee-rococo-local-dev \
+  --steps=50 \
+  --repeat=20 \
+  --pallet=pallet_teerex \
+  --extrinsic="*" \
+  --execution=wasm \
+  --wasm-execution=compiled \
+  --heap-pages=4096 \
+  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_teerex.rs

@@ -139,5 +139,5 @@ runtime-benchmarks = [
 #	"pallet-timestamp/runtime-benchmarks",
 #	"pallet-xcm/runtime-benchmarks",
 #	"xcm-builder/runtime-benchmarks",
-#	"pallet-teerex/runtime-benchmarks"
+	"pallet-teerex/runtime-benchmarks"
 ]
