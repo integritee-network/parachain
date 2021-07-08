@@ -17,7 +17,7 @@ $COLLATOR \
   --execution=wasm \
   --wasm-execution=compiled \
   --heap-pages=4096 \
-  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/frame_system.rs
+  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/frame_system.rs \
 
 echo benchmarking pallet_teerex...
 
@@ -31,4 +31,8 @@ $COLLATOR \
   --execution=wasm \
   --wasm-execution=compiled \
   --heap-pages=4096 \
-  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_teerex.rs
+  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_teerex.rs \
+  --template=./scripts/frame-weight-template.hbs
+# use the above template if you also want to also create a type definition to copy over to pallet_teerex's `WeightInfo`
+# definition and to create an implementation for `()` for tests
+
