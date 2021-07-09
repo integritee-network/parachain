@@ -412,13 +412,6 @@ impl cumulus_pallet_dmp_queue::Config for Runtime {
 	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
-impl cumulus_ping::Config for Runtime {
-	type Event = Event;
-	type Origin = Origin;
-	type Call = Call;
-	type XcmSender = XcmRouter;
-}
-
 parameter_types! {
 	pub const AssetDeposit: Balance = 1 * TEER;
 	pub const ApprovalDeposit: Balance = 100 * MILLITEER;
@@ -471,7 +464,6 @@ construct_runtime! {
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 31,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
-		Spambot: cumulus_ping::{Pallet, Call, Storage, Event<T>} = 39,
 
 		Teerex: pallet_teerex::{Pallet, Call, Storage, Event<T>} = 50,
 	}
