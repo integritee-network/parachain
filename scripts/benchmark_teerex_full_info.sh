@@ -1,9 +1,9 @@
 # This creates and extended weight file that contains:
 # * `WeightInfo` trait declaration
 # * `WeightInfo` implementation for an `IntegriteeRuntimeWeight` struct
-# * `WeightInfo` implementation for `()` for testing.
+# * `WeightInfo` implementation for `()` used in testing.
 #
-# This file is intended to be copied to the `pallet_teerex` repository and used there.
+# This output file is intended to be copied to the `pallet_teerex` repository and used there.
 
 COLLATOR=./target/release/integritee-collator
 
@@ -17,6 +17,6 @@ $COLLATOR \
   --execution=wasm \
   --wasm-execution=compiled \
   --heap-pages=4096 \
-  --output=./pallet_teerex.rs \
-  --template=./scripts/frame-weight-template-complete.hbs
+  --output=./pallet_teerex_weights.rs \
+  --template=./scripts/frame-weight-template-full-info.hbs
 

@@ -8,7 +8,7 @@ members = [
 
 [profile.release]
 panic = "unwind"
-
-[patch."https://github.com/scs/pallet-substratee-registry"]
-pallet-teerex = { path = "../pallet-teerex" }
-ias-verify = { path = "../pallet-teerex/ias-verify" }
+#
+#[patch."https://github.com/scs/pallet-substratee-registry"]
+#pallet-teerex = { path = "../pallet-teerex" }
+#ias-verify = { path = "../pallet-teerex/ias-verify" }

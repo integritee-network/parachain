@@ -188,7 +188,7 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type DbWeight = frame_support::weights::constants::RocksDbWeight;
+	type DbWeight = RocksDbWeight;
 	type BaseCallFilter = ();
 	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 	type BlockWeights = RuntimeBlockWeights;
@@ -610,9 +610,14 @@ impl_runtime_apis! {
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {}
 
-			// Whitelisted storage keys are not counted in the benchmark, as they are accessed every block anyhow. Previously
-			// accessed storage keys are stored in the `StorageOverlay`, i.e., the runtime cache. Hence, accessing these keys
-			// in our pallets is regarded as negligible.
+			// Whitelisted keys to be ignored in benchmarking DB-access tracking.
+			//
+			// Reasoning:
+			// 		Previously accessed storage keys are stored in the `StorageOverlay`, i.e. the runtime cache.
+			// 		A cache with the life-time of one block.
+			// 		Accessing these keys afterwards in the same block is considered as negligible overhead.
+			// 		Hence, we whitelist storage keys that are accessed every block anyhow because accessing them
+			// 		in our pallet can be considered free.
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac").to_vec().into(),
@@ -629,13 +634,11 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 
-			// Adding the pallet you will perform the benchmarking
 			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
 			add_benchmark!(params, batches, pallet_balances, Balances);
+			add_benchmark!(params, batches, pallet_teerex, Teerex);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 			add_benchmark!(params, batches, pallet_vesting, Vesting);
-
-			add_benchmark!(params, batches, pallet_teerex, Teerex);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)

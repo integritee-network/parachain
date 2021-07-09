@@ -118,10 +118,15 @@ extrinsics tab in polkadot-js/apps.
 * The relay chain and the collator need to be about equally recent. This might require frequent rebasing of this repository on the corresponding release branch.
 
 ## Benchmark
-This parachain as benchmarking implemented. Run benchmarks with the following command:
+The current weights have been benchmarked with the following reference hardware:
+* Core(TM) i7-10875H
+* 32GB of RAM
+* NVMe SSD
+
+The benchmarks are run with the following script:
 
 ```shell
-./scripts/benchmark.sh
+./scripts/benchmark_all_pallets.sh
 ```
 
 

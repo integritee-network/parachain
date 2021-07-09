@@ -71,7 +71,7 @@ substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", bran
 [dependencies.pallet-teerex]
 default-features = false
 git = "https://github.com/scs/pallet-substratee-registry.git"
-branch = "polkadot-v0.9.7"
+branch = "runtime-benchmarks-v0.9.7"
 package = 'pallet-teerex'
 
 [features]
