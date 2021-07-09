@@ -77,6 +77,8 @@ impl_opaque_keys! {
 	}
 }
 
+mod weights;
+
 /// This runtime version.
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -186,9 +188,9 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
-	type DbWeight = ();
+	type DbWeight = frame_support::weights::constants::RocksDbWeight;
 	type BaseCallFilter = ();
-	type SystemWeightInfo = ();
+	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
 	type SS58Prefix = SS58Prefix;
@@ -457,6 +459,7 @@ impl pallet_teerex::Config for Runtime {
 	type Event = Event;
 	type Currency = pallet_balances::Pallet<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
+	type WeightInfo = weights::pallet_teerex::WeightInfo<Runtime>;
 }
 
 construct_runtime! {
