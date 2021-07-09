@@ -5,34 +5,44 @@ COLLATOR=./target/release/integritee-collator
 
 mkdir -p $INTEGRITEE_RUNTIME_WEIGHT_DIR
 
-echo benchmarking frame_system...
 
-$COLLATOR \
+pallets=(
+  "frame_system" \
+  "pallet_teerex" \
+)
+
+for pallet in ${pallets[*]}; do
+  echo benchmarking "$pallet"...
+
+  $COLLATOR \
   benchmark \
   --chain=integritee-rococo-local-dev \
   --steps=50 \
   --repeat=20 \
-  --pallet=frame_system \
+  --pallet="$pallet" \
   --extrinsic="*" \
   --execution=wasm \
   --wasm-execution=compiled \
   --heap-pages=4096 \
-  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/frame_system.rs \
+  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/"$pallet".rs \
 
-echo benchmarking pallet_teerex...
+done
 
-$COLLATOR \
-  benchmark \
-  --chain=integritee-rococo-local-dev \
-  --steps=50 \
-  --repeat=20 \
-  --pallet=pallet_teerex \
-  --extrinsic="*" \
-  --execution=wasm \
-  --wasm-execution=compiled \
-  --heap-pages=4096 \
-  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_teerex.rs
+
+# use the command below with the custom template if you also want to
+# create a `WeightInfo` trait definition and test implementation to copy over
+# to pallet_teerex's weight.rs.
+
+#$COLLATOR \
+#  benchmark \
+#  --chain=integritee-rococo-local-dev \
+#  --steps=50 \
+#  --repeat=20 \
+#  --pallet=pallet_teerex \
+#  --extrinsic="*" \
+#  --execution=wasm \
+#  --wasm-execution=compiled \
+#  --heap-pages=4096 \
+#  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_teerex.rs
 #  --template=./scripts/frame-weight-template-complete.hbs
-# use the above template if you also want to also create a type definition to copy over to pallet_teerex's `WeightInfo`
-# definition and to create an implementation for `()` for tests
 
