@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Create `WeightInfo` implementations for all the pallets and store it in the weight module of the `integritee-runtime`.
+
 INTEGRITEE_RUNTIME_WEIGHT_DIR=polkadot-parachains/integritee-runtime/src/weights
 COLLATOR=./target/release/integritee-collator
 
@@ -30,22 +32,3 @@ for pallet in ${pallets[*]}; do
   --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/"$pallet".rs \
 
 done
-
-
-# use the command below with the custom template if you also want to
-# create a `WeightInfo` trait definition and test implementation to copy over
-# to pallet_teerex's weight.rs.
-
-#$COLLATOR \
-#  benchmark \
-#  --chain=integritee-rococo-local-dev \
-#  --steps=50 \
-#  --repeat=20 \
-#  --pallet=pallet_teerex \
-#  --extrinsic="*" \
-#  --execution=wasm \
-#  --wasm-execution=compiled \
-#  --heap-pages=4096 \
-#  --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_teerex.rs
-#  --template=./scripts/frame-weight-template-complete.hbs
-
