@@ -9,7 +9,6 @@ mkdir -p $INTEGRITEE_RUNTIME_WEIGHT_DIR
 
 pallets=(
   "frame_system" \
-#  "pallet_assets" \ Fixme: pallet assets throws an error while benchmarking, but do we even need that pallet??
   "pallet_balances" \
   "pallet_timestamp" \
   "pallet_vesting" \
