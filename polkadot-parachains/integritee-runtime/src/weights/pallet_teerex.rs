@@ -29,25 +29,25 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_teerex::WeightInfo for WeightInfo<T> {
 	fn register_enclave() -> Weight {
-		(1_821_900_000 as Weight)
+		(1_966_400_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 	fn unregister_enclave() -> Weight {
-		(40_200_000 as Weight)
+		(42_900_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
 	fn call_worker() -> Weight {
-		(79_300_000 as Weight)
+		(85_000_000 as Weight)
 	}
 	fn confirm_call() -> Weight {
-		(39_000_000 as Weight)
+		(41_300_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
 	fn confirm_block() -> Weight {
-		(38_000_000 as Weight)
+		(41_100_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
