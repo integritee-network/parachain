@@ -51,7 +51,7 @@ jobs:
       - name: Setup Rust toolchain
         run: rustup show
 
-      - name: Build
+      - name: fmt check
         # fail job on warnings with `-- --check`
         run: cargo fmt --all -- --check
 
@@ -65,7 +65,7 @@ jobs:
       - name: Setup Rust toolchain
         run: rustup show
 
-      - name: Build
+      - name: clippy
         # fail job on warnings with `-- -D warnings`
         run: cargo clippy -- -D warnings
 
