@@ -152,11 +152,10 @@ parameter_types! {
 pub struct DisableTokenTxFilter;
 impl Filter<Call> for DisableTokenTxFilter {
 	fn filter(call: &Call) -> bool {
-		match call {
-			// Balances and Vesting's transfer (which can be used to transfer)
-			Call::Balances(_) | Call::Vesting(pallet_vesting::Call::vested_transfer(..)) => false,
-			_ => true,
-		}
+		!matches!(
+			call,
+			Call::Balances(_) | Call::Vesting(pallet_vesting::Call::vested_transfer(..))
+		)
 	}
 }
 
@@ -212,10 +211,10 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: u128 = 1 * MILLITEER;
-	pub const TransferFee: u128 = 1 * MILLITEER;
-	pub const CreationFee: u128 = 1 * MILLITEER;
-	pub const TransactionByteFee: u128 = 1 * MICROTEER;
+	pub const ExistentialDeposit: u128 = MILLITEER;
+	pub const TransferFee: u128 = MILLITEER;
+	pub const CreationFee: u128 = MILLITEER;
+	pub const TransactionByteFee: u128 = MICROTEER;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = 50;
 }

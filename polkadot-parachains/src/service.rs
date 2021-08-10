@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
+// This file has not been touched by us and throws several warnings. Most of them are even false
+// positives.
+#![allow(clippy::all)]
+
 use cumulus_client_consensus_aura::{
 	build_aura_consensus, BuildAuraConsensusParams, SlotProportion,
 };

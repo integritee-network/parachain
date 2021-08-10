@@ -15,7 +15,11 @@
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	chain_spec::{integritee_chain_spec, shell_chain_spec, Extensions, GenesisKeys, RelayChain},
+	chain_spec,
+	chain_spec::{
+		integritee_chain_spec, shell_chain_spec, Extensions, GenesisKeys, RelayChain,
+		ShellChainSpec,
+	},
 	cli::{Cli, RelayChainCli, Subcommand},
 	service::{new_partial, RococoParachainRuntimeExecutor},
 };
@@ -51,12 +55,12 @@ impl<T: sc_service::ChainSpec + 'static> IdentifyChain for T {
 	}
 }
 
+// If we don't skipp here, each cmd expands to 5 lines. I think we have better overview like this.
+#[rustfmt::skip]
 fn load_spec(
 	id: &str,
 	para_id: ParaId,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-	// If we don't skipp here, each cmd expands to 5 lines. I think we have better overview like this.
-	#[rustfmt::skip]
 	Ok(match id {
 		"integritee-rococo-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
 		"integritee-rococo-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
@@ -79,7 +83,7 @@ fn load_spec(
 
 		"" => panic!("Please supply chain_spec to be loaded."),
 		path => {
-			let chain_spec = ChainSpec::from_json_file(path.into())?;
+			let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
 			if chain_spec.is_shell() {
 				Box::new(ShellChainSpec::from_json_file(path.into())?)
 			} else {
@@ -165,8 +169,7 @@ impl SubstrateCli for RelayChainCli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name().to_string()].iter())
-			.load_spec(id)
+		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
 
 	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
@@ -174,6 +177,8 @@ impl SubstrateCli for RelayChainCli {
 	}
 }
 
+// false clippy assumption. In the case of `Box<dyn T>` this is not the same.
+#[allow(clippy::borrowed_box)]
 fn extract_genesis_wasm(chain_spec: &Box<dyn sc_service::ChainSpec>) -> Result<Vec<u8>> {
 	let mut storage = chain_spec.build_storage()?;
 
@@ -236,7 +241,7 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|config| {
 				let polkadot_cli = RelayChainCli::new(
 					&config,
-					[RelayChainCli::executable_name().to_string()]
+					[RelayChainCli::executable_name()]
 						.iter()
 						.chain(cli.relaychain_args.iter()),
 				);
@@ -326,7 +331,7 @@ pub fn run() -> Result<()> {
 
 				let polkadot_cli = RelayChainCli::new(
 					&config,
-					[RelayChainCli::executable_name().to_string()]
+					[RelayChainCli::executable_name()]
 						.iter()
 						.chain(cli.relaychain_args.iter()),
 				);

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
+#![allow(clippy::inconsistent_digit_grouping)]
+
 use cumulus_primitives_core::ParaId;
 use rococo_parachain_runtime::{AccountId, AuraId};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
@@ -119,7 +121,7 @@ pub fn shell_chain_spec(
 		),
 	};
 
-	let chain_name = format!("Integritee Shell");
+	let chain_name = "Integritee Shell".to_string();
 
 	chain_spec(
 		&chain_name,
@@ -148,7 +150,7 @@ pub fn integritee_chain_spec(
 		),
 	};
 
-	let chain_name = format!("Integritee Network");
+	let chain_name = "Integritee Network".to_string();
 
 	chain_spec(
 		&chain_name,
