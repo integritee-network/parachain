@@ -15,12 +15,9 @@
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-	chain_spec,
+	chain_spec::{integritee_chain_spec, shell_chain_spec, Extensions, GenesisKeys, RelayChain},
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::{
-		new_partial,
-		RococoParachainRuntimeExecutor,
-	},
+	service::{new_partial, RococoParachainRuntimeExecutor},
 };
 use codec::Encode;
 use cumulus_client_service::genesis::generate_genesis_block;
@@ -35,7 +32,6 @@ use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::Block as BlockT;
 use std::{io::Write, net::SocketAddr};
-use crate::chain_spec::{GenesisKeys, RelayChain};
 
 const DEFAULT_PARA_ID: u32 = 2015;
 
@@ -59,31 +55,33 @@ fn load_spec(
 	id: &str,
 	para_id: ParaId,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+	// If we don't skipp here, each cmd expands to 5 lines. I think we have better overview like this.
+	#[rustfmt::skip]
 	Ok(match id {
-		"integritee-rococo-local" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
-		"integritee-rococo-local-dev" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
-		"integritee-rococo" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
-		"integritee-kusama-local" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::KusamaLocal)),
-		"integritee-kusama-local-dev" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
-		"integritee-kusama" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Kusama)),
-		"integritee-polkadot-local" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
-		"integritee-polkadot-local-dev" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
-		"integritee-polkadot" => Box::new(chain_spec::integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Polkadot)),
-		"shell-rococo-local" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
-		"shell-rococo-local-dev" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
-		"shell-rococo" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
-		"shell-kusama-local" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::KusamaLocal)),
-		"shell-kusama-local-dev" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
-		"shell-kusama" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Kusama)),
-		"shell-polkadot-local" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
-		"shell-polkadot-local-dev" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
-		"shell-polkadot" => Box::new(chain_spec::shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Polkadot)),
+		"integritee-rococo-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
+		"integritee-rococo-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
+		"integritee-rococo" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
+		"integritee-kusama-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::KusamaLocal)),
+		"integritee-kusama-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
+		"integritee-kusama" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Kusama)),
+		"integritee-polkadot-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
+		"integritee-polkadot-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
+		"integritee-polkadot" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Polkadot)),
+		"shell-rococo-local" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
+		"shell-rococo-local-dev" => Box::new(shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
+		"shell-rococo" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
+		"shell-kusama-local" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::KusamaLocal)),
+		"shell-kusama-local-dev" => Box::new(shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
+		"shell-kusama" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Kusama)),
+		"shell-polkadot-local" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
+		"shell-polkadot-local-dev" => Box::new(shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
+		"shell-polkadot" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Polkadot)),
 
 		"" => panic!("Please supply chain_spec to be loaded."),
 		path => {
-			let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
+			let chain_spec = ChainSpec::from_json_file(path.into())?;
 			if chain_spec.is_shell() {
-				Box::new(chain_spec::ShellChainSpec::from_json_file(path.into())?)
+				Box::new(ShellChainSpec::from_json_file(path.into())?)
 			} else {
 				Box::new(chain_spec)
 			}
@@ -306,11 +304,13 @@ pub fn run() -> Result<()> {
 				let runner = cli.create_runner(cmd)?;
 
 				if runner.config().chain_spec.is_shell() {
-					return Err("Benchmarking is not enabled in shell".into())
+					return Err("Benchmarking is not enabled in shell".into());
 				};
 
 				Ok(runner.sync_run(|config| {
-					cmd.run::<rococo_parachain_runtime::Block, RococoParachainRuntimeExecutor>(config)
+					cmd.run::<rococo_parachain_runtime::Block, RococoParachainRuntimeExecutor>(
+						config,
+					)
 				})?)
 			} else {
 				Err("Benchmarking wasn't enabled when building the node. \
@@ -322,8 +322,7 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 
 			runner.run_node_until_exit(|config| async move {
-				let para_id =
-					chain_spec::Extensions::try_get(&*config.chain_spec).map(|e| e.para_id);
+				let para_id = Extensions::try_get(&*config.chain_spec).map(|e| e.para_id);
 
 				let polkadot_cli = RelayChainCli::new(
 					&config,
