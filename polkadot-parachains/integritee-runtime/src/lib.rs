@@ -412,15 +412,6 @@ impl cumulus_pallet_dmp_queue::Config for Runtime {
 	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
-parameter_types! {
-	pub const AssetDeposit: Balance = TEER;
-	pub const ApprovalDeposit: Balance = 100 * MILLITEER;
-	pub const StringLimit: u32 = 50;
-	pub const MetadataDepositBase: Balance = TEER;
-	pub const MetadataDepositPerByte: Balance = 10 * MILLITEER;
-	pub const UnitBody: BodyId = BodyId::Unit;
-}
-
 /// A majority of the Unit body from Rococo over XCM is our required administration origin.
 pub type AdminOrigin = EnsureXcm<IsMajorityOfBody<RocLocation, UnitBody>>;
 
