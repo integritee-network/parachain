@@ -1,7 +1,7 @@
 [package]
 name = 'integritee-runtime'
 # patch revision must match runtime spec_version
-version = '0.7.10'
+version = '1.0.10'
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = '2018'
 description = "Simple runtime used by the rococo parachain(s)"

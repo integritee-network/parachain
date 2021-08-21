@@ -3419,7 +3419,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-runtime"
-version = "0.7.10"
+version = "1.0.10"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
