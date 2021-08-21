@@ -1,6 +1,6 @@
 {
 	"relaychain": {
-		"bin": "../bin/polkadot-0.9.7",
+		"bin": "../../bin/polkadot-0.9.8",
 		"chain": "rococo-local",
 		"nodes": [
 			{
@@ -22,7 +22,7 @@
 	},
 	"parachains": [
 		{
-			"bin": "./target/release/integritee-collator",
+			"bin": "./../target/release/integritee-collator",
 			"chain": "integritee-rococo-local-dev",
 			"id": "2000",
 			"nodes": [
@@ -41,7 +41,7 @@
 			]
 		},
 		{
-			"bin": "./target/release/integritee-collator",
+			"bin": "./../target/release/integritee-collator",
 			"chain": "integritee-rococo-local",
 			"id": "2015",
 			"nodes": [
