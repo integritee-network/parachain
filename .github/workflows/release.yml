@@ -28,7 +28,6 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-            enclave/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
@@ -71,7 +70,6 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-            enclave/target
           key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
 
       - name: clippy
