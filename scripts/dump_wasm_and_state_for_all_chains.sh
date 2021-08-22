@@ -29,9 +29,5 @@ mkdir -p $DUMP_DIR
 $COLLATOR --version
 # Print array values in  lines
 for spec in ${chainspecs[*]}; do
-  echo "dumping spec for $spec"
-  $COLLATOR build-spec --chain $spec >  $DUMP_DIR/${spec}.json
-  $COLLATOR build-spec --chain $spec --raw > $DUMP_DIR/${spec}-raw.json
-  $COLLATOR export-genesis-state --chain $DUMP_DIR/${spec}-raw.json --parachain-id 2015 > $DUMP_DIR/${spec}.state
-  $COLLATOR export-genesis-wasm --chain $DUMP_DIR/${spec}-raw.json >  $DUMP_DIR/${spec}.wasm
+  ./scripts/dump_wasm_state_and_spec.sh ${spec}
 done
