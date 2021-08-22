@@ -2,7 +2,7 @@
 
 # Helper script to generate the wasm, state and chain-spec/ -raw.json for a given chain-spec.
 #
-# Usage: ./scripts/dump_wasm_state_and_spec.sh <chain-spec> <para-id> <collator-binary>
+# Usage: ./scripts/dump_wasm_state_and_spec.sh <chain-spec> <para-id> <collator-binary> <dump-dir>
 #
 # Example: ./scripts/dump_wasm_state_and_spec.sh shell-kusama-local-dev 2000
 #
@@ -12,11 +12,14 @@
 CHAIN_SPEC=$1
 PARA_ID=${2:-2015}
 COLLATOR=${3:-./target/release/integritee-collator}
-DUMP_DIR=./chain_dumps
+DUMP_DIR=${4-./chain_dumps}
+
+mkdir -p ${DUMP_DIR}
 
 echo "dumping spec for: $CHAIN_SPEC"
 echo "para_id:          ${PARA_ID}"
 echo "collator:         ${COLLATOR}"
+echo "dump_dir:         ${DUMP_DIR}"
 echo ""
 
 $COLLATOR build-spec --chain ${CHAIN_SPEC} >$DUMP_DIR/${CHAIN_SPEC}.json

@@ -3,17 +3,17 @@
 
 # Helper script to generate the wasm, state and chain-spec/ -raw.json for a all chain-specs.
 #
-# Usage: ./scripts/dump_wasm_and_state_for_all_chains.sh <para-id> <collator-binary>
+# Usage: ./scripts/dump_wasm_and_state_for_all_chains.sh <para-id> <collator-binary> <dump-dir>
 #
-# Example: ./scripts/dump_wasm_state_and_spec.sh 2000
+# Example: ./scripts/dump_wasm_state_and_spec.sh 2000 ./
 #
 # para-id, and collator-binary is optional
 
 PARA_ID=${1:-2015}
 COLLATOR=${2:-./target/release/integritee-collator}
-DUMP_DIR=./chain_dumps
+DUMP_DIR=${3-./chain_dumps}
 
-mkdir -p $DUMP_DIR
+mkdir -p ${DUMP_DIR}
 
 chainspecs=("integritee-rococo-local" \
       "integritee-rococo-local-dev" \
@@ -39,5 +39,5 @@ chainspecs=("integritee-rococo-local" \
 $COLLATOR --version
 # Print array values in  lines
 for spec in ${chainspecs[*]}; do
-  ./scripts/dump_wasm_state_and_spec.sh ${spec} ${PARA_ID} ${COLLATOR}
+  ./scripts/dump_wasm_state_and_spec.sh ${spec} ${PARA_ID} ${COLLATOR} ${DUMP_DIR}
 done
