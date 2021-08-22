@@ -12,7 +12,7 @@
 CHAIN_SPEC=$1
 PARA_ID=${2:-2015}
 COLLATOR=${3:-./target/release/integritee-collator}
-DUMP_DIR=${4-./chain_dumps}
+DUMP_DIR=${4:-./chain_dumps}
 
 mkdir -p ${DUMP_DIR}
 
