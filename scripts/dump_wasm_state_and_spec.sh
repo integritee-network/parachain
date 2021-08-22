@@ -3,7 +3,7 @@
 
 spec=$1
 
-COLLATOR=./target/release/integritee-collator
+COLLATOR=${2:-./target/release/integritee-collator}
 DUMP_DIR=./chain_dumps
 
 echo "dumping spec for $spec"
