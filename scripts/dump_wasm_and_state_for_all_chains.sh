@@ -7,11 +7,11 @@
 #
 # Example: ./scripts/dump_wasm_state_and_spec.sh 2000 ./
 #
-# para-id, and collator-binary is optional
+# All arguments are optional.
 
 PARA_ID=${1:-2015}
 COLLATOR=${2:-./target/release/integritee-collator}
-DUMP_DIR=${3-./chain_dumps}
+DUMP_DIR=${3:-./chain_dumps}
 
 mkdir -p ${DUMP_DIR}
 
