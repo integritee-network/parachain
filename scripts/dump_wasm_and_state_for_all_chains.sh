@@ -21,7 +21,8 @@ chainspecs=("integritee-rococo-local" \
 
       )
 
-COLLATOR=${1:-./target/release/integritee-collator}
+PARA_ID=${1:-2015}
+COLLATOR=${2:-./target/release/integritee-collator}
 DUMP_DIR=./chain_dumps
 
 mkdir -p $DUMP_DIR
@@ -29,5 +30,5 @@ mkdir -p $DUMP_DIR
 $COLLATOR --version
 # Print array values in  lines
 for spec in ${chainspecs[*]}; do
-  ./scripts/dump_wasm_state_and_spec.sh ${spec} ${COLLATOR}
+  ./scripts/dump_wasm_state_and_spec.sh ${spec} ${PARA_ID} ${COLLATOR}
 done
