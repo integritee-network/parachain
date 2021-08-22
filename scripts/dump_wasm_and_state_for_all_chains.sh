@@ -5,7 +5,7 @@
 #
 # Usage: ./scripts/dump_wasm_and_state_for_all_chains.sh <para-id> <collator-binary> <dump-dir>
 #
-# Example: ./scripts/dump_wasm_state_and_spec.sh 2000 ./
+# Example: ./scripts/dump_wasm_state_and_spec.sh 2000 ./collator ./dump_dir
 #
 # All arguments are optional.
 

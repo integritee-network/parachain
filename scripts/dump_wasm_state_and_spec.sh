@@ -4,7 +4,7 @@
 #
 # Usage: ./scripts/dump_wasm_state_and_spec.sh <chain-spec> <para-id> <collator-binary> <dump-dir>
 #
-# Example: ./scripts/dump_wasm_state_and_spec.sh shell-kusama-local-dev 2000
+# Example: ./scripts/dump_wasm_state_and_spec.sh shell-kusama-local-dev 2000 collator ./dump_dir
 #
 # chain-spec is mandatory, the rest is optional.
 
