@@ -1,5 +1,20 @@
 #!/bin/bash
 # Remark: wasm and state will be identical for different relay-chains
+
+# Helper script to generate the wasm, state and chain-spec/ -raw.json for a all chain-specs.
+#
+# Usage: ./scripts/dump_wasm_and_state_for_all_chains.sh <para-id> <collator-binary>
+#
+# Example: ./scripts/dump_wasm_state_and_spec.sh 2000
+#
+# para-id, and collator-binary is optional
+
+PARA_ID=${1:-2015}
+COLLATOR=${2:-./target/release/integritee-collator}
+DUMP_DIR=./chain_dumps
+
+mkdir -p $DUMP_DIR
+
 chainspecs=("integritee-rococo-local" \
       "integritee-rococo-local-dev" \
       "integritee-rococo" \
@@ -20,12 +35,6 @@ chainspecs=("integritee-rococo-local" \
       "shell-polkadot" \
 
       )
-
-PARA_ID=${1:-2015}
-COLLATOR=${2:-./target/release/integritee-collator}
-DUMP_DIR=./chain_dumps
-
-mkdir -p $DUMP_DIR
 
 $COLLATOR --version
 # Print array values in  lines
