@@ -26,7 +26,7 @@ use sp_keyring::AccountKeyring::{Alice, Bob, Dave, Eve};
 use std::str::FromStr;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec =
+pub type IntegriteeChainSpec =
 	sc_service::GenericChainSpec<rococo_parachain_runtime::GenesisConfig, Extensions>;
 
 /// Specialized `ChainSpec` for the shell parachain runtime.
@@ -136,7 +136,7 @@ pub fn integritee_chain_spec(
 	id: ParaId,
 	genesis_keys: GenesisKeys,
 	relay_chain: RelayChain,
-) -> ChainSpec {
+) -> IntegriteeChainSpec {
 	let (root, endowed, authorities) = match genesis_keys {
 		GenesisKeys::Integritee => (
 			IntegriteeKeys::root(),

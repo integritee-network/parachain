@@ -85,7 +85,7 @@ fn load_spec(
 
 		"" => panic!("Please supply chain_spec to be loaded."),
 		path => {
-			let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
+			let chain_spec = chain_spec::IntegriteeChainSpec::from_json_file(path.into())?;
 			if chain_spec.is_shell() {
 				Box::new(ShellChainSpec::from_json_file(path.into())?)
 			} else {
