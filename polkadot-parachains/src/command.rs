@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::chain_spec::{integritee_kusama_config, integritee_westend_config, shell_kusama_config};
 use crate::{
 	chain_spec,
 	chain_spec::{
-		integritee_chain_spec, shell_chain_spec, shell_westend_config, Extensions, GenesisKeys,
+		integritee_chain_spec, integritee_kusama_config, integritee_westend_config,
+		shell_chain_spec, shell_kusama_config, shell_westend_config, Extensions, GenesisKeys,
 		RelayChain, ShellChainSpec,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
