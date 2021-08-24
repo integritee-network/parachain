@@ -271,7 +271,7 @@ pub fn shell_westend_config() -> Result<ShellChainSpec, String> {
 	ShellChainSpec::from_json_bytes(&include_bytes!("../res/shell-westend.json")[..])
 }
 
-pub fn integritee_westend_config() -> Result<ShellChainSpec, String> {
+pub fn integritee_westend_config() -> Result<IntegriteeChainSpec, String> {
 	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-westend.json")[..])
 }
 
@@ -279,7 +279,7 @@ pub fn shell_kusama_config() -> Result<ShellChainSpec, String> {
 	ShellChainSpec::from_json_bytes(&include_bytes!("../res/shell-kusama.json")[..])
 }
 
-pub fn integritee_kusama_config() -> Result<ShellChainSpec, String> {
+pub fn integritee_kusama_config() -> Result<IntegriteeChainSpec, String> {
 	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-kusama.json")[..])
 }
 
