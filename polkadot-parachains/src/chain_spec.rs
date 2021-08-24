@@ -268,7 +268,19 @@ pub enum RelayChain {
 }
 
 pub fn shell_westend_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../res/shell-westend-raw.json")[..])
+	ShellChainSpec::from_json_bytes(&include_bytes!("../res/shell-westend.json")[..])
+}
+
+pub fn integritee_westend_config() -> Result<ShellChainSpec, String> {
+	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-westend.json")[..])
+}
+
+pub fn shell_kusama_config() -> Result<ShellChainSpec, String> {
+	ShellChainSpec::from_json_bytes(&include_bytes!("../res/shell-kusama.json")[..])
+}
+
+pub fn integritee_kusama_config() -> Result<ShellChainSpec, String> {
+	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-kusama.json")[..])
 }
 
 impl ToString for RelayChain {
