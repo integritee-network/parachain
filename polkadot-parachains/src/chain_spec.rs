@@ -263,7 +263,6 @@ pub enum RelayChain {
 	KusamaLocal,
 	PolkadotLocal,
 	Rococo,
-	Kusama,
 	Polkadot,
 }
 
@@ -290,7 +289,6 @@ impl ToString for RelayChain {
 			RelayChain::KusamaLocal => "kusama-local".into(),
 			RelayChain::PolkadotLocal => "polkadot-local".into(),
 			RelayChain::Rococo => "rococo".into(),
-			RelayChain::Kusama => "kusama".into(),
 			RelayChain::Polkadot => "polkadot".into(),
 		}
 	}
@@ -303,7 +301,6 @@ impl RelayChain {
 			RelayChain::KusamaLocal => ChainType::Local,
 			RelayChain::PolkadotLocal => ChainType::Local,
 			RelayChain::Rococo => ChainType::Live,
-			RelayChain::Kusama => ChainType::Live,
 			RelayChain::Polkadot => ChainType::Live,
 		}
 	}
