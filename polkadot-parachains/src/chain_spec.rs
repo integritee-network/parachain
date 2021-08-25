@@ -182,7 +182,7 @@ fn chain_spec<F: Fn() -> GenesisConfig + 'static + Send + Sync, GenesisConfig>(
 		Some(
 			serde_json::from_str(
 				r#"{
-				"ss58Format": 42,
+				"ss58Format": 13,
 				"tokenDecimals": 12,
 				"tokenSymbol": "TEER"
 				}"#,
