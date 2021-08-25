@@ -2,7 +2,9 @@
   "name": "Integritee Shell",
   "id": "integritee-kusama",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/159.89.98.37/tcp/30333/p2p/12D3KooWT2dtwAeFxkPa7csfvYZJgUvVxYTZHWE5fFb4fxcz39Gp"
+  ],
   "telemetryEndpoints": null,
   "protocolId": "teer",
   "properties": {
