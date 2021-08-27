@@ -180,12 +180,13 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.chain }}-runtime-${{ github.sha }}
-      - name: Archive Release
-        uses: thedoctor0/zip-release@master
-        with:
-          type: 'zip'
-          path: ./${{ matrix.chain }}-runtime-${{ github.sha }}
-          filename: '${{ matrix.chain }}-runtime-${{ github.sha }}.zip'
+          
+#      - name: Archive Release
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          type: 'zip'
+#          path: ./${{ matrix.chain }}-runtime-${{ github.sha }}
+#          filename: '${{ matrix.chain }}-runtime-${{ github.sha }}.zip'
         
       - name: 'Create binaries for artifacts'
         # Note: there is no way to pass the parachain-id to the `build-spec` cmd, which which imposes to set
