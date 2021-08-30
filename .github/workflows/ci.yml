@@ -83,11 +83,11 @@ jobs:
           #profile: minimal
           override: true
       - name: Print info
-        run: rustc --print sysroot
+        run: |
+          rustc --print sysroot
       - name: Install sccache (ubuntu-20.04)
         if: matrix.os == 'ubuntu-20.04'
-        run: |
-          RUSTC=$(rustup which rustc) $(rustup which cargo) install sccache
+        run: RUSTC=$(rustup which rustc) $(rustup which cargo) install sccache
       - name: Cache cargo registry
         uses: actions/cache@v2
         continue-on-error: false
