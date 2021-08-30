@@ -50,64 +50,43 @@ jobs:
   #     - name: Check rustfmt
   #       run: cargo fmt --all -- --check
 
-  tests:
-    name: ${{ matrix.make.name }} (${{ matrix.os }})
+  build_primary_binaries:
+    name: Primary build ${{ matrix.binary }} for ${{ matrix.rust-target }} on (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         rust: [stable]
-        make:
-          - name: Clippy
-            task: "clippy -- -D warnings"
-          # - name: Release
-          #   task: "build --release"
-        include:
-          - os: ubuntu-20.04
-            sccache-path: /home/runner/.cache/sccache
-            sccache-bin: /home/runner/.cargo/bin/sccache
+        binary: [clippy]
     env:
       RUST_BACKTRACE: full
-      RUSTC_WRAPPER: ${{ matrix.sccache-bin }}
       RUSTV: ${{ matrix.rust }}
-      SCCACHE_CACHE_SIZE: 2G
-      SCCACHE_DIR: ${{ matrix.sccache-path }}
-      # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
+      TARGET: ${{ matrix.rust-target }}
+      RUST_BIN_DIR: target/${{ matrix.rust-target }}/debug
+      RELEASE_NAME: debug
     steps:
       - uses: actions/checkout@v2
+
+      - name: Print env
+        run: |
+          echo "RUST_BIN_DIR = ${{ env.RUST_BIN_DIR }} "
+
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
           #profile: minimal
           override: true
-      - name: Print info
-        run: |
-          rustc --print sysroot
-      - name: Install sccache (ubuntu-20.04)
-        if: matrix.os == 'ubuntu-20.04'
-        run: RUSTC=$(rustup which rustc) $(rustup which cargo) install sccache
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        continue-on-error: false
+
+      - uses: Swatinem/rust-cache@v1
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-      - name: Save sccache
-        uses: actions/cache@v2
-        continue-on-error: false
-        with:
-          path: ${{ matrix.sccache-path }}
-          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-sccache-
-      - name: ${{ matrix.make.name }}
-        run: cargo ${{ matrix.make.task }}
-      - name: Print sccache stats
-        run: ${{ matrix.sccache-bin }} --show-stats
+          key: ${{ matrix.os }}-${{ env.RUST_BIN_DIR }}-${{ matrix.binary }}
+
+      - name: Clippy
+        if: ${{ matrix.binary == 'clippy' }}
+        run: cargo clippy -- -D warnings
+
+      - name: Release
+        if: ${{ matrix.binary == 'release' }}
+        run: cargo build --release
 
