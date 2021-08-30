@@ -66,9 +66,10 @@ jobs:
         include:
           - os: ubuntu-20.04
             sccache-path: /home/runner/.cache/sccache
+            sccache-bin: /home/runner/.cargo/bin/sccache
     env:
       RUST_BACKTRACE: full
-      RUSTC_WRAPPER: sccache
+      RUSTC_WRAPPER: ${{ matrix.sccache-bin }}
       RUSTV: ${{ matrix.rust }}
       SCCACHE_CACHE_SIZE: 2G
       SCCACHE_DIR: ${{ matrix.sccache-path }}
@@ -77,15 +78,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install sccache (ubuntu-20.04)
         if: matrix.os == 'ubuntu-20.04'
-        env:
-          LINK: https://github.com/mozilla/sccache/releases/download
-          SCCACHE_VERSION: v0.2.15
         run: |
-          SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
-          mkdir -p $HOME/.local/bin
-          curl -L "$LINK/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz" | tar xz
-          mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache-dist
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          cargo install sccache
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -110,12 +104,8 @@ jobs:
           key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-sccache-
-      - name: Start sccache server
-        run: sccache-dist --start-server
       - name: ${{ matrix.make.name }}
         run: cargo ${{ matrix.make.task }}
       - name: Print sccache stats
-        run: sccache-dist --show-stats
-      - name: Stop sccache server
-        run: sccache-dist --stop-server || true
+        run: ${{ matrix.sccache-bin }} --show-stats
 
