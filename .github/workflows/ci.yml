@@ -24,31 +24,31 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
 
-  rustfmt:
-    name: Rustfmt (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        rust: [stable]
-    env:
-      RUST_BACKTRACE: full
-      RUSTC_WRAPPER: sccache
-      SCCACHE_CACHE_SIZE: 300M
-      SCCACHE_DIR: /home/runner/.cache/sccache
-      SCCACHE_IDLE_TIMEOUT: 0
-      FLV_SOCKET_WAIT: 600
-      RUSTV: ${{ matrix.rust }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          profile: minimal
-          override: true
-      - name: Check rustfmt
-        run: cargo fmt --all -- --check
+  # rustfmt:
+  #   name: Rustfmt (${{ matrix.os }})
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-20.04]
+  #       rust: [stable]
+  #   env:
+  #     RUST_BACKTRACE: full
+  #     RUSTC_WRAPPER: sccache
+  #     SCCACHE_CACHE_SIZE: 300M
+  #     SCCACHE_DIR: /home/runner/.cache/sccache
+  #     SCCACHE_IDLE_TIMEOUT: 0
+  #     FLV_SOCKET_WAIT: 600
+  #     RUSTV: ${{ matrix.rust }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Install Rust ${{ matrix.rust }}
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         profile: minimal
+  #         override: true
+  #     - name: Check rustfmt
+  #       run: cargo fmt --all -- --check
 
   tests:
     name: ${{ matrix.make.name }} (${{ matrix.os }})
@@ -62,7 +62,7 @@ jobs:
           - name: Clippy
             task: "clippy -- -D warnings"
           - name: Release
-            task: "cargo build --release"
+            task: "build --release"
         include:
           - os: ubuntu-latest
             sccache-path: /home/runner/.cache/sccache
