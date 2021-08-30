@@ -79,6 +79,8 @@ jobs:
       - name: Install sccache (ubuntu-20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
+          rm -fr /home/runner/.local/bin/sccache
+          rm -fr /tmp/cargo-*
           cargo install sccache
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
