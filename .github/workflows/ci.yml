@@ -61,8 +61,8 @@ jobs:
         make:
           - name: Clippy
             task: "clippy -- -D warnings"
-          - name: Release
-            task: "build --release"
+          # - name: Release
+          #   task: "build --release"
         include:
           - os: ubuntu-20.04
             sccache-path: /home/runner/.cache/sccache
