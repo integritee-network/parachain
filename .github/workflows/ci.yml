@@ -10,7 +10,7 @@ on:
       verbose:
         description: "Set --verbose to get verbose build output"
         required: false
-        default: ''
+        default: 'true'
 
 env:
   VERBOSE: ${{ github.events.input.verbose }}
@@ -18,7 +18,7 @@ env:
 jobs:
   cancel_previous_runs:
     name: Cancel Previous Runs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: styfle/cancel-workflow-action@0.4.1
         with:
@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         rust: [stable]
         make:
           - name: Clippy
@@ -64,7 +64,7 @@ jobs:
           - name: Release
             task: "build --release"
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             sccache-path: /home/runner/.cache/sccache
     env:
       RUST_BACKTRACE: full
@@ -75,8 +75,8 @@ jobs:
       # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
     steps:
       - uses: actions/checkout@v2
-      - name: Install sccache (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install sccache (ubuntu-20.04)
+        if: matrix.os == 'ubuntu-20.04'
         env:
           LINK: https://github.com/mozilla/sccache/releases/download
           SCCACHE_VERSION: 0.2.13
@@ -90,7 +90,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          profile: minimal
+          #profile: minimal
           override: true
       - name: Cache cargo registry
         uses: actions/cache@v2
