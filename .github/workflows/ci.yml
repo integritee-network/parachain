@@ -82,6 +82,8 @@ jobs:
           toolchain: ${{ matrix.rust }}
           #profile: minimal
           override: true
+      - name: Print info
+        run: rustc --print sysroot
       - name: Install sccache (ubuntu-20.04)
         if: matrix.os == 'ubuntu-20.04'
         run: |
