@@ -205,11 +205,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: shell-runtime-${{ github.sha }}
+          path: shell-runtime-${{ github.sha }}
 
       - name: Download integritee runtime artifacts
         uses: actions/download-artifact@v2
         with:
           name: integritee-runtime-${{ github.sha }}
+          path: integritee-runtime-${{ github.sha }}
 
       - name: Display structure of downloaded files
         run: ls -R
