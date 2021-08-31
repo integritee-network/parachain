@@ -227,14 +227,14 @@ jobs:
         with:
           type: 'zip'
           filename: 'integritee-runtime-${{ github.sha }}.zip'
-          directory: integritee-runtime-${{ github.sha }}
+          path: integritee-runtime-${{ github.sha }}
 
       - name: Archive Shell Runtime
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
           filename: 'shell-runtime-${{ github.sha }}.zip'
-          directory: shell-runtime-${{ github.sha }}
+          path: shell-runtime-${{ github.sha }}
           
       - name: Display structure of downloaded files
         run: ls -R
