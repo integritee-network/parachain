@@ -196,6 +196,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [srtool, build_primary_binaries, check]
     steps:
+      - uses: actions/checkout@v2
+
       - name: Download Integritee Collator
         uses: actions/download-artifact@v2
         with:
@@ -213,12 +215,12 @@ jobs:
           name: integritee-runtime-${{ github.sha }}
           path: integritee-runtime-${{ github.sha }}
 
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: /home/runner/work/parachain/parachain
-
       - name: Create required package.json
         run: test -f package.json || echo '{}' >package.json
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: .
 
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
