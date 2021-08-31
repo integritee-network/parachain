@@ -206,19 +206,23 @@ jobs:
         with:
           name: shell-runtime-${{ github.sha }}
 
-      - name: Dowload integritee runtime artifacts
+      - name: Download integritee runtime artifacts
         uses: actions/download-artifact@v2
         with:
           name: integritee-runtime-${{ github.sha }}
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: /home/runner/work/parachain/parachain
+
+      - name: Create required package.json
+        run: test -f package.json || echo '{}' >package.json
 
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
         id: Changelog
         env:
           REPO: ${{ github.repository }}
-
-      - name: Create required package.json
-        run: test -f package.json || echo '{}' >package.json
 
       - name: Release
         id: create_release
