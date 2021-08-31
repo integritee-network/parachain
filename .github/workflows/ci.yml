@@ -100,11 +100,12 @@ jobs:
         run: cargo build --release
         
       # Upload artifacts
-      - name: Upload artifact - ${{ matrix.binary }}
+      - name: Upload integritee-collator
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.binary }}-${{ matrix.rust-target }}
-          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.binary }}
+          name: integritee-collator-${{ github.sha }}
+          path: target/release/integritee-collator
+
 
   # Run all checks and unit test. This always run on debug mode
   check:
