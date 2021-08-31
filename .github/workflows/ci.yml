@@ -198,8 +198,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        chain: [shell]
-        config: [kusama]
+        chain: ["shell", "integritee"]
     steps:
       - name: Download Integritee Collator
         uses: actions/download-artifact@v2
@@ -210,13 +209,21 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.chain }}-runtime-${{ github.sha }}
-
+      - name: Changelog
+        uses: scottbrenner/generate-changelog-action@master
+        id: Changelog
+        env:
+          REPO: ${{ github.repository }}
+          
       - name: Release
+        id: create_release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          body: |
+            ${{ steps.Changelog.outputs.changelog }}
           draft: true
           files: |
-            Release.txt
-            LICENSE
+            integritee-collator
+            ${{ matrix.chain }}-runtime
