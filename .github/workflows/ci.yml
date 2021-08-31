@@ -3,7 +3,7 @@ name: CI
 on: 
   push: 
     branches:
-      - main
+      - master
     tags: 
       - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
@@ -195,26 +195,31 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     needs: [srtool, build_primary_binaries, check]
-    strategy:
-      fail-fast: false
-      matrix:
-        chain: ["shell", "integritee"]
     steps:
       - name: Download Integritee Collator
         uses: actions/download-artifact@v2
         with:
           name: integritee-collator-${{ github.sha }}
 
-      - name: Dowload runtime artifacts
+      - name: Dowload shell runtime artifacts
         uses: actions/download-artifact@v2
         with:
-          name: ${{ matrix.chain }}-runtime-${{ github.sha }}
+          name: shell-runtime-${{ github.sha }}
+
+      - name: Dowload integritee runtime artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: integritee-runtime-${{ github.sha }}
+
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
         id: Changelog
         env:
           REPO: ${{ github.repository }}
-          
+
+      - name: Create required package.json
+        run: test -f package.json || echo '{}' >package.json
+
       - name: Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -226,4 +231,5 @@ jobs:
           draft: true
           files: |
             integritee-collator
-            ${{ matrix.chain }}-runtime
+            shell-runtime-*
+            integritee-runtime-*
