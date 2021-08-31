@@ -223,8 +223,6 @@ jobs:
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
         id: Changelog
-        env:
-          REPO: ${{ github.repository }}
 
       - name: Release
         id: create_release
@@ -237,5 +235,5 @@ jobs:
           draft: true
           files: |
             integritee-collator
-            shell-runtime-*
-            integritee-runtime-*
+            shell-runtime-${{ github.sha }}
+            integritee-runtime-${{ github.sha }}
