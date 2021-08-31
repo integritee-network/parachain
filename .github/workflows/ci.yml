@@ -218,13 +218,27 @@ jobs:
       - name: Create required package.json
         run: test -f package.json || echo '{}' >package.json
 
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: .
-
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
         id: Changelog
+
+      - name: Archive Integritee Runtime
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          filename: 'integritee-runtime-${{ github.sha }}.zip'
+          directory: integritee-runtime-${{ github.sha }}
+
+      - name: Archive Shell Runtime
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          filename: 'shell-runtime-${{ github.sha }}.zip'
+          directory: shell-runtime-${{ github.sha }}
+          
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: .
 
       - name: Release
         id: create_release
@@ -237,5 +251,5 @@ jobs:
           draft: true
           files: |
             integritee-collator
-            shell-runtime-${{ github.sha }}
-            integritee-runtime-${{ github.sha }}
+            shell-runtime-${{ github.sha }}.zip
+            integritee-runtime-${{ github.sha }}.zip
