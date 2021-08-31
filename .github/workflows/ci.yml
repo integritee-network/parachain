@@ -98,6 +98,13 @@ jobs:
       - name: Release
         if: ${{ matrix.binary == 'release' }}
         run: cargo build --release
+        
+      # Upload artifacts
+      - name: Upload artifact - ${{ matrix.binary }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.binary }}-${{ matrix.rust-target }}
+          path: ${{ env.RUST_BIN_DIR }}/${{ matrix.binary }}
 
   # Run all checks and unit test. This always run on debug mode
   check:
