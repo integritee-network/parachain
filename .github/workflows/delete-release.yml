@@ -30,6 +30,8 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+      # Unfortunately accessing the repo with personal access token is not possible
+      # Workaround: disable 2FA and user password instead of TOKEN
       - name: Delete docker tag
         run: |
           ORGANIZATION="integritee"
@@ -40,7 +42,7 @@ jobs:
           cat <<EOF
           {
             "username": "${{ secrets.DOCKER_HUB_USERNAME }}",
-            "password": "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}"
+            "password": "${{ secrets.DOCKERHUB_PASSWORD }}"
           }
           EOF
           }
