@@ -2,19 +2,32 @@ name: Delete-Release
 
 on:
   release:
-    types: [edited,prereleased,unpublished,published,created,released,deleted] # should be deleted
+    types: [edited,prereleased,unpublished,published,created,deleted] # should be deleted
 
 jobs:
-  test:
+  purge-image:
+    name: Delete image fron ghcr.io
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Set output
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
       - name: Check output
         env:
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
         run: |
           echo $RELEASE_VERSION
           echo ${{ steps.vars.outputs.tag }}
+
+      - name: Delete image
+        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        with:
+          # NOTE: at now only orgs is supported
+          owner: integritee
+          name: parachain
+          # NOTE: using Personal Access Token
+          token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          tag: pr-${{github.event.pull_request.number}}
