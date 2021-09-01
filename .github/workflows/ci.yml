@@ -238,7 +238,7 @@ jobs:
           echo "Status:    ${{ steps.buildx.outputs.status }}"
           echo "Flags:     ${{ steps.buildx.outputs.flags }}"
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-          
+
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -246,16 +246,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-            upload_url: ${{ github.event.release.upload_url }}
-            asset_path: ./integritee-collator
-            asset_name: integritee-collator
-            asset_content_type: application/binary
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'

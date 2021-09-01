@@ -6,7 +6,7 @@ on:
 
 jobs:
   purge-image:
-    name: Delete image fron ghcr.io
+    name: Delete image from ghcr.io
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -23,12 +23,30 @@ jobs:
           echo ${{ steps.vars.outputs.tag }}
           echo ${{github.event.pull_request.number}}
 
-      - name: Delete image
-        uses: bots-house/ghcr-delete-image-action@v1.0.1
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
         with:
-          # NOTE: at now only orgs is supported
-          owner: integritee
-          name: parachain
-          # NOTE: using Personal Access Token
-          token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          tag: ${{ steps.vars.outputs.tag }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Delete docker tag
+        run: |
+          ORGANIZATION="integritee"
+          IMAGE="parachain"
+          TAG="${{ steps.vars.outputs.tag }}"
+
+          login_data() {
+          cat <<EOF
+          {
+            "username": "${{ secrets.DOCKER_HUB_USERNAME }}",
+            "password": "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}"
+          }
+          EOF
+          }
+
+          TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "$(login_data)" "https://hub.docker.com/v2/users/login/" | jq -r .token`
+
+          curl "https://hub.docker.com/v2/repositories/${ORGANIZATION}/${IMAGE}/tags/${TAG}/" \
+          -X DELETE \
+          -H "Authorization: JWT ${TOKEN}"
