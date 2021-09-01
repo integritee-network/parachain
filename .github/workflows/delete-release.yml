@@ -2,7 +2,7 @@ name: Delete-Release
 
 on:
   release:
-    types: [edited,prereleased,unpublished,published,created,deleted] # should be deleted
+    types: [deleted] # should be deleted
 
 jobs:
   purge-image:
