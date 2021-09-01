@@ -83,6 +83,15 @@ jobs:
         with:
           name: integritee-collator-${{ github.sha }}
           path: target/release/integritee-collator
+          
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 
   # Run all checks and unit test. This always run on debug mode
@@ -191,6 +200,15 @@ jobs:
             ${{ matrix.chain }}-metadata.json
 #            ${{ matrix.chain }}-diff.txt
 
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   docker:
     runs-on: ubuntu-20.04  
     needs: [build_primary_binaries]
@@ -277,14 +295,13 @@ jobs:
           tags: ${{ steps.prep.outputs.tags }}
 
       - name: Slack Notification
-        if: always()
-        uses: rtCamp/action-slack-notify@v2
+        uses: 8398a7/action-slack@v3
+        if: always() # failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
         env:
-          SLACK_CHANNEL: build
-          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
-          # SLACK_MESSAGE: 'Post Content :rocket:'
-          # SLACK_TITLE: Post Title
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
@@ -348,3 +365,12 @@ jobs:
             integritee-collator
             shell-runtime-${{ github.sha }}.zip
             integritee-runtime-${{ github.sha }}.zip
+
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

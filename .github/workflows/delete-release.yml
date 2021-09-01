@@ -52,3 +52,11 @@ jobs:
           curl "https://hub.docker.com/v2/repositories/${ORGANIZATION}/${IMAGE}/tags/${TAG}/" \
           -X DELETE \
           -H "Authorization: JWT ${TOKEN}"
+
+      - name: Delete tag as well
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: false # it is triggered by release deletion
+          tag_name: ${{ steps.vars.outputs.tag }} # tag name to delete
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
