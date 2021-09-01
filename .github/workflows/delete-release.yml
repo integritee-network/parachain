@@ -21,13 +21,14 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ steps.vars.outputs.tag }}
+          echo ${{github.event.pull_request.number}}
 
       - name: Delete image
-        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        uses: bots-house/ghcr-delete-image-action@v1.0.1
         with:
           # NOTE: at now only orgs is supported
           owner: integritee
           name: parachain
           # NOTE: using Personal Access Token
           token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          tag: pr-${{github.event.pull_request.number}}
+          tag: ${{ steps.vars.outputs.tag }}
