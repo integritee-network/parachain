@@ -312,7 +312,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   create_artifacts:
-    needs: [ build_primary_binaries, srtool ]
+    needs: [ build_primary_binaries, build-runtimes ]
     runs-on: ubuntu-20.04
     env:
       CHAIN_SPEC: ${{ matrix.chain }}-${{ matrix.config }}
