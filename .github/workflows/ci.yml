@@ -248,7 +248,7 @@ jobs:
         with:
           body: |
             ${{ steps.Changelog.outputs.changelog }}
-          draft: true
+          draft: false
           files: |
             integritee-collator
             shell-runtime-${{ github.sha }}.zip
