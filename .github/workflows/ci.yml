@@ -192,7 +192,7 @@ jobs:
 #            ${{ matrix.chain }}-diff.txt
 
   docker:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-20.04  
     needs: [build_primary_binaries]
     env:
       PARACHAIN_IMAGE_NAME: integritee/parachain
@@ -234,10 +234,10 @@ jobs:
           fi
           echo ::set-output name=tags::${TAGS}
 
-      # - name: Set up QEMU
-      #   uses: docker/setup-qemu-action@v1
-      #   with:
-      #     platforms: all
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
 
       - name: Set up Docker Buildx
         id: buildx
