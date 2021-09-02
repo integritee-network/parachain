@@ -7,6 +7,7 @@ on:
 
 jobs:
   main:
+    name: Push to Dockerhub
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,8 +34,8 @@ jobs:
       - name: Login to Dockerhub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build and push
         id:   docker_build
