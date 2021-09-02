@@ -161,15 +161,6 @@ jobs:
           echo "Compact Runtime: ${{ steps.srtool_build.outputs.wasm }}"
           echo "Compressed Runtime: ${{ steps.srtool_build.outputs.wasm_compressed }}"
 
-      - name: Archive Runtime
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
-          path: |
-            ${{ steps.srtool_build.outputs.wasm }}
-            ${{ steps.srtool_build.outputs.wasm_compressed }}
-            ${{ matrix.runtime }}-srtool-digest.json
-
       # We now get extra information thanks to subwasm
       - name: Install subwasm
         run: |
@@ -203,6 +194,9 @@ jobs:
         with:
           name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
           path: |
+            ${{ steps.srtool_build.outputs.wasm }}
+            ${{ steps.srtool_build.outputs.wasm_compressed }}
+            ${{ matrix.runtime }}-srtool-digest.json
             ${{ matrix.runtime }}-info.json
             ${{ matrix.runtime }}-compressed-info.json
             ${{ matrix.runtime }}-metadata.json
@@ -377,45 +371,19 @@ jobs:
         with:
           name: integritee-collator-${{ github.sha }}
 
-      - name: Dowload shell runtime artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: shell-runtime-${{ github.sha }}
-          path: shell-runtime-${{ github.sha }}
-
-      - name: Download integritee runtime artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: integritee-runtime-${{ github.sha }}
-          path: integritee-runtime-${{ github.sha }}
-
       - name: Create required package.json
         run: test -f package.json || echo '{}' >package.json
 
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
         id: Changelog
-
-      - name: Archive Integritee Runtime
-        uses: thedoctor0/zip-release@master
-        with:
-          type: 'zip'
-          filename: 'integritee-runtime-${{ github.sha }}.zip'
-          path: integritee-runtime-${{ github.sha }}
-
-      - name: Archive Shell Runtime
-        uses: thedoctor0/zip-release@master
-        with:
-          type: 'zip'
-          filename: 'shell-runtime-${{ github.sha }}.zip'
-          path: shell-runtime-${{ github.sha }}
           
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: .
 
       - name: Release
-        id: create_release
+        id: create-release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -425,8 +393,6 @@ jobs:
           draft: false
           files: |
             integritee-collator
-            shell-runtime-${{ github.sha }}.zip
-            integritee-runtime-${{ github.sha }}.zip
 
       - name: Slack Notification
         uses: 8398a7/action-slack@v3
