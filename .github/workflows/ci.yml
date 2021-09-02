@@ -189,112 +189,25 @@ jobs:
 #          subwasm diff ${{ steps.srtool_build.outputs.wasm }} --chain-b ${{ matrix.chain }} > ${{ matrix.chain }}-diff.txt
 #          cat ${{ matrix.chain }}-diff.txt
 
-      - name: Archive Subwasm results
+      - name: Upload ${{ matrix.runtime }} srtool json
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
+          name: ${{ matrix.runtime }}-srtool-json-${{ github.sha }}
           path: |
-            ${{ steps.srtool_build.outputs.wasm }}
-            ${{ steps.srtool_build.outputs.wasm_compressed }}
             ${{ matrix.runtime }}-srtool-digest.json
             ${{ matrix.runtime }}-info.json
             ${{ matrix.runtime }}-compressed-info.json
             ${{ matrix.runtime }}-metadata.json
 #            ${{ matrix.runtime }}-diff.txt
 
-      - name: Slack Notification
-        uses: 8398a7/action-slack@v3
-        if: failure()
+          
+      - name: Upload ${{ matrix.runtime }} runtime
+        uses: actions/upload-artifact@v2
         with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  docker:
-    runs-on: ubuntu-20.04  
-    needs: [build_primary_binaries]
-    env:
-      PARACHAIN_IMAGE_NAME: integritee/parachain
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Download Integritee Collator
-        uses: actions/download-artifact@v2
-        with:
-          name: integritee-collator-${{ github.sha }}
-
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
-      - name: Check output
-        env:
-          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ steps.vars.outputs.tag }}
-          echo ${{github.event.pull_request.number}}
-
-      - name: Prepare docker versions
-        id: prep
-        run: |
-          DOCKER_IMAGE=${{ env.PARACHAIN_IMAGE_NAME }}
-          VERSION=edge
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${{ steps.vars.outputs.tag }}
-          fi
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            VERSION=nightly
-          fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-
-          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            TAGS="$TAGS,${DOCKER_IMAGE}:latest"
-          fi
-          echo ::set-output name=tags::${TAGS}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: all
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Inspect builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-          echo "Version:   ${{ steps.prep.outputs.tags }}"
-
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Build and push
-        id: docker_push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          builder: ${{ steps.buildx.outputs.name }}
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.prep.outputs.tags }}
+          name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
+          path: |
+            ${{ steps.srtool_build.outputs.wasm }}
+            ${{ steps.srtool_build.outputs.wasm_compressed }}
 
       - name: Slack Notification
         uses: 8398a7/action-slack@v3
@@ -390,7 +303,7 @@ jobs:
         with:
           body: |
             ${{ steps.Changelog.outputs.changelog }}
-          draft: false
+          draft: true
           files: |
             integritee-collator
 
