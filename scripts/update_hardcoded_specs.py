@@ -20,9 +20,10 @@ RES_DIR = "polkadot-parachains/res"
 def main():
     for s in SPECS:
         chain_spec = s["chain_id"]
+        para_id = s["para_id"]
 
         ret = subprocess.call(
-            f'scripts/dump_wasm_state_and_spec.sh {chain_spec}-fresh {s["para_id"]} {COLLATOR} {RES_DIR}',
+            f'scripts/dump_wasm_state_and_spec.sh {chain_spec}-fresh {para_id} {COLLATOR} {RES_DIR}',
             stdout=subprocess.PIPE,
             shell=True
         )
@@ -31,11 +32,11 @@ def main():
 
         orig_file = f'{RES_DIR}/{chain_spec}.json'
         new_file_base = f'{RES_DIR}/{chain_spec}-fresh'
+
         with open(orig_file, 'r+') as spec_orig_file:
             orig_json = json.load(spec_orig_file)
 
             # migrate old values to new spec
-
             with open(f'{new_file_base}-raw.json', 'r+') as spec_new_file:
                 new_json = json.load(spec_new_file)
 
@@ -50,10 +51,6 @@ def main():
         os.remove(f'{new_file_base}-raw.json')
         os.remove(f'{new_file_base}.state')
         os.remove(f'{new_file_base}.wasm')
-
-
-
-
 
 
 if __name__ == '__main__':
