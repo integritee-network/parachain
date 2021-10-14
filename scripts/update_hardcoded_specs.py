@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
 """
-Simple script to upgrade the hardcode chain-spec.json files
+Simple script to upgrade the hardcoded chain-spec.json files.
 
 This the main purpose is that to automate migration of values from the old files to the new files that can not
 be inserted by the rust code, e.g., the `bootNodes`.
 
+Usage: ./scripts/update_hardcoded_specs.py <--migrate-genesis>
+
 Optionally define if the `genesis` field of the chain-spec should also be migrated. This field should be set as follows:
-*   True if a completely new chain-spec shall be created. This will create a new genesis state, which is not compatible
+*   True, if a completely new chain-spec shall be created. This will create a new genesis state, which is not compatible
     with chains running on the old chain-spec.
-*   False if we only want to change other fields that are relevant to the node (i.e., the client) only, but not
+*   False, if we only want to change other fields that are relevant to the node (i.e., the client) only, but not
     the runtime. For instance if we update the substrate/polkadot.
 """
 
