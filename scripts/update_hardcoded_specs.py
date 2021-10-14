@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+
+"""
+Simple script to upgrade the hardcode chain-spec.json files
+
+This the main purpose is that to automate migration of values from the old files to the new files that can not
+be inserted by the rust code, e.g., the `bootNodes`.
+
+It optionally defines if the `genesis` field of the chain-spec should also be migrated. This field should be set as follows:
+*   True if a completely new chain-spec shall be created. This will create a new genesis state, which is not compatible
+    with the old chain-specs
+*   False if we only want to change other fields that are relevant to the node (i.e., the client) only, but not
+    the runtime. For instance if we update the substrate/polkadot.
+
+"""
+import argparse
 import json
 import os
 import subprocess
@@ -17,7 +32,7 @@ COLLATOR = "target/release/integritee-collator"
 RES_DIR = "polkadot-parachains/res"
 
 
-def main():
+def main(migrate_genesis: bool):
     for s in SPECS:
         chain_spec = s["chain_id"]
         para_id = s["para_id"]
@@ -42,6 +57,9 @@ def main():
 
                 new_json["bootNodes"] = orig_json["bootNodes"]
 
+                if migrate_genesis:
+                    new_json["genesis"] = orig_json["genesis"]
+
                 # go to beginning of the file to overwrite
                 spec_orig_file.seek(0)
                 json.dump(new_json, spec_orig_file, indent=2)
@@ -54,4 +72,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--migrate-genesis', help='Print more data',
+                        action='store_true')
+
+    args = parser.parse_args()
+    print(f'Updating chain specs migrating-genesis == {args.migrate_genesis}')
+
+    main(args.migrate_genesis)
