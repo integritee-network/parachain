@@ -6,13 +6,13 @@ Simple script to upgrade the hardcode chain-spec.json files
 This the main purpose is that to automate migration of values from the old files to the new files that can not
 be inserted by the rust code, e.g., the `bootNodes`.
 
-It optionally defines if the `genesis` field of the chain-spec should also be migrated. This field should be set as follows:
+Optionally define if the `genesis` field of the chain-spec should also be migrated. This field should be set as follows:
 *   True if a completely new chain-spec shall be created. This will create a new genesis state, which is not compatible
-    with the old chain-specs
+    with chains running on the old chain-spec.
 *   False if we only want to change other fields that are relevant to the node (i.e., the client) only, but not
     the runtime. For instance if we update the substrate/polkadot.
-
 """
+
 import argparse
 import json
 import os
@@ -65,6 +65,7 @@ def main(migrate_genesis: bool):
                 json.dump(new_json, spec_orig_file, indent=2)
                 spec_orig_file.truncate()
 
+        # remove side-products
         os.remove(f'{new_file_base}.json')
         os.remove(f'{new_file_base}-raw.json')
         os.remove(f'{new_file_base}.state')
