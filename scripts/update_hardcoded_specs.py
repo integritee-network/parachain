@@ -76,7 +76,7 @@ def main(migrate_genesis: bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--migrate-genesis', help='Print more data', action='store_true')
+    parser.add_argument('--migrate-genesis', help='Create entirely new chain spec, not preserving previous genesis state', action='store_true')
 
     args = parser.parse_args()
     print(f'Updating chain specs migrating-genesis == {args.migrate_genesis}')
