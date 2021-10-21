@@ -37,6 +37,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
+use frame_support::traits::Contains;
 pub use frame_support::{
 	construct_runtime, match_type, parameter_types,
 	traits::{IsInVec, Randomness},
@@ -161,6 +162,16 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 13;
 }
 
+/// Allow everything.
+/// A more restrictive polkadot runtime Example be found here:
+/// https://github.com/paritytech/polkadot/blob/f0b2bf3c20a7fae381685c7f6bb3c36fbce65722/runtime/polkadot/src/lib.rs#L130-L175
+pub struct BaseFilter;
+impl Contains<Call> for BaseFilter {
+	fn contains(_: &Call) -> bool {
+		true
+	}
+}
+
 impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
@@ -192,7 +203,7 @@ impl frame_system::Config for Runtime {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type DbWeight = RocksDbWeight;
-	type BaseCallFilter = ();
+	type BaseCallFilter = BaseFilter;
 	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
@@ -371,7 +382,7 @@ impl Config for XcmConfig {
 	type IsTeleporter = NativeAsset; // <- should be enough to allow teleportation of TEER
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
-	type Weigher = FixedWeightBounds<UnitWeightCost, Call>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type Trader = UsingComponents<IdentityFee<Balance>, RocLocation, AccountId, Balances, ()>;
 	type ResponseHandler = (); // Don't handle responses for now.
 	type SubscriptionService = (); // don't handle subscriptions for now
@@ -398,7 +409,7 @@ impl pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Everything;
 	type XcmReserveTransferFilter = ();
-	type Weigher = FixedWeightBounds<UnitWeightCost, Call>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type LocationInverter = LocationInverter<Ancestry>;
 }
 
@@ -427,6 +438,7 @@ parameter_types! {
 	pub const MetadataDepositBase: Balance = TEER;
 	pub const MetadataDepositPerByte: Balance = 10 * MILLITEER;
 	pub const UnitBody: BodyId = BodyId::Unit;
+	pub const MaxInstructions: u32 = 100;
 }
 
 /// A majority of the Unit body from Rococo over XCM is our required administration origin.
