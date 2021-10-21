@@ -65,8 +65,12 @@ substrate-prometheus-endpoint = { git = "https://github.com/paritytech/substrate
 
 # RPC related dependencies
 jsonrpc-core = "18.0.0"
+sc-transaction-pool-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
+frame-rpc-system = { package = "substrate-frame-rpc-system", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
+pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
 
 # Cumulus dependencies
+parachains-common = {git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11"  }
 cumulus-client-cli = {git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11"  }
 cumulus-client-consensus-aura = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
 cumulus-client-consensus-relay-chain = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
