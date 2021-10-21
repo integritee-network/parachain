@@ -163,7 +163,7 @@ parameter_types! {
 }
 
 /// Allow everything.
-/// A more restrictive polkadot runtime Example be found here:
+/// A more restrictive polkadot runtime example be found here:
 /// https://github.com/paritytech/polkadot/blob/f0b2bf3c20a7fae381685c7f6bb3c36fbce65722/runtime/polkadot/src/lib.rs#L130-L175
 pub struct BaseFilter;
 impl Contains<Call> for BaseFilter {
@@ -384,8 +384,6 @@ impl Config for XcmConfig {
 	type IsTeleporter = NativeAsset; // <- should be enough to allow teleportation of TEER
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
-	// Polkadot runtime westend recently switched to WeightInfoBounds
-	// https://github.com/paritytech/polkadot/blob/f0b2bf3c20a7fae381685c7f6bb3c36fbce65722/runtime/westend/src/lib.rs#L989
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type Trader = UsingComponents<IdentityFee<Balance>, RocLocation, AccountId, Balances, ()>;
 	type ResponseHandler = (); // Don't handle responses for now.
