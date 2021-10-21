@@ -72,7 +72,7 @@ where
 		deny_unsafe,
 	)));
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
-		client.clone(),
+		client,
 	)));
 
 	io
