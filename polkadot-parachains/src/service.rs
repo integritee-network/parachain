@@ -30,7 +30,6 @@ use cumulus_client_service::{
 use cumulus_primitives_core::ParaId;
 
 use sc_client_api::ExecutorProvider;
-use sc_executor::native_executor_instance;
 use sc_network::NetworkService;
 use sc_service::{Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
@@ -41,7 +40,7 @@ use sp_runtime::traits::BlakeTwo256;
 use std::sync::Arc;
 use substrate_prometheus_endpoint::Registry;
 
-pub use sc_executor::NativeExecutor;
+pub use sc_executor::NativeElseWasmExecutor;
 
 type BlockNumber = u32;
 type Header = sp_runtime::generic::Header<BlockNumber, sp_runtime::traits::BlakeTwo256>;
@@ -49,12 +48,19 @@ pub type Block = sp_runtime::generic::Block<Header, sp_runtime::OpaqueExtrinsic>
 type Hash = sp_core::H256;
 
 // Native executor instance.
-native_executor_instance!(
-	pub RococoParachainRuntimeExecutor,
-	rococo_parachain_runtime::api::dispatch,
-	rococo_parachain_runtime::native_version,
-	frame_benchmarking::benchmarking::HostFunctions,
-);
+pub struct RococoParachainRuntimeExecutor;
+
+impl sc_executor::NativeExecutionDispatch for RococoParachainRuntimeExecutor {
+	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+
+	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
+		rococo_parachain_runtime::api::dispatch(method, data)
+	}
+
+	fn native_version() -> sc_executor::NativeVersion {
+		rococo_parachain_runtime::native_version()
+	}
+}
 
 /// Starts a `ServiceBuilder` for a full service.
 ///
@@ -88,7 +94,7 @@ where
 		> + sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
-	Executor: sc_executor::NativeExecutionDispatch + 'static,
+	Executor: sc_executor::NativeExecutionDispatch + 'static + sc_executor::RuntimeVersionOf,
 	BIQ: FnOnce(
 		Arc<TFullClient<Block, RuntimeApi, Executor>>,
 		&Configuration,
