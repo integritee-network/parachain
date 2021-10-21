@@ -447,6 +447,7 @@ parameter_types! {
 	pub const MetadataDepositPerByte: Balance = 10 * MILLITEER;
 	pub const UnitBody: BodyId = BodyId::Unit;
 	pub const MaxInstructions: u32 = 100;
+	pub const MaxAuthorities: u32 = 100_000;
 }
 
 /// A majority of the Unit body from Rococo over XCM is our required administration origin.
@@ -455,7 +456,7 @@ pub type AdminOrigin = EnsureXcm<IsMajorityOfBody<RocLocation, UnitBody>>;
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
-	type MaxAuthorities = ();
+	type MaxAuthorities = MaxAuthorities;
 }
 
 // TEE

@@ -333,10 +333,14 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
+parameter_types! {
+	pub const MaxAuthorities: u32 = 100_000;
+}
+
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
-	type MaxAuthorities = ();
+	type MaxAuthorities = MaxAuthorities;
 }
 
 construct_runtime! {
