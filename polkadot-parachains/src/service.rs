@@ -30,6 +30,7 @@ use cumulus_client_service::{
 use cumulus_primitives_core::ParaId;
 
 use sc_client_api::ExecutorProvider;
+use sc_executor::NativeExecutionDispatch;
 use sc_network::NetworkService;
 use sc_service::{Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
@@ -71,17 +72,23 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
 	build_import_queue: BIQ,
 ) -> Result<
 	PartialComponents<
-		TFullClient<Block, RuntimeApi, Executor>,
+		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
 		TFullBackend<Block>,
 		(),
-		sc_consensus::DefaultImportQueue<Block, TFullClient<Block, RuntimeApi, Executor>>,
-		sc_transaction_pool::FullPool<Block, TFullClient<Block, RuntimeApi, Executor>>,
+		sc_consensus::DefaultImportQueue<
+			Block,
+			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+		>,
+		sc_transaction_pool::FullPool<
+			Block,
+			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+		>,
 		(Option<Telemetry>, Option<TelemetryWorkerHandle>),
 	>,
 	sc_service::Error,
 >
 where
-	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, Executor>>
+	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
 		+ Send
 		+ Sync
 		+ 'static,
@@ -94,14 +101,17 @@ where
 		> + sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
-	Executor: sc_executor::NativeExecutionDispatch + 'static + sc_executor::RuntimeVersionOf,
+	Executor: NativeExecutionDispatch + 'static,
 	BIQ: FnOnce(
-		Arc<TFullClient<Block, RuntimeApi, Executor>>,
+		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		&Configuration,
 		Option<TelemetryHandle>,
 		&TaskManager,
 	) -> Result<
-		sc_consensus::DefaultImportQueue<Block, TFullClient<Block, RuntimeApi, Executor>>,
+		sc_consensus::DefaultImportQueue<
+			Block,
+			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+		>,
 		sc_service::Error,
 	>,
 {
@@ -172,7 +182,7 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
 	build_consensus: BIC,
 ) -> sc_service::error::Result<(TaskManager, Arc<TFullClient<Block, RuntimeApi, Executor>>)>
 where
-	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, Executor>>
+	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
 		+ Send
 		+ Sync
 		+ 'static,
@@ -193,21 +203,29 @@ where
 		+ Send
 		+ 'static,
 	BIQ: FnOnce(
-		Arc<TFullClient<Block, RuntimeApi, Executor>>,
-		&Configuration,
-		Option<TelemetryHandle>,
-		&TaskManager,
-	) -> Result<
-		sc_consensus::DefaultImportQueue<Block, TFullClient<Block, RuntimeApi, Executor>>,
-		sc_service::Error,
-	>,
+			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+			&Configuration,
+			Option<TelemetryHandle>,
+			&TaskManager,
+		) -> Result<
+			sc_consensus::DefaultImportQueue<
+				Block,
+				TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			>,
+			sc_service::Error,
+		> + 'static,
 	BIC: FnOnce(
-		Arc<TFullClient<Block, RuntimeApi, Executor>>,
+		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		Option<&Registry>,
 		Option<TelemetryHandle>,
 		&TaskManager,
 		&polkadot_service::NewFull<polkadot_service::Client>,
-		Arc<sc_transaction_pool::FullPool<Block, TFullClient<Block, RuntimeApi, Executor>>>,
+		Arc<
+			sc_transaction_pool::FullPool<
+				Block,
+				TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			>,
+		>,
 		Arc<NetworkService<Block, Hash>>,
 		SyncCryptoStorePtr,
 		bool,
@@ -327,7 +345,11 @@ where
 /// Build the import queue for the rococo parachain runtime.
 pub fn rococo_parachain_build_import_queue(
 	client: Arc<
-		TFullClient<Block, rococo_parachain_runtime::RuntimeApi, RococoParachainRuntimeExecutor>,
+		TFullClient<
+			Block,
+			rococo_parachain_runtime::RuntimeApi,
+			NativeElseWasmExecutor<RococoParachainRuntimeExecutor>,
+		>,
 	>,
 	config: &Configuration,
 	telemetry: Option<TelemetryHandle>,
@@ -335,7 +357,11 @@ pub fn rococo_parachain_build_import_queue(
 ) -> Result<
 	sc_consensus::DefaultImportQueue<
 		Block,
-		TFullClient<Block, rococo_parachain_runtime::RuntimeApi, RococoParachainRuntimeExecutor>,
+		TFullClient<
+			Block,
+			rococo_parachain_runtime::RuntimeApi,
+			NativeElseWasmExecutor<RococoParachainRuntimeExecutor>,
+		>,
 	>,
 	sc_service::Error,
 > {
