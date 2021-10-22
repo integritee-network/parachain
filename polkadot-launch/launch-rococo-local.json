@@ -20,9 +20,12 @@
 			}
 		]
 	},
-	"parachains": [],
-	"simpleParachains": [],
-	"hrmpChannels": [],
+	"parachains": [
+	],
+	"simpleParachains": [
+	],
+	"hrmpChannels": [
+	],
 	"types": "./polkadot-launch/type-registry.json",
 	"finalization": false
 }
