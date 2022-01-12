@@ -19,7 +19,7 @@ use crate::{
 	chain_spec,
 	chain_spec::{
 		integritee_chain_spec, integritee_kusama_config, integritee_westend_config,
-		shell_chain_spec, shell_kusama_config, shell_westend_config, Extensions, GenesisKeys,
+		shell_chain_spec, shell_kusama_config, shell_westend_config, GenesisKeys,
 		RelayChain, ShellChainSpec,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
@@ -34,10 +34,7 @@ use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
 };
-use sc_service::{
-	config::{BasePath, PrometheusConfig},
-	TaskManager,
-};
+use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::Block as BlockT;
 use std::{io::Write, net::SocketAddr};
@@ -66,7 +63,7 @@ fn load_spec(
 	id: &str,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 	// FIXME distinguish paraid by relaychain
-	let para_id = DEFAULT_PARA_ID;
+	let para_id: ParaId = DEFAULT_PARA_ID.into();
 	Ok(match id {
 		"integritee-rococo-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
 		"integritee-rococo-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
@@ -149,7 +146,7 @@ impl SubstrateCli for Cli {
 		if chain_spec.is_shell() {
 			&shell_runtime::VERSION
 		} else {
-			&rococo_parachain_runtime::VERSION
+			&parachain_runtime::VERSION
 		}
 	}
 }
@@ -210,7 +207,7 @@ macro_rules! construct_async_run {
 			runner.async_run(|$config| {
 				let $components = new_partial::<shell_runtime::RuntimeApi, ShellParachainRuntimeExecutor, _>(
 					&$config,
-					crate::service::launch_parachain_build_import_queue,
+					crate::service::shell_parachain_build_import_queue,
 				)?;
 				let task_manager = $components.task_manager;
 				{ $( $code )* }.map(|v| (v, task_manager))
@@ -218,12 +215,12 @@ macro_rules! construct_async_run {
 		} else {
 			runner.async_run(|$config| {
 			let $components = new_partial::<
-				rococo_parachain_runtime::RuntimeApi,
+				parachain_runtime::RuntimeApi,
 				IntegriteeParachainRuntimeExecutor,
 				_
 			>(
 				&$config,
-				crate::service::rococo_parachain_build_import_queue,
+				crate::service::integritee_parachain_build_import_queue,
 			)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
@@ -380,12 +377,12 @@ pub fn run() -> Result<()> {
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				if config.chain_spec.is_shell() {
-					crate::service::start_launch_parachain_node(config, polkadot_config, id)
+					crate::service::start_shell_parachain_node(config, polkadot_config, id)
 						.await
 						.map(|r| r.0)
 						.map_err(Into::into)
 				} else {
-					crate::service::start_rococo_parachain_node(config, polkadot_config, id)
+					crate::service::start_integritee_parachain_node(config, polkadot_config, id)
 						.await
 						.map(|r| r.0)
 						.map_err(Into::into)

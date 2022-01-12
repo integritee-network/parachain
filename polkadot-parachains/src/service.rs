@@ -15,11 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
 
-use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
+use cumulus_client_consensus_aura::{
+	build_aura_consensus, BuildAuraConsensusParams, SlotProportion,
+};
 use cumulus_client_consensus_common::{
 	ParachainBlockImport, ParachainCandidate, ParachainConsensus,
 };
-use cumulus_client_network::BlockAnnounceValidator;
+
+use cumulus_client_network::build_block_announce_validator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
 };
@@ -51,13 +54,13 @@ use sp_runtime::{
 	generic::BlockId,
 	traits::{BlakeTwo256, Header as HeaderT},
 };
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use substrate_prometheus_endpoint::Registry;
 
 /// Native executor instance.
-pub struct RococoParachainRuntimeExecutor;
+pub struct IntegriteeParachainRuntimeExecutor;
 
-impl sc_executor::NativeExecutionDispatch for RococoParachainRuntimeExecutor {
+impl sc_executor::NativeExecutionDispatch for IntegriteeParachainRuntimeExecutor {
 	/// Only enable the benchmarking host functions when we actually want to benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
@@ -76,9 +79,9 @@ impl sc_executor::NativeExecutionDispatch for RococoParachainRuntimeExecutor {
 
 
 /// Native executor instance.
-pub struct ShellRuntimeExecutor;
+pub struct ShellParachainRuntimeExecutor;
 
-impl sc_executor::NativeExecutionDispatch for ShellRuntimeExecutor {
+impl sc_executor::NativeExecutionDispatch for ShellParachainRuntimeExecutor {
 	/// Only enable the benchmarking host functions when we actually want to benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
@@ -87,11 +90,11 @@ impl sc_executor::NativeExecutionDispatch for ShellRuntimeExecutor {
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		launch_runtime::api::dispatch(method, data)
+		shell_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
-		launch_runtime::native_version()
+		shell_runtime::native_version()
 	}
 }
 
@@ -397,7 +400,7 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
 }
 
 /// Import queue for the integritee parachain runtime.
-pub fn rococo_parachain_build_import_queue(
+pub fn integritee_parachain_build_import_queue(
 	client: Arc<
 		TFullClient<
 			Block,
@@ -428,11 +431,11 @@ pub fn rococo_parachain_build_import_queue(
 }
 
 /// Import queue for the launch runtime.
-pub fn launch_parachain_build_import_queue(
+pub fn shell_parachain_build_import_queue(
 	client: Arc<
 		TFullClient<
 			Block,
-			launch_runtime::RuntimeApi,
+			shell_runtime::RuntimeApi,
 			NativeElseWasmExecutor<ShellParachainRuntimeExecutor>,
 		>,
 	>,
@@ -444,13 +447,13 @@ pub fn launch_parachain_build_import_queue(
 		Block,
 		TFullClient<
 			Block,
-			launch_runtime::RuntimeApi,
+			shell_runtime::RuntimeApi,
 			NativeElseWasmExecutor<ShellParachainRuntimeExecutor>,
 		>,
 	>,
 	sc_service::Error,
 > {
-	parachain_build_import_queue::<launch_runtime::RuntimeApi, ShellParachainRuntimeExecutor>(
+	parachain_build_import_queue::<shell_runtime::RuntimeApi, ShellParachainRuntimeExecutor>(
 		client,
 		config,
 		telemetry,
@@ -644,7 +647,7 @@ pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 	))
 }
 /// Start a rococo parachain node.
-pub async fn start_rococo_parachain_node(
+pub async fn start_integritee_parachain_node(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	id: ParaId,
@@ -658,12 +661,12 @@ pub async fn start_rococo_parachain_node(
 		>,
 	>,
 )> {
-	start_parachain_node(parachain_config, polkadot_config, id, rococo_parachain_build_import_queue)
+	start_parachain_node(parachain_config, polkadot_config, id, integritee_parachain_build_import_queue)
 		.await
 }
 
 /// Start a launch-runtime parachain node.
-pub async fn start_launch_parachain_node(
+pub async fn start_shell_parachain_node(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	id: ParaId,
@@ -672,12 +675,12 @@ pub async fn start_launch_parachain_node(
 	Arc<
 		TFullClient<
 			Block,
-			launch_runtime::RuntimeApi,
+			shell_runtime::RuntimeApi,
 			NativeElseWasmExecutor<ShellParachainRuntimeExecutor>,
 		>,
 	>,
 )> {
-	start_parachain_node(parachain_config, polkadot_config, id, launch_parachain_build_import_queue)
+	start_parachain_node(parachain_config, polkadot_config, id, shell_parachain_build_import_queue)
 		.await
 }
 

@@ -27,7 +27,7 @@ async-trait = "0.1.42"
 serde_json = "1.0.64"
 
 # Parachain runtimes
-rococo-parachain-runtime = { package = "integritee-runtime", path = "integritee-runtime" }
+parachain-runtime = { package = "integritee-runtime", path = "integritee-runtime" }
 shell-runtime = { package = "shell-runtime", path = "shell-runtime" }
 parachains-common = { path = "parachains-common" }
 
@@ -105,5 +105,5 @@ substrate-test-runtime-client = { git = "https://github.com/paritytech/substrate
 default = []
 runtime-benchmarks = [
 	'polkadot-service/runtime-benchmarks',
-	'rococo-parachain-runtime/runtime-benchmarks'
+	'parachain-runtime/runtime-benchmarks'
 ]
