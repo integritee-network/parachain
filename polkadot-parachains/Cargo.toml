@@ -6,7 +6,7 @@ authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 name = "integritee-collator"
@@ -70,25 +70,25 @@ frame-rpc-system = { package = "substrate-frame-rpc-system", git = "https://gith
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.13" }
 
 # Cumulus dependencies
-parachains-common = {git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13"  }
-cumulus-client-cli = {git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11"  }
-cumulus-client-consensus-aura = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-client-consensus-relay-chain = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-client-consensus-common = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-client-collator = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-client-service = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-client-network = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
-cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.11" }
+parachains-common = { path = "parachains-common" }
+cumulus-client-cli = {git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13"  }
+cumulus-client-consensus-aura = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-client-consensus-relay-chain = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-client-consensus-common = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-client-collator = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-client-service = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-client-network = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
+cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13" }
 
 # Polkadot dependencies
-polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.11" }
-polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.11" }
-polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.11" }
-polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.11" }
+polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.13" }
+polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.13" }
+polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.13" }
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.13" }
 
 [build-dependencies]
-substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
+substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.13" }
 
 [dev-dependencies]
 assert_cmd = "0.12"
@@ -98,9 +98,9 @@ tempfile = "3.2.0"
 tokio = { version = "0.2.13", features = ["macros"] }
 
 # Substrate dependencies
-pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
-substrate-test-client = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
-substrate-test-runtime-client = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
+pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.13" }
+substrate-test-client = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.13" }
+substrate-test-runtime-client = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.13" }
 
 [features]
 default = []

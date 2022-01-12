@@ -6,7 +6,7 @@ version = '1.2.10'
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
-edition = '2018'
+edition = '2021'
 
 [dependencies]
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
@@ -53,11 +53,11 @@ cumulus-pallet-xcmp-queue = { git = "https://github.com/paritytech/cumulus.git",
 cumulus-pallet-xcm = { git = "https://github.com/paritytech/cumulus.git",  branch = "polkadot-v0.9.13", default-features = false }
 
 # Polkadot dependencies
-polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
-xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
-xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
-pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.13" }
+xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.13" }
+xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.13" }
+xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.13" }
+pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.13" }
 
 # Benchmarking
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.13" }
@@ -74,7 +74,7 @@ substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", bran
 # TEE
 [dependencies.pallet-teerex]
 default-features = false
-git = "https://github.com/integritee-network/pallet-teerex.git"
+git = "https://github.com/integritee-network/pallets.git"
 branch = "polkadot-v0.9.13"
 package = 'pallet-teerex'
 
