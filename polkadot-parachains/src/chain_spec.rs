@@ -207,7 +207,6 @@ fn integritee_genesis_config(
 			code: rococo_parachain_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
-			changes_trie_config: Default::default(),
 		},
 		balances: rococo_parachain_runtime::BalancesConfig {
 			balances: endowed_accounts
@@ -238,7 +237,6 @@ fn shell_genesis_config(
 			code: shell_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
-			changes_trie_config: Default::default(),
 		},
 		balances: shell_runtime::BalancesConfig {
 			balances: endowed_accounts
