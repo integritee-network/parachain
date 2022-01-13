@@ -24,7 +24,6 @@
 		{
 			"bin": "./../target/release/integritee-collator",
 			"chain": "shell-rococo-local-dev",
-			"id": "2000",
 			"balance": "10_000_000__000_000_000_000",
 			"nodes": [
 				{
@@ -41,19 +40,6 @@
 				}
 			]
 		},
-		{
-			"bin": "./../target/release/integritee-collator",
-			"chain": "shell-rococo-local",
-			"id": "2015",
-			"balance": "10_000_000__000_000_000_000",
-			"nodes": [
-				{
-					"wsPort": 9915,
-					"port": 31200,
-					"flags": ["--", "--execution=wasm"]
-				}
-			]
-		}
 	],
 	"simpleParachains": [
 	],
