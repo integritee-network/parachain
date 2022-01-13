@@ -1,6 +1,6 @@
 {
 	"relaychain": {
-		"bin": "../../bin/polkadot-0.9.13",
+		"bin": "../../../bin/polkadot-0.9.13",
 		"chain": "kusama-local",
 		"nodes": [
 			{
@@ -39,7 +39,7 @@
 					"flags": ["--", "--execution=wasm"]
 				}
 			]
-		},
+		}
 	],
 	"simpleParachains": [
 	],
