@@ -77,7 +77,6 @@ impl sc_executor::NativeExecutionDispatch for IntegriteeParachainRuntimeExecutor
 	}
 }
 
-
 /// Native executor instance.
 pub struct ShellParachainRuntimeExecutor;
 
@@ -97,8 +96,6 @@ impl sc_executor::NativeExecutionDispatch for ShellParachainRuntimeExecutor {
 		shell_runtime::native_version()
 	}
 }
-
-
 
 /// Starts a `ServiceBuilder` for a full service.
 ///
@@ -180,7 +177,9 @@ where
 	let telemetry_worker_handle = telemetry.as_ref().map(|(worker, _)| worker.handle());
 
 	let telemetry = telemetry.map(|(worker, telemetry)| {
-		task_manager.spawn_handle().spawn("telemetry", None, worker.run());
+		task_manager
+			.spawn_handle()
+			.spawn("telemetry", None, worker.run());
 		telemetry
 	});
 
@@ -227,12 +226,12 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
 	TaskManager,
 	Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 )>
-	where
-		RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
+where
+	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
 		+ Send
 		+ Sync
 		+ 'static,
-		RuntimeApi::RuntimeApi: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+	RuntimeApi::RuntimeApi: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
 		+ sp_api::Metadata<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_api::ApiExt<
@@ -243,14 +242,14 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
 		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-		sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
-		Executor: sc_executor::NativeExecutionDispatch + 'static,
-		RB: Fn(
+	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
+	Executor: sc_executor::NativeExecutionDispatch + 'static,
+	RB: Fn(
 			Arc<TFullClient<Block, RuntimeApi, Executor>>,
 		) -> Result<jsonrpc_core::IoHandler<sc_rpc::Metadata>, sc_service::Error>
 		+ Send
 		+ 'static,
-		BIQ: FnOnce(
+	BIQ: FnOnce(
 			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 			&Configuration,
 			Option<TelemetryHandle>,
@@ -262,25 +261,25 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
 			>,
 			sc_service::Error,
 		> + 'static,
-		BIC: FnOnce(
-			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
-			Option<&Registry>,
-			Option<TelemetryHandle>,
-			&TaskManager,
-			&polkadot_service::NewFull<polkadot_service::Client>,
-			Arc<
-				sc_transaction_pool::FullPool<
-					Block,
-					TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-				>,
+	BIC: FnOnce(
+		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+		Option<&Registry>,
+		Option<TelemetryHandle>,
+		&TaskManager,
+		&polkadot_service::NewFull<polkadot_service::Client>,
+		Arc<
+			sc_transaction_pool::FullPool<
+				Block,
+				TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
 			>,
-			Arc<NetworkService<Block, Hash>>,
-			SyncCryptoStorePtr,
-			bool,
-		) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error>,
+		>,
+		Arc<NetworkService<Block, Hash>>,
+		SyncCryptoStorePtr,
+		bool,
+	) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error>,
 {
 	if matches!(parachain_config.role, Role::Light) {
-		return Err("Light client not supported!".into())
+		return Err("Light client not supported!".into());
 	}
 
 	let parachain_config = prepare_node_config(parachain_config);
@@ -472,7 +471,7 @@ impl<R> BuildOnAccess<R> {
 			match self {
 				Self::Uninitialized(f) => {
 					*self = Self::Initialized((f.take().unwrap())());
-				},
+				}
 				Self::Initialized(ref mut r) => return r,
 			}
 		}
@@ -499,9 +498,9 @@ impl<Client> Clone for WaitForAuraConsensus<Client> {
 
 #[async_trait::async_trait]
 impl<Client> ParachainConsensus<Block> for WaitForAuraConsensus<Client>
-	where
-		Client: sp_api::ProvideRuntimeApi<Block> + Send + Sync,
-		Client::Api: AuraApi<Block, AuraId>,
+where
+	Client: sp_api::ProvideRuntimeApi<Block> + Send + Sync,
+	Client::Api: AuraApi<Block, AuraId>,
 {
 	async fn produce_candidate(
 		&mut self,
@@ -540,14 +539,20 @@ struct Verifier<Client> {
 
 #[async_trait::async_trait]
 impl<Client> VerifierT<Block> for Verifier<Client>
-	where
-		Client: sp_api::ProvideRuntimeApi<Block> + Send + Sync,
-		Client::Api: AuraApi<Block, AuraId>,
+where
+	Client: sp_api::ProvideRuntimeApi<Block> + Send + Sync,
+	Client::Api: AuraApi<Block, AuraId>,
 {
 	async fn verify(
 		&mut self,
 		block_import: BlockImportParams<Block, ()>,
-	) -> Result<(BlockImportParams<Block, ()>, Option<Vec<(CacheKeyId, Vec<u8>)>>), String> {
+	) -> Result<
+		(
+			BlockImportParams<Block, ()>,
+			Option<Vec<(CacheKeyId, Vec<u8>)>>,
+		),
+		String,
+	> {
 		let block_id = BlockId::hash(*block_import.header.parent_hash());
 
 		if self
@@ -579,12 +584,12 @@ pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 	>,
 	sc_service::Error,
 >
-	where
-		RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
+where
+	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
 		+ Send
 		+ Sync
 		+ 'static,
-		RuntimeApi::RuntimeApi: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+	RuntimeApi::RuntimeApi: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
 		+ sp_api::Metadata<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_api::ApiExt<
@@ -593,8 +598,8 @@ pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 		> + sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ sp_consensus_aura::AuraApi<Block, AuraId>,
-		sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
-		Executor: sc_executor::NativeExecutionDispatch + 'static,
+	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
+	Executor: sc_executor::NativeExecutionDispatch + 'static,
 {
 	let client2 = client.clone();
 
@@ -626,8 +631,9 @@ pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 		})) as Box<_>
 	};
 
-	let relay_chain_verifier =
-		Box::new(RelayChainVerifier::new(client.clone(), |_, _| async { Ok(()) })) as Box<_>;
+	let relay_chain_verifier = Box::new(RelayChainVerifier::new(client.clone(), |_, _| async {
+		Ok(())
+	})) as Box<_>;
 
 	let verifier = Verifier {
 		client: client.clone(),
@@ -661,8 +667,13 @@ pub async fn start_integritee_parachain_node(
 		>,
 	>,
 )> {
-	start_parachain_node(parachain_config, polkadot_config, id, integritee_parachain_build_import_queue)
-		.await
+	start_parachain_node(
+		parachain_config,
+		polkadot_config,
+		id,
+		integritee_parachain_build_import_queue,
+	)
+	.await
 }
 
 /// Start a launch-runtime parachain node.
@@ -680,8 +691,13 @@ pub async fn start_shell_parachain_node(
 		>,
 	>,
 )> {
-	start_parachain_node(parachain_config, polkadot_config, id, shell_parachain_build_import_queue)
-		.await
+	start_parachain_node(
+		parachain_config,
+		polkadot_config,
+		id,
+		shell_parachain_build_import_queue,
+	)
+	.await
 }
 
 /// Generic implementation introduced by integritee.
@@ -697,12 +713,12 @@ pub async fn start_parachain_node<RuntimeApi, Executor, BIQ>(
 	TaskManager,
 	Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 )>
-	where
-		RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
+where
+	RuntimeApi: ConstructRuntimeApi<Block, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>
 		+ Send
 		+ Sync
 		+ 'static,
-		RuntimeApi::RuntimeApi: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
+	RuntimeApi::RuntimeApi: sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
 		+ sp_api::Metadata<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_api::ApiExt<
@@ -714,9 +730,9 @@ pub async fn start_parachain_node<RuntimeApi, Executor, BIQ>(
 		+ sp_consensus_aura::AuraApi<Block, AuraId>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-		sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
-		Executor: sc_executor::NativeExecutionDispatch + 'static,
-		BIQ: FnOnce(
+	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
+	Executor: sc_executor::NativeExecutionDispatch + 'static,
+	BIQ: FnOnce(
 			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 			&Configuration,
 			Option<TelemetryHandle>,
@@ -843,8 +859,8 @@ pub async fn start_parachain_node<RuntimeApi, Executor, BIQ>(
 						relay_chain_client: relay_chain_node.client.clone(),
 						relay_chain_backend: relay_chain_node.backend.clone(),
 						create_inherent_data_providers:
-						move |_, (relay_parent, validation_data)| {
-							let parachain_inherent =
+							move |_, (relay_parent, validation_data)| {
+								let parachain_inherent =
 								cumulus_primitives_parachain_inherent::ParachainInherentData::create_at_with_client(
 									relay_parent,
 									&relay_chain_client,
@@ -852,16 +868,16 @@ pub async fn start_parachain_node<RuntimeApi, Executor, BIQ>(
 									&validation_data,
 									id,
 								);
-							async move {
-								let parachain_inherent =
-									parachain_inherent.ok_or_else(|| {
-										Box::<dyn std::error::Error + Send + Sync>::from(
-											"Failed to create parachain inherent",
-										)
-									})?;
-								Ok(parachain_inherent)
-							}
-						},
+								async move {
+									let parachain_inherent =
+										parachain_inherent.ok_or_else(|| {
+											Box::<dyn std::error::Error + Send + Sync>::from(
+												"Failed to create parachain inherent",
+											)
+										})?;
+									Ok(parachain_inherent)
+								}
+							},
 					},
 				);
 
@@ -874,5 +890,5 @@ pub async fn start_parachain_node<RuntimeApi, Executor, BIQ>(
 			Ok(parachain_consensus)
 		},
 	)
-		.await
+	.await
 }
