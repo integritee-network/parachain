@@ -99,7 +99,7 @@ needs to be upgraded whereas the client can remain the same. Hence, all modules 
 Prepare a local shell network and generate the `integritee-runtime` wasm blob, which contains the upgraded runtime to be executed after the runtime upgrade.
 ```shell
 // launch local setup
-node ../polkadot-launch/dist/index.js shell-local-config.json
+node ../polkadot-launch/dist/cli.js polkadot-launch/launch-rococo-local-with-shell.json
 
 // generate wasm blob
  ./target/release/integritee-collator export-genesis-wasm --chain integritee-rococo-local-dev > integritee-rococo-local-dev.wasm
