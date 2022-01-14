@@ -1,7 +1,8 @@
 [package]
 name = 'shell-runtime'
 description = "The Integritee shell parachain runtime"
-version = '1.2.10'
+# major.minor revision must match collator node. patch should stay at zero to match spec_version which is hard-nailed to 1
+version = '1.2.1'
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
