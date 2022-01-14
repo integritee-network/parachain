@@ -18,9 +18,9 @@
 use crate::{
 	chain_spec,
 	chain_spec::{
-		integritee_chain_spec, integritee_kusama_config, integritee_westend_config,
-		shell_chain_spec, shell_kusama_config, shell_westend_config, GenesisKeys, RelayChain,
-		ShellChainSpec,
+		integritee_chain_spec, integritee_kusama_config, integritee_rococo_config,
+		integritee_westend_config, shell_chain_spec, shell_kusama_config, shell_rococo_config,
+		shell_westend_config, GenesisKeys, RelayChain, ShellChainSpec,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
 	service::{
@@ -69,7 +69,8 @@ fn load_spec(
 	Ok(match id {
 		"integritee-rococo-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
 		"integritee-rococo-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
-		"integritee-rococo" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
+		"integritee-rococo-fresh" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
+		"integritee-rococo" => Box::new(integritee_rococo_config()?),
 
 		"integritee-kusama-local" => Box::new(integritee_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::KusamaLocal)),
 		"integritee-kusama-local-dev" => Box::new(integritee_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
@@ -84,7 +85,8 @@ fn load_spec(
 
 		"shell-rococo-local" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::RococoLocal)),
 		"shell-rococo-local-dev" => Box::new(shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::RococoLocal)),
-		"shell-rococo" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
+		"shell-rococo-fresh" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::Rococo)),
+		"shell-rococo" => Box::new(shell_rococo_config()?),
 
 		"shell-kusama-local" => Box::new(shell_chain_spec(para_id, GenesisKeys::Integritee, RelayChain::KusamaLocal)),
 		"shell-kusama-local-dev" => Box::new(shell_chain_spec(para_id, GenesisKeys::WellKnown, RelayChain::KusamaLocal)),

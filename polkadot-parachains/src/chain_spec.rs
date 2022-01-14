@@ -281,6 +281,14 @@ pub fn integritee_kusama_config() -> Result<IntegriteeChainSpec, String> {
 	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-kusama.json")[..])
 }
 
+pub fn shell_rococo_config() -> Result<ShellChainSpec, String> {
+	ShellChainSpec::from_json_bytes(&include_bytes!("../res/shell-rococo.json")[..])
+}
+
+pub fn integritee_rococo_config() -> Result<IntegriteeChainSpec, String> {
+	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-rococo.json")[..])
+}
+
 impl ToString for RelayChain {
 	fn to_string(&self) -> String {
 		match self {
