@@ -570,8 +570,6 @@ where
 
 /// Generic import queue for the integritee- and shell parachain runtime.
 ///
-/// The trait bounds of the generic parameters are copied from the above `start_node_impl` except
-/// for the one mentioned below.
 pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 	config: &Configuration,
@@ -702,8 +700,6 @@ pub async fn start_shell_parachain_node(
 
 /// Generic implementation introduced by integritee.
 ///
-/// The trait bounds of the generic parameters are copied from the above `start_node_impl` except
-/// for the one mentioned below.
 pub async fn start_parachain_node<RuntimeApi, Executor, BIQ>(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
