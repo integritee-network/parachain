@@ -178,6 +178,8 @@ fn chain_spec<F: Fn() -> GenesisConfig + 'static + Send + Sync, GenesisConfig>(
 		None,
 		// protocol id
 		Some("teer"),
+		// fork id
+		None,
 		// properties
 		Some(
 			serde_json::from_str(
