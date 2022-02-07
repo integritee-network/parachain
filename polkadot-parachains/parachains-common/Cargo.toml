@@ -1,6 +1,7 @@
 [package]
 name = "parachains-common"
-version = "1.0.0"
+# major.minor revision must match collator node. patch bump ad lib
+version = "1.4.0"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2021"
 description = "Logic which is common to all parachain runtimes"
