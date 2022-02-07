@@ -22,7 +22,7 @@ parking_lot = "0.10.2"
 trie-root = "0.15.2"
 codec = { package = "parity-scale-codec", version = "2.3.1" }
 structopt = "0.3.3"
-serde = { version = "1.0.101", features = ["derive"] }
+serde = { version = "1.0.132", features = ["derive"] }
 hex-literal = "0.2.1"
 async-trait = "0.1.42"
 serde_json = "1.0.64"
@@ -35,7 +35,7 @@ parachains-common = { path = "parachains-common" }
 # Substrate dependencies
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.16" }
 frame-benchmarking-cli = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.16" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
 sp-inherents = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
@@ -80,12 +80,15 @@ cumulus-client-service = { git = "https://github.com/paritytech/cumulus", branch
 cumulus-client-network = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.16" }
 cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.16" }
 cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.16" }
+cumulus-relay-chain-interface = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.16" }
+cumulus-relay-chain-local = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.16" }
 
 # Polkadot dependencies
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
 polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
+xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }

@@ -47,7 +47,10 @@ pub use frame_support::{
 	},
 	StorageValue,
 };
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{
+	limits::{BlockLength, BlockWeights},
+	EnsureRoot,
+};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -465,13 +468,8 @@ impl pallet_aura::Config for Runtime {
 // TEE
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
-	pub const ReputationLifetime: u32 = 1;
-	pub const AmountNewbieTickets: u8 = 50;
-	pub const MinSolarTripTimeS: u32 = 1;
-	pub const MaxSpeedMps: u32 = 83;
-	pub const DefaultDemurrage: Demurrage = Demurrage::from_bits(0x0000000000000000000001E3F0A8A973_i128);
-	pub const InactivityTimeout: u32 = 50;
 }
+
 impl pallet_teerex::Config for Runtime {
 	type Event = Event;
 	type Currency = pallet_balances::Pallet<Runtime>;
@@ -556,7 +554,7 @@ pub type Executive = frame_executive::Executive<
 	AllPalletsWithSystem,
 >;
 
-[cfg(feature = "runtime-benchmarks")]
+#[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
 extern crate frame_benchmarking;
 

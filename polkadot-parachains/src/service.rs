@@ -53,6 +53,7 @@ use sp_consensus_aura::AuraApi;
 use sp_core::crypto::Pair;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::{
+	app_crypto::AppKey,
 	generic::BlockId,
 	traits::{BlakeTwo256, Header as HeaderT},
 };
@@ -166,6 +167,7 @@ where
 		config.wasm_method,
 		config.default_heap_pages,
 		config.max_runtime_instances,
+		config.runtime_cache_size,
 	);
 
 	let (client, backend, keystore_container, task_manager) =
@@ -404,68 +406,6 @@ where
 	Ok((task_manager, client))
 }
 
-/// Import queue for the integritee parachain runtime.
-pub fn integritee_parachain_build_import_queue(
-	client: Arc<
-		TFullClient<
-			Block,
-			parachain_runtime::RuntimeApi,
-			NativeElseWasmExecutor<IntegriteeParachainRuntimeExecutor>,
-		>,
-	>,
-	config: &Configuration,
-	telemetry: Option<TelemetryHandle>,
-	task_manager: &TaskManager,
-) -> Result<
-	sc_consensus::DefaultImportQueue<
-		Block,
-		TFullClient<
-			Block,
-			parachain_runtime::RuntimeApi,
-			NativeElseWasmExecutor<IntegriteeParachainRuntimeExecutor>,
-		>,
-	>,
-	sc_service::Error,
-> {
-	parachain_build_import_queue::<parachain_runtime::RuntimeApi, IntegriteeParachainRuntimeExecutor>(
-		client,
-		config,
-		telemetry,
-		task_manager,
-	)
-}
-
-/// Import queue for the launch runtime.
-pub fn shell_parachain_build_import_queue(
-	client: Arc<
-		TFullClient<
-			Block,
-			shell_runtime::RuntimeApi,
-			NativeElseWasmExecutor<ShellParachainRuntimeExecutor>,
-		>,
-	>,
-	config: &Configuration,
-	telemetry: Option<TelemetryHandle>,
-	task_manager: &TaskManager,
-) -> Result<
-	sc_consensus::DefaultImportQueue<
-		Block,
-		TFullClient<
-			Block,
-			shell_runtime::RuntimeApi,
-			NativeElseWasmExecutor<ShellParachainRuntimeExecutor>,
-		>,
-	>,
-	sc_service::Error,
-> {
-	parachain_build_import_queue::<shell_runtime::RuntimeApi, ShellParachainRuntimeExecutor>(
-		client,
-		config,
-		telemetry,
-		task_manager,
-	)
-}
-
 enum BuildOnAccess<R> {
 	Uninitialized(Option<Box<dyn FnOnce() -> R + Send + Sync>>),
 	Initialized(R),
@@ -663,53 +603,6 @@ where
 		&spawner,
 		registry,
 	))
-}
-/// Start a rococo parachain node.
-pub async fn start_integritee_parachain_node(
-	parachain_config: Configuration,
-	polkadot_config: Configuration,
-	id: ParaId,
-) -> sc_service::error::Result<(
-	TaskManager,
-	Arc<
-		TFullClient<
-			Block,
-			parachain_runtime::RuntimeApi,
-			NativeElseWasmExecutor<IntegriteeParachainRuntimeExecutor>,
-		>,
-	>,
-)> {
-	start_parachain_node(
-		parachain_config,
-		polkadot_config,
-		id,
-		integritee_parachain_build_import_queue,
-	)
-	.await
-}
-
-/// Start a launch-runtime parachain node.
-pub async fn start_shell_parachain_node(
-	parachain_config: Configuration,
-	polkadot_config: Configuration,
-	id: ParaId,
-) -> sc_service::error::Result<(
-	TaskManager,
-	Arc<
-		TFullClient<
-			Block,
-			shell_runtime::RuntimeApi,
-			NativeElseWasmExecutor<ShellParachainRuntimeExecutor>,
-		>,
-	>,
-)> {
-	start_parachain_node(
-		parachain_config,
-		polkadot_config,
-		id,
-		shell_parachain_build_import_queue,
-	)
-	.await
 }
 
 /// Generic implementation introduced by integritee.

@@ -120,9 +120,6 @@ std = [
 	"xcm-executor/std",
 	"pallet-aura/std",
 	"sp-consensus-aura/std",
-	# benchmarking stuff
-	"frame-benchmarking/std",
-	"frame-system-benchmarking/std",
 	# TEE
 	"pallet-teerex/std"
 ]

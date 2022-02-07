@@ -217,7 +217,9 @@ fn integritee_genesis_config(
 				.map(|k| (k, 10_000_000__000_000_000_000))
 				.collect(),
 		},
-		sudo: parachain_runtime::SudoConfig { key: root_key },
+		sudo: parachain_runtime::SudoConfig {
+			key: Some(root_key),
+		},
 		vesting: Default::default(),
 		parachain_info: parachain_runtime::ParachainInfoConfig { parachain_id: id },
 		aura: parachain_runtime::AuraConfig {
@@ -247,7 +249,9 @@ fn shell_genesis_config(
 				.map(|k| (k, 10_000_000__000_000_000_000))
 				.collect(),
 		},
-		sudo: shell_runtime::SudoConfig { key: root_key },
+		sudo: shell_runtime::SudoConfig {
+			key: Some(root_key),
+		},
 		vesting: Default::default(),
 		parachain_info: shell_runtime::ParachainInfoConfig { parachain_id },
 		parachain_system: Default::default(),
