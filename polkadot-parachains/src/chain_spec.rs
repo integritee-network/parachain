@@ -92,13 +92,14 @@ impl IntegriteeKeys {
 		vec![
 			public_from_ss58::<sr25519::Public>("5GZJjbPPD9u6NDgK1ApYmbyGs7EBX4HeEz2y2CD38YJxjvQH")
 				.into(),
-			/*
-			public_from_ss58::<sr25519::Public>("5CcSd1GZus6Jw7rP47LLqMMmtr2KeXCH6W11ZKk1LbCQ9dPY").into(),
-			public_from_ss58::<sr25519::Public>("5FsECrDjBXrh5hXmN4PhQfNPbjYYwwW7edu2UQ8G5LR1JFuH").into(),
-			public_from_ss58::<sr25519::Public>("5HBdSEnswkqm6eoHzzX5PCeKoC15CCy88vARrT8XMaRRuyaE").into(),
-			public_from_ss58::<sr25519::Public>("5GGxVLYTXS7JZAwVzisdXbsugHSD6gtDb3AT3MVzih9jTLQT").into(),
-
-			 */
+			public_from_ss58::<sr25519::Public>("5CcSd1GZus6Jw7rP47LLqMMmtr2KeXCH6W11ZKk1LbCQ9dPY")
+				.into(),
+			public_from_ss58::<sr25519::Public>("5FsECrDjBXrh5hXmN4PhQfNPbjYYwwW7edu2UQ8G5LR1JFuH")
+				.into(),
+			public_from_ss58::<sr25519::Public>("5HBdSEnswkqm6eoHzzX5PCeKoC15CCy88vARrT8XMaRRuyaE")
+				.into(),
+			public_from_ss58::<sr25519::Public>("5GGxVLYTXS7JZAwVzisdXbsugHSD6gtDb3AT3MVzih9jTLQT")
+				.into(),
 		]
 	}
 }
@@ -196,11 +197,7 @@ fn integritee_genesis_config(
 				.to_vec(),
 		},
 		balances: parachain_runtime::BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, 10_000_000__000_000_000_000))
-				.collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 10__000_000_000_000)).collect(),
 		},
 		sudo: parachain_runtime::SudoConfig { key: Some(root_key) },
 		vesting: Default::default(),
@@ -224,11 +221,7 @@ fn shell_genesis_config(
 				.to_vec(),
 		},
 		balances: shell_runtime::BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, 10_000_000__000_000_000_000))
-				.collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 10__000_000_000_000)).collect(),
 		},
 		sudo: shell_runtime::SudoConfig { key: Some(root_key) },
 		vesting: Default::default(),
