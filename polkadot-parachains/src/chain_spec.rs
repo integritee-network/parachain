@@ -296,5 +296,4 @@ impl RelayChain {
 			RelayChain::Polkadot => "teer-p",
 		}
 	}
-
 }

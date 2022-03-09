@@ -18,8 +18,8 @@
 use crate::{
 	chain_spec,
 	chain_spec::{
-		integritee_chain_spec, shell_chain_spec, shell_kusama_config, shell_rococo_config,
-		shell_westend_config, shell_polkadot_config, GenesisKeys, RelayChain, ShellChainSpec,
+		integritee_chain_spec, shell_chain_spec, shell_kusama_config, shell_polkadot_config,
+		shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain, ShellChainSpec,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
 	service::{
