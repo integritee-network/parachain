@@ -647,7 +647,7 @@ where
 			let spawn_handle = task_manager.spawn_handle();
 			let transaction_pool2 = transaction_pool.clone();
 			let telemetry2 = telemetry.clone();
-			let prometheus_registry2 = prometheus_registry.map(|r| (*r).clone());
+			let prometheus_registry2 = prometheus_registry.cloned();
 			let relay_chain_for_aura = relay_chain_interface.clone();
 			let aura_consensus = BuildOnAccess::Uninitialized(Some(Box::new(move || {
 				let slot_duration =
