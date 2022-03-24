@@ -3236,6 +3236,7 @@ dependencies = [
  "integritee-runtime",
  "jsonrpc-core",
  "log",
+ "maplit",
  "nix",
  "pallet-sudo",
  "pallet-transaction-payment-rpc",
