@@ -20,7 +20,7 @@ use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, Slo
 use cumulus_client_consensus_common::{
 	ParachainBlockImport, ParachainCandidate, ParachainConsensus,
 };
-
+use maplit::hashmap;
 use cumulus_client_network::BlockAnnounceValidator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
@@ -45,7 +45,7 @@ use sc_consensus::{
 };
 use sc_executor::NativeElseWasmExecutor;
 use sc_network::NetworkService;
-use sc_service::{Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager};
+use sc_service::{error::Error as ServiceError, Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sp_api::{ApiExt, ConstructRuntimeApi};
 use sp_consensus::{CacheKeyId, SlotData};
@@ -59,6 +59,7 @@ use sp_runtime::{
 };
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 use substrate_prometheus_endpoint::{PrometheusError, Registry};
+use sc_service::config::PrometheusConfig;
 
 /// Native executor instance.
 pub struct IntegriteeParachainRuntimeExecutor;
@@ -105,7 +106,7 @@ impl sc_executor::NativeExecutionDispatch for ShellParachainRuntimeExecutor {
 /// Use this macro if you don't actually need the full service, but just the builder in order to
 /// be able to perform chain operations.
 pub fn new_partial<RuntimeApi, Executor, BIQ>(
-	config: &Configuration,
+	config: &mut Configuration,
 	build_import_queue: BIQ,
 ) -> Result<
 	PartialComponents<
@@ -152,6 +153,8 @@ where
 		sc_service::Error,
 	>,
 {
+	set_prometheus_registry(config)?;
+
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
@@ -285,9 +288,9 @@ where
 		return Err("Light client not supported!".into())
 	}
 
-	let parachain_config = prepare_node_config(parachain_config);
+	let mut parachain_config = prepare_node_config(parachain_config);
 
-	let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
+	let params = new_partial::<RuntimeApi, Executor, BIQ>(&mut parachain_config, build_import_queue)?;
 	let (mut telemetry, telemetry_worker_handle) = params.other;
 
 	let client = params.client.clone();
@@ -596,11 +599,22 @@ where
 	))
 }
 
+// // If we're using prometheus, use a registry with a prefix of `moonbeam`.
+// fn set_extra_prefix(prometheus_config: &mut Option<Registry>) -> Result<(), PrometheusError> {
+// 	if let Some(registry) = prometheus_config.as_mut() {
+// 		*registry = Registry::new_custom(Some("aura".into()), None)?;
+// 	}
+// 	Ok(())
+// }
 // If we're using prometheus, use a registry with a prefix of `moonbeam`.
-fn set_extra_prefix(prometheus_config: &mut Option<Registry>) -> Result<(), PrometheusError> {
-	if let Some(registry) = prometheus_config.as_mut() {
-		*registry = Registry::new_custom(Some("aura".into()), None)?;
+fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
+	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
+		let labels = hashmap! {
+			"chain".into() => config.chain_spec.id().into(),
+		};
+		*registry = Registry::new_custom(Some("moonbeam".into()), Some(labels))?;
 	}
+
 	Ok(())
 }
 
@@ -655,10 +669,9 @@ where
 			let spawn_handle = task_manager.spawn_handle();
 			let transaction_pool2 = transaction_pool.clone();
 			let telemetry2 = telemetry.clone();
-			let mut prometheus_registry2 = prometheus_registry.cloned();
-			set_extra_prefix(&mut prometheus_registry2);
+			let prometheus_registry2 = prometheus_registry.map(|r| (*r).clone());
+			//set_extra_prefix(&mut prometheus_registry2);
 			let relay_chain_for_aura = relay_chain_interface.clone();
-
 			let aura_consensus = BuildOnAccess::Uninitialized(Some(Box::new(move || {
 				let slot_duration =
 					cumulus_client_consensus_aura::slot_duration(&*client2).unwrap();
