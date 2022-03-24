@@ -58,7 +58,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, Header as HeaderT},
 };
 use std::{marker::PhantomData, sync::Arc, time::Duration};
-use substrate_prometheus_endpoint::Registry;
+use substrate_prometheus_endpoint::{PrometheusError, Registry};
 
 /// Native executor instance.
 pub struct IntegriteeParachainRuntimeExecutor;
@@ -596,6 +596,14 @@ where
 	))
 }
 
+// If we're using prometheus, use a registry with a prefix of `moonbeam`.
+fn set_extra_prefix(prometheus_config: &mut Option<Registry>) -> Result<(), PrometheusError> {
+	if let Some(registry) = prometheus_config.as_mut() {
+		*registry = Registry::new_custom(Some("aura".into()), None)?;
+	}
+	Ok(())
+}
+
 /// Generic implementation introduced by integritee.
 ///
 pub async fn start_parachain_node<RuntimeApi, Executor, AuraId: AppKey>(
@@ -647,8 +655,10 @@ where
 			let spawn_handle = task_manager.spawn_handle();
 			let transaction_pool2 = transaction_pool.clone();
 			let telemetry2 = telemetry.clone();
-			let prometheus_registry2 = prometheus_registry.cloned();
+			let mut prometheus_registry2 = prometheus_registry.cloned();
+			set_extra_prefix(&mut prometheus_registry2);
 			let relay_chain_for_aura = relay_chain_interface.clone();
+
 			let aura_consensus = BuildOnAccess::Uninitialized(Some(Box::new(move || {
 				let slot_duration =
 					cumulus_client_consensus_aura::slot_duration(&*client2).unwrap();
