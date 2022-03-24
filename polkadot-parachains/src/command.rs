@@ -215,22 +215,22 @@ macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
 		if runner.config().chain_spec.is_shell() {
-			runner.async_run(|$config| {
+			runner.async_run(|mut $config| {
 				let $components = new_partial::<shell_runtime::RuntimeApi, ShellParachainRuntimeExecutor, _>(
-					&$config,
+					&mut $config,
 					crate::service::parachain_build_import_queue::<_, _, parachains_common::AuraId>,
 				)?;
 				let task_manager = $components.task_manager;
 				{ $( $code )* }.map(|v| (v, task_manager))
 			})
 		} else {
-			runner.async_run(|$config| {
+			runner.async_run(|mut $config| {
 			let $components = new_partial::<
 				parachain_runtime::RuntimeApi,
 				IntegriteeParachainRuntimeExecutor,
 				_
 			>(
-				&$config,
+				&mut $config,
 				crate::service::parachain_build_import_queue::<_, _, parachains_common::AuraId>,
 			)?;
 			let task_manager = $components.task_manager;
