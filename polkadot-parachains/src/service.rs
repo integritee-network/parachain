@@ -599,14 +599,13 @@ where
 	))
 }
 
-// // If we're using prometheus, use a registry with a prefix of `moonbeam`.
 // fn set_extra_prefix(prometheus_config: &mut Option<Registry>) -> Result<(), PrometheusError> {
 // 	if let Some(registry) = prometheus_config.as_mut() {
 // 		*registry = Registry::new_custom(Some("aura".into()), None)?;
 // 	}
 // 	Ok(())
 // }
-// If we're using prometheus, use a registry with a prefix of `moonbeam`.
+
 fn set_prometheus_registry(config: &mut Configuration) -> Result<(), ServiceError> {
 	if let Some(PrometheusConfig { registry, .. }) = config.prometheus_config.as_mut() {
 		let labels = hashmap! {
