@@ -20,7 +20,6 @@ use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, Slo
 use cumulus_client_consensus_common::{
 	ParachainBlockImport, ParachainCandidate, ParachainConsensus,
 };
-use maplit::hashmap;
 use cumulus_client_network::BlockAnnounceValidator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
@@ -31,6 +30,7 @@ use cumulus_primitives_core::{
 };
 use cumulus_relay_chain_interface::RelayChainInterface;
 use cumulus_relay_chain_local::build_relay_chain_interface;
+use maplit::hashmap;
 use polkadot_service::NativeExecutionDispatch;
 
 use crate::rpc;
@@ -45,7 +45,10 @@ use sc_consensus::{
 };
 use sc_executor::NativeElseWasmExecutor;
 use sc_network::NetworkService;
-use sc_service::{error::Error as ServiceError, Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager};
+use sc_service::{
+	config::PrometheusConfig, error::Error as ServiceError, Configuration, PartialComponents, Role,
+	TFullBackend, TFullClient, TaskManager,
+};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sp_api::{ApiExt, ConstructRuntimeApi};
 use sp_consensus::{CacheKeyId, SlotData};
@@ -59,7 +62,6 @@ use sp_runtime::{
 };
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 use substrate_prometheus_endpoint::{PrometheusError, Registry};
-use sc_service::config::PrometheusConfig;
 
 /// Native executor instance.
 pub struct IntegriteeParachainRuntimeExecutor;
@@ -290,7 +292,8 @@ where
 
 	let mut parachain_config = prepare_node_config(parachain_config);
 
-	let params = new_partial::<RuntimeApi, Executor, BIQ>(&mut parachain_config, build_import_queue)?;
+	let params =
+		new_partial::<RuntimeApi, Executor, BIQ>(&mut parachain_config, build_import_queue)?;
 	let (mut telemetry, telemetry_worker_handle) = params.other;
 
 	let client = params.client.clone();
