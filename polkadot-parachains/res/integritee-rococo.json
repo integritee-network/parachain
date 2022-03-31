@@ -1,5 +1,7 @@
 {
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/164.90.161.113/tcp/30333/p2p/12D3KooWRNVutJeyx7rwxvPs4zzkxhRXHpWx4wyJ49m1d1nhZGog"
+  ],
   "chainType": "Live",
   "codeSubstitutes": {},
   "consensusEngine": null,
