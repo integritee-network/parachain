@@ -14,7 +14,7 @@ pallets=(
   "pallet_vesting" \
   "pallet_teerex" \
   "pallet_claims" \
-  "pallet_migrations" \
+  "pallet_migration" \
   "pallet_multisig" \
   "pallet_proxy" \
   "pallet_scheduler" \
