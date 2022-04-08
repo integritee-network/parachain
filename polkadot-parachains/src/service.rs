@@ -675,27 +675,22 @@ where
 		 sync_oracle,
 		 keystore,
 		 force_authoring| {
-			let client2 = client.clone();
 			let spawn_handle = task_manager.spawn_handle();
-			let transaction_pool2 = transaction_pool.clone();
-			let telemetry2 = telemetry.clone();
-			let prometheus_registry2 = prometheus_registry.map(|r| (*r).clone());
-			let relay_chain_for_aura = relay_chain_interface.clone();
-			let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client2).unwrap();
+			let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client).unwrap();
 
 			let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 				spawn_handle,
-				client2.clone(),
-				transaction_pool2,
-				prometheus_registry2.as_ref(),
-				telemetry2.clone(),
+				client.clone(),
+				transaction_pool,
+				prometheus_registry,
+				telemetry.clone(),
 			);
 
 			Ok(AuraConsensus::build::<<AuraId as AppKey>::Pair, _, _, _, _, _, _>(
 				BuildAuraConsensusParams {
 					proposer_factory,
 					create_inherent_data_providers: move |_, (relay_parent, validation_data)| {
-						let relay_chain_for_aura = relay_chain_for_aura.clone();
+						let relay_chain_for_aura = relay_chain_interface.clone();
 						async move {
 							let parachain_inherent =
 							cumulus_primitives_parachain_inherent::ParachainInherentData::create_at(
@@ -720,8 +715,8 @@ where
 							Ok((time, slot, parachain_inherent))
 						}
 					},
-					block_import: client2.clone(),
-					para_client: client2.clone(),
+					block_import: client.clone(),
+					para_client: client,
 					backoff_authoring_blocks: Option::<()>::None,
 					sync_oracle,
 					keystore,
@@ -731,7 +726,7 @@ where
 					block_proposal_slot_portion: SlotProportion::new(1f32 / 24f32),
 					// And a maximum of 750ms if slots are skipped
 					max_block_proposal_slot_portion: Some(SlotProportion::new(1f32 / 16f32)),
-					telemetry: telemetry2,
+					telemetry,
 				},
 			))
 		},
