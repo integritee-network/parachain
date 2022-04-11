@@ -1,6 +1,6 @@
-# Integritee Parachain:
+# Integritee Parachain
 
-This is the repository to run Integritee as a parachain on Kusama and Rococo.It is forked from the [Cumulus](https://github.com/paritytech/cumulus) repository.
+This is the repository to run Integritee as a parachain on Kusama and Rococo. It is forked from the [Cumulus](https://github.com/paritytech/cumulus) repository.
 
 ## Launch a local setup including a Relay Chain and a Parachain
 
@@ -18,17 +18,15 @@ depending on how you installed `polkadot-launch`.
 
 #### Launch a Rococo Relay Chain
 
-Check out which polkadot release to use in the .json files in the [polkadot-launch](./polkadot-launch) folder.
-
-Example:
+First, check out which polkadot release to use in the .json files in the [polkadot-launch](./polkadot-launch) folder:
 ```json
 {
 	"relaychain": {
 		"bin": "../../../bin/polkadot-0.9.18", // <-- release to use
     		"chain": "kusama-local",
-        ...
+        // --snip--
 ```
-
+Then get and build `polkadot`:
 ```bash
 # Compile Polkadot with the real overseer feature
 git clone https://github.com/paritytech/polkadot
