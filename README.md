@@ -1,6 +1,6 @@
-# IntegriTEE Parachain:
+# Integritee Parachain:
 
-This is the repository to run integritee as a parachain in the rococo-v1 testnet. It is forked from the [Cumulus](https://github.com/paritytech/cumulus) repository and only adds the SubstraTEE pallet and configuration.
+This is the repository to run Integritee as a parachain on Kusama and Rococo.It is forked from the [Cumulus](https://github.com/paritytech/cumulus) repository.
 
 ## Launch a local setup including a Relay Chain and a Parachain
 
@@ -12,7 +12,7 @@ or
 ```
 polkadot-launch launch-kusama-local-with-shell.json
 ```
-depending on how you installed it.
+depending on how you installed `polkadot-launch`.
 
 ### Manually Launch a local Rococo Testnet
 
