@@ -33,7 +33,7 @@ git clone https://github.com/paritytech/polkadot
 # Switch into the Polkadot directory
 cd polkadot
 # Checkout the proper commit
-git checkout <release tag>  # release tag that matches the branch id in the polkadot-deps
+git checkout <release tag>  # release tag, just like in the example above: polkadot-0.9.18
 cargo build --release
 
 # Generate a raw chain spec
