@@ -43,7 +43,7 @@ cargo +nightly-2022-01-31 build --release # or any other up-to-date nightly vers
 ```
 Start the `Alice` validator:
 ```bash
-./target/release/polkadot --chain rococo-local-cfde.json --alice --validator --tmp
+./target/release/polkadot --chain rococo-local-cfde.json --alice --validator --tmp --port 30333 --ws-port 9944
 ```
 When the node starts you will see several log messages. Take note of the node's Peer ID in the logs. We will need it when connecting other nodes to it. It will look something like this:
 ```bash
@@ -103,7 +103,7 @@ Export genesis and wasm states:
 ```
 Start the first collator node:
 ```bash
-./target/release/integritee-collator --alice --force-authoring --collator --tmp --chain integritee-rococo-local-dev-raw.json --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde.json --port 30337 --ws-port 9981
+./target/release/integritee-collator --dave --force-authoring --collator --tmp --chain integritee-rococo-local-dev-raw.json --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde.json --port 30337 --ws-port 9981 --bootnodes /ip4/<Alice IP>/tcp/30333/p2p/<Alice Peer ID>
 ```
 
 Additional information can be found in https://docs.substrate.io/tutorials/v3/cumulus/connect-parachain/.
