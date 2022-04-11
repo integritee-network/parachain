@@ -35,6 +35,8 @@ cd polkadot
 # Checkout the proper commit
 git checkout <release tag>  # release tag, just like in the example above: polkadot-0.9.18
 cargo build --release
+# If this fails due to  `feature `edition2021` is required` you have set an outdated rust default version. To fix this, you can simply run:
+cargo +nightly-2022-01-31 build --release # or any other up-to-date nightly version
 
 # Generate a raw chain spec
 ./target/release/polkadot build-spec --chain rococo-local --disable-default-bootnode --raw > rococo-local-cfde.json
