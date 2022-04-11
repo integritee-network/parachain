@@ -56,9 +56,14 @@ Start the `Bob` validator (in a second terminal):
 
 More information can be found in the Substrate tutorial [Start a Relay Chain](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/)
 
+#### Reserve a para ID
+Go to [Polkadot Apps](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/parachains/parathreads). Register the parachain via
+Network > Parachains sub-page, click on Parathreads tab and use the + ParaId button. After registering, the collator should start producing blocks when the next era starts.
+![image](https://d33wubrfki0l68.cloudfront.net/ab3d311e37364a9706f2747b98b24fc259398152/2c4ba/static/4e9213b9ee2f65cc7fa9ccddd73679a3/c1b63/paraid-reserve.png)
+
+
 
 #### Launch the Parachain
-More information can be found in https://docs.substrate.io/tutorials/v3/cumulus/connect-parachain/.
 
 Build the parachain:
 ```bash
@@ -71,45 +76,43 @@ cargo build --release
 ```
 Generate custom parachain specification:
 ```bash
-./target/release/integritee-collator build-spec --disable-default-bootnode > integritee-local-dev-plain.json
+./target/release/integritee-collator build-spec --chain integritee-rococo-local-dev --disable-default-bootnode > integritee-rococo-local-dev-plain.json
 ```
 and update the `para_id` to the `para_id` you reserved on the relay-chain (default is `2000`):
 ```json
 // --snip--
-  "para_id": 2015, // <--- your already registered ID
+  "para_id": 2000, // <--- your already registered ID
   // --snip--
       "parachainInfo": {
-        "parachainId": 2015 // <--- your already registered ID
+        "parachainId": 2000 // <--- your already registered ID
       },
   // --snip--
 ```
 Then generate a raw chain spec derived from your modified plain chain spec:
 
 ```bash
-./target/release/parachain-collator build-spec --chain integritee-local-dev-plain.json --raw --disable-default-bootnode > integritee-local-dev.json
+./target/release/parachain-collator build-spec --chain integritee-rococo-local-dev --raw --disable-default-bootnode > integritee-rococo-local-dev.json
 ```
 Export genesis and wasm states:
 ```bash
 # Export genesis state
-./target/release/integritee-collator export-genesis-state --chain integritee-local-dev.json > integritee-local-dev.state
+./target/release/integritee-collator export-genesis-state --chain integritee-rococo-local-dev > integritee-rococo-local-dev.state
 
 # Export genesis wasm
-./target/release/integritee-collator export-genesis-wasm --chain integritee-local-dev.json > integritee-local-dev.wasm
+./target/release/integritee-collator export-genesis-wasm --chain integritee-rococo-local-dev > integritee-rococo-local-dev.wasm
 ```
 Start the first collator node:
 ```bash
-./target/release/integritee-collator --alice --force-authoring --collator --tmp --chain integritee-local-dev.json --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde.json --port 30337 --ws-port 9981
+./target/release/integritee-collator --alice --force-authoring --collator --tmp --chain integritee-rococo-local-dev --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde.json --port 30337 --ws-port 9981
 ```
+
+Additional information can be found in https://docs.substrate.io/tutorials/v3/cumulus/connect-parachain/.
 
 
 #### Register the Parachain
-Go to [Polkadot Apps](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/parachains/parathreads). Register the parachain via
-Network > Parachains sub-page, click on Parathreads tab and use the + ParaId button. After registering, the collator should start producing blocks when the next era starts.
-![image](https://d33wubrfki0l68.cloudfront.net/ab3d311e37364a9706f2747b98b24fc259398152/2c4ba/static/4e9213b9ee2f65cc7fa9ccddd73679a3/c1b63/paraid-reserve.png
-)
+Go to [Polkadot Apps](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/parachains/parathreads). Register the parachain via the `paraSudoWrapper` pallet. After registering, the collator should start producing blocks when the next era starts
 
-
-**Note:** You may also register the parachain via the `paraSudoWrapper` module (see [Launch the Parachain](launch-the-parachain) for generating genesis state and wasm):
+**Note:** Change the `ParaId` to the value you used for reserving your parachain.
 
 ![image](https://user-images.githubusercontent.com/2915325/99548884-1be13580-2987-11eb-9a8b-20be658d34f9.png)
 
@@ -171,7 +174,7 @@ If successful, a `parachainSystem.validationFunctionStored` event is thrown foll
 
 ### Caveats
 * Don't forget to enable file upload if you perform drag and drop for the `genesisHead` and `validationCode`. If it is not enabled, Polkadot-js will interpret the path as a string and won't complain but the registration will fail.
-* Don't forget to add the argument `--chain integritee-rococo-local-dev.json` for the custom chain config. This argument is omitted in the [Cumulus Workshop](https://substrate.dev/cumulus-workshop/).
+* Don't forget to add the argument `--chain integritee-rococo-local-dev` for the custom chain config. This argument is omitted in the [Cumulus Workshop](https://substrate.dev/cumulus-workshop/).
 * The relay chain and the collator need to be about equally recent. This might require frequent rebasing of this repository on the corresponding release branch.
 
 ## Benchmark
