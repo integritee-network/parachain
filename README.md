@@ -59,9 +59,12 @@ More information can be found in the Substrate tutorial [Start a Relay Chain](ht
 
 #### Register the Parachain
 Go to [Polkadot Apps](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/parachains/parathreads). Register the parachain via
-Network > Parachains sub-page, click on Parathreads tab and use the + ParaId button or the `paraSudoWrapper` pallet. After registering, the collator should start producing blocks when the next era starts.
+Network > Parachains sub-page, click on Parathreads tab and use the + ParaId button. After registering, the collator should start producing blocks when the next era starts.
+![image](https://d33wubrfki0l68.cloudfront.net/ab3d311e37364a9706f2747b98b24fc259398152/2c4ba/static/4e9213b9ee2f65cc7fa9ccddd73679a3/c1b63/paraid-reserve.png
+)
 
-**Note:** Change the `ParaId` to 2015 when registering the parachain.
+
+**Note:** You may also register the parachain via the `paraSudoWrapper` module (see [Launch the Parachain](launch-the-parachain) for generating genesis state and wasm):
 
 ![image](https://user-images.githubusercontent.com/2915325/99548884-1be13580-2987-11eb-9a8b-20be658d34f9.png)
 
@@ -90,7 +93,7 @@ Generate custom parachain specification:
 ```bash
 ./target/release/integritee-collator build-spec --disable-default-bootnode > integritee-local-dev-plain.json
 ```
-and update the `para_id` to `2015` (default is `2000`):
+and update the `para_id` to the `para_id` you reserved on the relay-chain (default is `2000`):
 ```json
 // --snip--
   "para_id": 2015, // <--- your already registered ID
