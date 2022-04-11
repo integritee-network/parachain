@@ -83,12 +83,12 @@ integritee-collator \
         --chain integritee-rococo-local-dev \
         --rpc-cors all \
         --name integritee-rococo-collator-1 \
-        -- --execution wasm --chain rococo 
+        -- --execution wasm --chain rococo
 
 ```
 
 ### Runtime upgrade
-Two runtimes are contained in this repository. First, the shell-runtime, which has been extended compared to the upstream shell-runtime. It has some additional modules including sudo to facilitate a 
+Two runtimes are contained in this repository. First, the shell-runtime, which has been extended compared to the upstream shell-runtime. It has some additional modules including sudo to facilitate a
 runtime upgrade with the [sudo upgrade](https://substrate.dev/docs/en/tutorials/forkless-upgrade/sudo-upgrade) method. Second, it runs with the same executor instance as the integritee-runtime, such that an eventual upgrade is simpler to perform, i.e., only the runtime
 needs to be upgraded whereas the client can remain the same. Hence, all modules revolving around aura have been included, which provide data the client needs.
 
@@ -129,4 +129,4 @@ The benchmarks are run with the following script:
 
 ### More Resources
 * Thorough Readme about Rococo and Collators in general in the original [repository](https://github.com/paritytech/cumulus) of this fork.
-* Parachains on Rococo in the [Polkadot Wiki](https://wiki.polkadot.network/docs/en/build-parachains-rococo#rococo-v1-parachain-requirements)
+* Parachains Development in the [Polkadot Wiki](https://wiki.polkadot.network/docs/build-pdk)
