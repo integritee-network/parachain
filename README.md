@@ -91,19 +91,19 @@ and update the `para_id` to the `para_id` you reserved on the relay-chain (defau
 Then generate a raw chain spec derived from your modified plain chain spec:
 
 ```bash
-./target/release/parachain-collator build-spec --chain integritee-rococo-local-dev --raw --disable-default-bootnode > integritee-rococo-local-dev.json
+./target/release/integritee-collator build-spec --chain integritee-rococo-local-dev.json --raw --disable-default-bootnode > integritee-rococo-local-dev-raw.json
 ```
 Export genesis and wasm states:
 ```bash
 # Export genesis state
-./target/release/integritee-collator export-genesis-state --chain integritee-rococo-local-dev > integritee-rococo-local-dev.state
+./target/release/integritee-collator export-genesis-state --chain integritee-rococo-local-dev-raw.json > integritee-rococo-local-dev.state
 
 # Export genesis wasm
-./target/release/integritee-collator export-genesis-wasm --chain integritee-rococo-local-dev > integritee-rococo-local-dev.wasm
+./target/release/integritee-collator export-genesis-wasm --chain integritee-rococo-local-dev-raw.json > integritee-rococo-local-dev.wasm
 ```
 Start the first collator node:
 ```bash
-./target/release/integritee-collator --alice --force-authoring --collator --tmp --chain integritee-rococo-local-dev --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde.json --port 30337 --ws-port 9981
+./target/release/integritee-collator --alice --force-authoring --collator --tmp --chain integritee-rococo-local-dev-raw.json --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde.json --port 30337 --ws-port 9981
 ```
 
 Additional information can be found in https://docs.substrate.io/tutorials/v3/cumulus/connect-parachain/.
