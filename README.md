@@ -76,9 +76,9 @@ cargo build --release
 ```
 Generate custom parachain specification:
 ```bash
-./target/release/integritee-collator build-spec --chain integritee-rococo-local-dev --disable-default-bootnode > integritee-rococo-local-dev-plain.json
+./target/release/integritee-collator build-spec --chain integritee-rococo-local-dev --disable-default-bootnode > integritee-rococo-local-dev.json
 ```
-and update the `para_id` to the `para_id` you reserved on the relay-chain (default is `2000`):
+and update the `para_id` to the one you reserved on the relay-chain (default is `2000`):
 ```json
 // --snip--
   "para_id": 2000, // <--- your already registered ID
