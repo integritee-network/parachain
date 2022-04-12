@@ -57,7 +57,9 @@ Start the `Bob` validator (in a second terminal):
 More information can be found in the Substrate tutorial [Start a Relay Chain](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/)
 
 #### Reserve a para ID
-Go to [Polkadot Apps](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/parachains/parathreads). Register the parachain via
+Go to [Polkadot Apps](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/parachains/parathreads). This links to the default port used for the alice relay chain node. But you can also use any other port of a node that is connected to your relay chain.
+
+Register the parachain via
 Network > Parachains sub-page, click on Parathreads tab and use the + ParaId button. After registering, the collator should start producing blocks when the next era starts.
 ![image](https://d33wubrfki0l68.cloudfront.net/ab3d311e37364a9706f2747b98b24fc259398152/2c4ba/static/4e9213b9ee2f65cc7fa9ccddd73679a3/c1b63/paraid-reserve.png)
 
