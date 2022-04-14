@@ -17,58 +17,93 @@
 				"name": "charlie",
 				"wsPort": 9877,
 				"port": 31666
-			}
+			},
+			{
+				"name": "dave",
+				"wsPort": 9977,
+				"port": 30777
+			  }
 		]
 	},
 	"parachains": [
 		{
 			"bin": "./../target/release/integritee-collator",
-			"id": "2015",
 			"chain": "integritee-rococo-local-dev",
 			"nodes": [
 				{
 					"wsPort": 9994,
 					"port": 31300,
 					"name": "dave",
-					"flags": ["--", "--execution=wasm"]
+					"flags": [
+						"--unsafe-ws-external",
+						"--unsafe-rpc-external",
+						"--rpc-external",
+						"--ws-external",
+						"--rpc-cors=all",
+						"--rpc-methods=Unsafe",
+						"--force-authoring",
+						"--log=xcm=trace",
+						"--",
+						"--execution=wasm"
+					]
 				},
 				{
 					"wsPort": 9995,
 					"port": 31301,
 					"name": "eve",
-					"flags": ["--", "--execution=wasm"]
+					"flags": [
+						"--unsafe-ws-external",
+						"--unsafe-rpc-external",
+						"--rpc-external",
+						"--ws-external",
+						"--rpc-cors=all",
+						"--rpc-methods=Unsafe",
+						"--force-authoring",
+						"--log=xcm=trace",
+						"--",
+						"--execution=wasm"
+					]
 				}
 			]
 		},
 		{
-			"bin": "./../target/release/karura-collator",
-			"id": "2000",
-			"chain": "integritee-rococo-local-dev",
+			"bin": "../../bin/acala",
+			"chain": "karura-dev",
 			"nodes": [
 				{
 					"wsPort": 9984,
 					"port": 31302,
 					"name": "alice",
-					"flags": ["--", "--execution=wasm"]
-				},
-				{
-					"wsPort": 9985,
-					"port": 31303,
-					"name": "bob",
-					"flags": ["--", "--execution=wasm"]
+					"flags": [
+						"--unsafe-ws-external",
+						"--unsafe-rpc-external",
+						"--rpc-external",
+						"--ws-external",
+						"--rpc-cors=all",
+						"--rpc-methods=Unsafe",
+						"--force-authoring",
+						"--log=xcm=trace",
+						"--",
+						"--execution=wasm"
+					  ]
 				}
 			]
 		}
 	],
-	"simpleParachains": [
-	],
+	"simpleParachains": [],
 	"hrmpChannels": [
 		{
-			"sender": 2015,
+			"sender": 2001,
 			"recipient": 2000,
 			"maxCapacity": 8,
 			"maxMessageSize": 512
-		  }
+		},
+		{
+			"sender": 2000,
+			"recipient": 2001,
+			"maxCapacity": 8,
+			"maxMessageSize": 512
+		}
 	],
 	"finalization": false
 }
