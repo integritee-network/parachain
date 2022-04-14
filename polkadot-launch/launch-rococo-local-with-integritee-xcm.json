@@ -1,0 +1,74 @@
+{
+	"relaychain": {
+		"bin": "../../bin/polkadot-0.9.18",
+		"chain": "rococo-local",
+		"nodes": [
+			{
+				"name": "alice",
+				"wsPort": 9899,
+				"port": 31444
+			},
+			{
+				"name": "bob",
+				"wsPort": 9888,
+				"port": 31555
+			},
+			{
+				"name": "charlie",
+				"wsPort": 9877,
+				"port": 31666
+			}
+		]
+	},
+	"parachains": [
+		{
+			"bin": "./../target/release/integritee-collator",
+			"id": "2015",
+			"chain": "integritee-rococo-local-dev",
+			"nodes": [
+				{
+					"wsPort": 9994,
+					"port": 31300,
+					"name": "dave",
+					"flags": ["--", "--execution=wasm"]
+				},
+				{
+					"wsPort": 9995,
+					"port": 31301,
+					"name": "eve",
+					"flags": ["--", "--execution=wasm"]
+				}
+			]
+		},
+		{
+			"bin": "./../target/release/karura-collator",
+			"id": "2000",
+			"chain": "integritee-rococo-local-dev",
+			"nodes": [
+				{
+					"wsPort": 9984,
+					"port": 31302,
+					"name": "alice",
+					"flags": ["--", "--execution=wasm"]
+				},
+				{
+					"wsPort": 9985,
+					"port": 31303,
+					"name": "bob",
+					"flags": ["--", "--execution=wasm"]
+				}
+			]
+		}
+	],
+	"simpleParachains": [
+	],
+	"hrmpChannels": [
+		{
+			"sender": 2015,
+			"recipient": 2000,
+			"maxCapacity": 8,
+			"maxMessageSize": 512
+		  }
+	],
+	"finalization": false
+}
