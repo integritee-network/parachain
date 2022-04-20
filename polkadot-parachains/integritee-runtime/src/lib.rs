@@ -28,11 +28,12 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::{
 	Contains, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
 };
+use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto},
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, Convert},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
@@ -208,38 +209,6 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 13;
 }
 
-/// Only allow runtime upgrades and sudo calls during migration.
-/// A polkadot runtime example be found here:
-/// https://github.com/paritytech/polkadot/blob/f0b2bf3c20a7fae381685c7f6bb3c36fbce65722/runtime/polkadot/src/lib.rs#L130-L175
-pub struct BaseFilter;
-impl Contains<Call> for BaseFilter {
-	fn contains(call: &Call) -> bool {
-		match call {
-			// These modules are all allowed to be called by transactions:
-			Call::System(_) |
-			Call::ParachainSystem(_) |
-			Call::Timestamp(_) |
-			Call::Sudo(_) |
-			Call::XcmpQueue(_) |
-			Call::PolkadotXcm(_) |
-			Call::CumulusXcm(_) |
-			Call::DmpQueue(_) |
-			Call::Migration(_) => true,
-			// Disable everything before / during migration
-			Call::Multisig(_) |
-			Call::Proxy(_) |
-			Call::Scheduler(_) |
-			Call::Utility(_) |
-			Call::Balances(_) |
-			Call::Vesting(_) |
-			Call::Treasury(_) |
-			Call::Teerex(_) |
-			Call::Claims(_) |
-			Call::Teeracle(_) => false,
-		}
-	}
-}
-
 impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
@@ -277,10 +246,8 @@ impl frame_system::Config for Runtime {
 	type OnKilledAccount = ();
 	/// The weight of database operations that the runtime can invoke.
 	type DbWeight = RocksDbWeight;
-	/// Use the call filter from Migration pallet for now to shorten migration downtime
-	/// With this, no runtime upgrade is necessary to reenable calls.
-	/// Should be removed with the next runtime upgrade.
-	type BaseCallFilter = Migration;
+	/// All calls are allowed.
+	type BaseCallFilter = Everything;
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
 	/// Block & extrinsics weights: base values and limits.
@@ -509,6 +476,73 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 }
 
+// We only support TEER for now.
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+pub enum CurrencyId {
+	TEER
+}
+
+pub struct CurrencyIdConvert;
+impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
+	fn convert(id: CurrencyId) -> Option<MultiLocation> {
+		match id {
+			CurrencyId::TEER => Some(MultiLocation::new(
+                1,
+                X1(
+                    Parachain(ParachainInfo::parachain_id().into()),
+                ),
+            ))
+		}
+	}
+}
+
+parameter_types! {
+	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(ParachainInfo::parachain_id().into())));
+}
+
+pub struct AccountIdToMultiLocation;
+impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
+	fn convert(account: AccountId) -> MultiLocation {
+		X1(AccountId32 {
+			network: NetworkId::Any,
+			id: account.into(),
+		})
+		.into()
+	}
+}
+
+
+parameter_types! {
+	pub const BaseXcmWeight: Weight = 100_000_000; // TODO: recheck this
+	pub const MaxAssetsForTransfer: usize = 2;
+}
+
+parameter_type_with_key! {
+	pub ParachainMinFee: |_location: MultiLocation| -> u128 {
+		u128::MAX
+	};
+}
+
+impl orml_xtokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+	type CurrencyIdConvert = CurrencyIdConvert;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation;
+	type SelfLocation = SelfLocation;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
+	type BaseXcmWeight = BaseXcmWeight;
+	type LocationInverter = LocationInverter<Ancestry>;
+	type MaxAssetsForTransfer = MaxAssetsForTransfer;
+	type MinXcmFee = ParachainMinFee;
+	type MultiLocationsFilter = Everything;
+	type ReserveProvider = AbsoluteReserveProvider;
+}
+
+
 impl parachain_info::Config for Runtime {}
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
@@ -606,9 +640,9 @@ impl Config for XcmConfig {
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type Trader = UsingComponents<IdentityFee<Balance>, RocLocation, AccountId, Balances, ()>;
 	type ResponseHandler = (); // Don't handle responses for now.
-	type SubscriptionService = (); // don't handle subscriptions for now
-	type AssetTrap = ();
-	type AssetClaims = ();
+	type SubscriptionService = PolkadotXcm;
+	type AssetTrap = PolkadotXcm;
+	type AssetClaims = PolkadotXcm;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
@@ -749,26 +783,6 @@ impl pallet_treasury::Config for Runtime {
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
 
-// Migration pallet
-parameter_types! {
-	pub const MigrationMaxAccounts: u32 = 100;
-	pub const MigrationMaxVestings: u32 = 10;
-	pub const MigrationMaxProxies: u32 = 10;
-}
-
-impl pallet_migration::Config for Runtime {
-	type MigrationMaxAccounts = MigrationMaxAccounts;
-	type MigrationMaxVestings = MigrationMaxVestings;
-	type MigrationMaxProxies = MigrationMaxProxies;
-	type Event = Event;
-	type WeightInfo = weights::pallet_migration::WeightInfo<Runtime>;
-	type FinalizedFilter = Everything; // Allow all calls again after finishing the migration
-								   // After this runtime upgrade, we do not allow any transactions except for migration purposes
-	type InactiveFilter = BaseFilter;
-	// During migration we do not allow any transactions except for migration purposes
-	type OngoingFilter = BaseFilter;
-}
-
 construct_runtime! {
 	pub enum Runtime where
 		Block = Block,
@@ -805,14 +819,12 @@ construct_runtime! {
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 31,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
+		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
-
-		// Migration.
-		Migration: pallet_migration::{Pallet, Call, Storage, Event<T>} = 99,
 	}
 }
 
