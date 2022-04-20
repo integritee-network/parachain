@@ -26,7 +26,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use crate::opaque::SessionKeys;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::{
-	Contains, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
+	EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
 };
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use sp_api::impl_runtime_apis;
@@ -478,8 +478,6 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 
 // We only support TEER for now.
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub enum CurrencyId {
 	TEER
 }
@@ -884,7 +882,6 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_claims, Claims]
-		[pallet_migration, Migration]
 		[pallet_multisig, Multisig]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]

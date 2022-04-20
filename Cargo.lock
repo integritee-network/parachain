@@ -3540,7 +3540,6 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-claims",
- "pallet-migration",
  "pallet-multisig",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
@@ -6016,27 +6015,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-migration"
-version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallet-migration?branch=polkadot-v0.9.18#2ca466ba596b3a234b2e070a82f773a411543acd"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "pallet-proxy",
- "pallet-vesting",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-version",
 ]
 
 [[package]]
