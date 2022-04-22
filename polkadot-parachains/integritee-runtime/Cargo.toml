@@ -75,6 +75,7 @@ pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features 
 orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, rev = "2b5d4ce1d08fb54c0007c2055653892d2c93a92e" }
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, rev = "2b5d4ce1d08fb54c0007c2055653892d2c93a92e" }
 orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, rev = "2b5d4ce1d08fb54c0007c2055653892d2c93a92e" }
+orml-xcm = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, rev = "2b5d4ce1d08fb54c0007c2055653892d2c93a92e" }
 
 # Benchmarking
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.18" }
@@ -141,6 +142,7 @@ std = [
 	"orml-xtokens/std",
 	"orml-traits/std",
 	"orml-xcm-support/std",
+	"orml-xcm/std",
 	# Integritee
 	"pallet-claims/std",
 	"pallet-teeracle/std",

@@ -603,7 +603,7 @@ impl parachain_info::Config for Runtime {}
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 parameter_types! {
-	pub const RelayChain: MultiLocation = MultiLocation::parent();
+	pub const RelayChainLocation: MultiLocation = MultiLocation::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: Origin = cumulus_pallet_xcm::Origin::Relay.into();
 	// Ancestry defines the multilocation describing this consensus system
@@ -761,7 +761,7 @@ parameter_types! {
 }
 
 /// A majority of the Unit body from Rococo over XCM is our required administration origin.
-pub type AdminOrigin = EnsureXcm<IsMajorityOfBody<RelayChain, UnitBody>>;
+pub type AdminOrigin = EnsureXcm<IsMajorityOfBody<RelayChainLocation, UnitBody>>;
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -836,6 +836,11 @@ impl pallet_treasury::Config for Runtime {
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
 
+impl orml_xcm::Config for Runtime {
+	type Event = Event;
+	type SovereignOrigin = RootOrigin;
+}
+
 construct_runtime! {
 	pub enum Runtime where
 		Block = Block,
@@ -873,6 +878,7 @@ construct_runtime! {
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 34,
+		OrmlXcm: orml_xcm = 55,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
