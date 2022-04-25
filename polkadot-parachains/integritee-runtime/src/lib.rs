@@ -27,7 +27,7 @@ use crate::opaque::SessionKeys;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::{EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced};
 use orml_traits::{
-	location::{AbsoluteReserveProvider, RelativeReserveProvider, Reserve},
+	location::{RelativeReserveProvider, Reserve},
 	parameter_type_with_key,
 };
 use sp_api::impl_runtime_apis;
@@ -80,7 +80,7 @@ use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds,
-	LocationInverter, NativeAsset, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	LocationInverter, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
 	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
