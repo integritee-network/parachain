@@ -519,6 +519,7 @@ pub enum CurrencyId {
 	TEER,
 }
 
+/// Converts a CurrencyId into a Multilocation, used by xtoken for XCMP.
 pub struct CurrencyIdConvert;
 impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 	fn convert(id: CurrencyId) -> Option<MultiLocation> {
@@ -531,6 +532,9 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 	}
 }
 
+
+/// Converts a Mulitloaction into a CurrencyId. Used by XCMP LocalAssetTransactor for asset filtering:
+/// we only accept Assets that are convertable to a "CurrencyId".
 impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(location: MultiLocation) -> Option<CurrencyId> {
 		let teer_key: Vec<u8> = "TEER".into();
@@ -552,6 +556,7 @@ impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	}
 }
 
+/// Converts a MultiAsset into a CurrencyId, using the defined Mulitlocation.
 impl Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(asset: MultiAsset) -> Option<CurrencyId> {
 		if let MultiAsset { id: Concrete(location), .. } = asset {
@@ -890,7 +895,7 @@ construct_runtime! {
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 34,
-		OrmlXcm: orml_xcm = 55,
+		OrmlXcm: orml_xcm = 35,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
