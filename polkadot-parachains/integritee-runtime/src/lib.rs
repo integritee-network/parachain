@@ -532,7 +532,6 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 	}
 }
 
-
 /// Converts a Mulitloaction into a CurrencyId. Used by XCMP LocalAssetTransactor for asset filtering:
 /// we only accept Assets that are convertable to a "CurrencyId".
 impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
