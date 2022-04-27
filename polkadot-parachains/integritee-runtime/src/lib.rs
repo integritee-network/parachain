@@ -40,19 +40,15 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
-	construct_runtime, match_type, parameter_types,
-	traits::{EnsureOneOf, IsInVec, Randomness},
+	construct_runtime, match_type,
+	pallet_prelude::Get,
+	parameter_types,
+	traits::{EnsureOneOf, Everything, IsInVec, Nothing, PalletInfoAccess, Randomness},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		DispatchClass, IdentityFee, Weight,
 	},
 	PalletId, RuntimeDebug, StorageValue,
-};
-use frame_support::{
-	pallet_prelude::Get,
-	parameter_types,
-	traits::{Everything, Nothing, PalletInfoAccess},
-	weights::Weight,
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},

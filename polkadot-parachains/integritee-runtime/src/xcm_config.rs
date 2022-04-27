@@ -19,15 +19,17 @@
 //!
 
 use super::{
-	AccountId, AssetId, AssetManager, Assets, Balance, Balances, Call, DealWithFees, Event,
-	LocalAssets, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, Treasury,
-	WeightToFee, XcmpQueue, FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX, MAXIMUM_BLOCK_WEIGHT,
+	AccountId, Balance, Balances, Call, Convert, Event, MaxInstructions, Origin, ParachainInfo,
+	ParachainSystem, PolkadotXcm, Runtime, XcmpQueue, TEER,
 };
+use codec::{Decode, Encode, MaxEncodedLen};
 use core::marker::PhantomData;
 use frame_support::{
+	pallet_prelude::Get,
 	parameter_types,
-	traits::{Everything, Nothing, PalletInfoAccess},
-	weights::Weight,
+	traits::Everything,
+	weights::{IdentityFee, Weight},
+	RuntimeDebug,
 };
 use frame_system::EnsureRoot;
 use orml_traits::{
@@ -35,28 +37,22 @@ use orml_traits::{
 	parameter_type_with_key,
 };
 use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
-use pallet_evm_precompile_assets_erc20::AccountIdAssetIdConversion;
-use pallet_xcm::{EnsureXcm, IsMajorityOfBody, XcmPassthrough};
-use parity_scale_codec::{Decode, Encode};
+use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
 use scale_info::TypeInfo;
-use sp_core::{H160, H256};
-use sp_runtime::traits::Hash as THash;
 use sp_std::{
-	convert::{From, Into, TryFrom},
+	convert::{From, Into},
 	prelude::*,
 };
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	AccountId32Aliases, AccountKey20Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
-	AllowTopLevelPaidExecutionFrom, AsPrefixedGeneralIndex, ConvertedConcreteAssetId,
-	CurrencyAdapter as XcmCurrencyAdapter, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds,
-	FungiblesAdapter, LocationInverter, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
+	AllowTopLevelPaidExecutionFrom, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds,
+	LocationInverter, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedAccountKey20AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	UsingComponents,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
-use xcm_executor::{traits::JustTry, Config, XcmExecutor};
+use xcm_executor::{Config, XcmExecutor};
 
 parameter_types! {
 	pub const RelayChainLocation: MultiLocation = MultiLocation::parent();
@@ -65,7 +61,12 @@ parameter_types! {
 	// Ancestry defines the multilocation describing this consensus system
 	pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	// Relative Self Reserve location, defines the multilocation identifiying the local currency.
-	pub SelfReserve: MultiLocation = MultiLocation::here();
+	pub SelfReserve: MultiLocation = MultiLocation {
+		parents:0,
+		interior: Junctions::X1(
+			GeneralKey("TEER".into())
+		)
+	};
 }
 
 // Supported Currencies.
@@ -308,7 +309,7 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub const BaseXcmWeight: Weight = 100_000_000; // TODO: recheck this
+	pub const BaseXcmWeight: Weight = 100_000_000;
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
