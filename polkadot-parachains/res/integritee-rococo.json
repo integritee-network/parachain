@@ -42,7 +42,7 @@
   },
   "id": "integritee-rococo",
   "name": "Integritee on Rococo",
-  "para_id": 3002,
+  "para_id": 2015,
   "properties": {
     "ss58Format": 13,
     "tokenDecimals": 12,
