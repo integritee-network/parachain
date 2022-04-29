@@ -27,12 +27,12 @@ But keep the following in mind:
 - For testing on rococo-local use the chain spec `integritee-rococo-local-dev`
 - More chain specs can be found in [polkadot-parachains/src/command.rs](/polkadot-parachains/src/command.rs)
 
-### Runtime upgrade
+## Runtime upgrade
 Two runtimes are contained in this repository. First, the shell-runtime, which has been extended compared to the upstream shell-runtime. It has some additional modules including sudo to facilitate a
 runtime upgrade with the [sudo upgrade](https://substrate.dev/docs/en/tutorials/forkless-upgrade/sudo-upgrade) method. Second, it runs with the same executor instance as the integritee-runtime, such that an eventual upgrade is simpler to perform, i.e., only the runtime
 needs to be upgraded whereas the client can remain the same. Hence, all modules revolving around aura have been included, which provide data the client needs.
 
-#### Upgrade procedure
+### Upgrade procedure
 Prepare a local shell network and generate the `integritee-runtime` wasm blob, which contains the upgraded runtime to be executed after the runtime upgrade.
 ```bash
 # launch local setup
@@ -66,7 +66,7 @@ The benchmarks are run with the following script:
 ```
 
 
-### More Resources
+## More Resources
 * Thorough Readme about Rococo and Collators in general in the original [repository](https://github.com/paritytech/cumulus) of this fork.
 * Parachains Development in the [Polkadot Wiki](https://wiki.polkadot.network/docs/build-pdk)
 * encointer parachain readme: https://github.com/encointer/encointer-parachain
