@@ -27,7 +27,7 @@ use crate::opaque::SessionKeys;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
 	pallet_prelude::ConstU32,
-	traits::{ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced},
+	traits::{ConstBool, ConstU128, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced},
 };
 use pallet_collective;
 use sp_api::impl_runtime_apis;
@@ -579,7 +579,6 @@ parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
 	pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	pub const PreimageByteDeposit = ConstU128<10 * MICROTEER>; // 10 times a tx fee
 }
 
 pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
@@ -626,7 +625,7 @@ impl pallet_democracy::Config for Runtime {
 	// only do it once and it lasts only for the cooloff period.
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommitteeInstance>;
 	type CooloffPeriod = CooloffPeriod;
-	type PreimageByteDeposit = PreimageByteDeposit;
+	type PreimageByteDeposit = ConstU128<{ 10 * MICROTEER }>; // 10 times a tx fee
 	type OperationalPreimageOrigin =
 		pallet_collective::EnsureMember<AccountId, TechnicalCommitteeInstance>; // Does that make sense? Normally, that's council only
 	type Slash = Treasury;
