@@ -579,7 +579,7 @@ parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
 	pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	pub const PreimageByteDeposit = 10 * MICROTEER; // 10 times a tx fee
+	pub const PreimageByteDeposit = ConstU128<10 * MICROTEER>; // 10 times a tx fee
 }
 
 pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
@@ -674,6 +674,7 @@ construct_runtime! {
 		// Consensus.
 		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
 		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
