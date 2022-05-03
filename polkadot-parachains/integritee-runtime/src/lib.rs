@@ -556,28 +556,50 @@ impl pallet_treasury::Config for Runtime {
 
 pub type TechnicalCommitteeInstance = pallet_collective::Instance1;
 
+// parameter_types! {
+// 	pub const MotionDuration: BlockNumber = 3 * DAYS;
+// 	pub const MaxProposals: u32 = 100;
+// 	pub const MaxMembers: u32 = 100;
+// }
+
+parameter_types! {
+	pub const MotionDuration: BlockNumber = 5 * MINUTES;
+	pub const MaxProposals: u32 = 100;
+	pub const MaxMembers: u32 = 100;
+}
+
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Origin = Origin;
 	type Event = Event;
 	type Proposal = Call;
 	/// The maximum amount of time (in blocks) for technical committee members to vote on motions.
 	/// Motions may end in fewer blocks if enough votes are cast to determine the result.
-	type MotionDuration = ConstU32<{ 3 * DAYS }>;
+	type MotionDuration = MotionDuration;
 	/// The maximum number of Proposlas that can be open in the technical committee at once.
-	type MaxProposals = ConstU32<100>;
+	type MaxProposals = MaxProposals;
 	/// The maximum number of technical committee members.
-	type MaxMembers = ConstU32<100>;
+	type MaxMembers = MaxMembers;
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
+// parameter_types! {
+// 	pub const LaunchPeriod: BlockNumber = 1 * DAYS;
+// 	pub const VotingPeriod: BlockNumber = 5 * DAYS;
+// 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
+// 	pub const MinimumDeposit: Balance = 100 * TEER;
+// 	pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
+// 	pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
+// 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
+// }
+
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 1 * DAYS;
-	pub const VotingPeriod: BlockNumber = 5 * DAYS;
-	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
+	pub const LaunchPeriod: BlockNumber = 5 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 10 * MINUTES;
+	pub const FastTrackVotingPeriod: BlockNumber = 5 * MINUTES;
 	pub const MinimumDeposit: Balance = 100 * TEER;
-	pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
-	pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
+	pub const EnactmentPeriod: BlockNumber = 5 * MINUTES;
+	pub const VoteLockingPeriod: BlockNumber = 5 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
 }
 
