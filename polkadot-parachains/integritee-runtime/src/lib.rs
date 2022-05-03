@@ -57,7 +57,7 @@ pub use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
+	EnsureRoot, EnsureSigned,
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -601,13 +601,13 @@ impl pallet_democracy::Config for Runtime {
 	type VoteLockingPeriod = VoteLockingPeriod;
 	type MinimumDeposit = MinimumDeposit;
 	/// Schedules a proposal to become a referendum once it is is legal for an
-	/// externally proposed referendum
+	/// externally proposed referendum (SuperMajorityApprove)
 	type ExternalOrigin = EnsureRoot<AccountId>;
 	/// Schedules a proposal to become a majority-carries referendum
-	/// once it is legal for an externally proposed referendum
-	type ExternalMajorityOrigin = EnsureRoot<AccountId>;
+	/// once it is legal for an externally proposed referendum (Simple Majority)
+	type ExternalMajorityOrigin = EnsureSigned<AccountId>;
 	/// Schedules a proposal to become a negative-turnout-bias referendum
-	/// once it is legal for an externally proposed referendum
+	/// once it is legal for an externally proposed referendum (SuperMajorityAgainst)
 	type ExternalDefaultOrigin = EnsureRoot<AccountId>;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
