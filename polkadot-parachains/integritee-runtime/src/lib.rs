@@ -600,14 +600,14 @@ impl pallet_democracy::Config for Runtime {
 	type VotingPeriod = VotingPeriod;
 	type VoteLockingPeriod = VoteLockingPeriod;
 	type MinimumDeposit = MinimumDeposit;
-	/// Schedules a proposal to become a referendum once it is is legal for an
-	/// externally proposed referendum (SuperMajorityApprove)
+	//// Only root is able to schedule a proposal to become a SuperMajorityApprove (default decline)
+	/// referendum once it is is legal for an externally proposed referendum
 	type ExternalOrigin = EnsureRoot<AccountId>;
-	/// Schedules a proposal to become a majority-carries referendum
-	/// once it is legal for an externally proposed referendum (Simple Majority)
+	/// Everyone is able to schedules a proposal to become a majority-carries (Simple Majority)
+	/// referendum once it is legal for an externally proposed referendum
 	type ExternalMajorityOrigin = EnsureSigned<AccountId>;
-	/// Schedules a proposal to become a negative-turnout-bias referendum
-	/// once it is legal for an externally proposed referendum (SuperMajorityAgainst)
+	/// Only root is able to schedule a proposal to become a SuperMajorityAgainst (default accept)
+	/// referendum once it is legal for an externally proposed referendum
 	type ExternalDefaultOrigin = EnsureRoot<AccountId>;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
