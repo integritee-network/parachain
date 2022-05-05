@@ -6,17 +6,15 @@ This is the repository to run Integritee as a parachain on Kusama and Rococo. It
 
 ### Polkadot-launch
 
-Quick: see [polkadot-launch](https://github.com/paritytech/polkadot-launch.git)
-```
-node ../polkadot-launch/dist/cli.js launch-rococo-local-with-integritee.json
-```
-or
+Install polkadot-launch according to the instruction in [polkadot-launch](https://github.com/paritytech/polkadot-launch#install)
+
+and use it with
+
 ```
 polkadot-launch launch-rococo-local-with-integritee.json
 ```
-depending on how you installed `polkadot-launch`.
 
-All polkadot launch script can be found in the [polkadot-launch](/polkadot-launch/) folder.
+All polkadot launch scripts can be found in the [polkadot-launch](/polkadot-launch/) folder.
 
 ### Manually launch a local Rococo Testnet
 
