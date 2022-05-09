@@ -25,10 +25,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use crate::opaque::SessionKeys;
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
-	pallet_prelude::ConstU32,
-	traits::{ConstBool, ConstU128, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced},
-};
+use frame_support::traits::{EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced};
 use pallet_collective;
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
@@ -57,7 +54,7 @@ pub use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureSigned,
+	EnsureRoot,
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -74,6 +71,7 @@ pub use pallet_teerex::Call as TeerexCall;
 
 pub type SessionHandlers = ();
 
+mod helpers;
 mod weights;
 
 pub mod xcm_config;
@@ -510,7 +508,7 @@ impl pallet_claims::Config for Runtime {
 	type Event = Event;
 	type VestingSchedule = Vesting;
 	type Prefix = Prefix;
-	type MoveClaimOrigin = frame_system::EnsureRoot<AccountId>;
+	type MoveClaimOrigin = EnsureRoot<AccountId>;
 	type WeightInfo = weights::pallet_claims::WeightInfo<Runtime>;
 }
 parameter_types! {
@@ -539,12 +537,12 @@ type RootOrigin = EnsureRoot<AccountId>;
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = pallet_balances::Pallet<Runtime>;
-	type ApproveOrigin = RootOrigin;
-	type RejectOrigin = RootOrigin;
+	type ApproveOrigin = EnsureRootOrThreeFifthCouncil;
+	type RejectOrigin = EnsureRootOrHalfCouncil;
 	type Event = Event;
-	type OnSlash = (); //No proposal
-	type ProposalBond = ProposalBond; //No proposal
-	type ProposalBondMinimum = ProposalBondMinimum; //No proposal
+	type OnSlash = (); // No Proposal
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ProposalBondMinimum;
 	type ProposalBondMaximum = ProposalBondMaximum;
 	type SpendPeriod = SpendPeriod; //Cannot be 0: Error: Thread 'tokio-runtime-worker' panicked at 'attempt to calculate the remainder with a divisor of zero
 	type Burn = (); //No burn
@@ -554,18 +552,56 @@ impl pallet_treasury::Config for Runtime {
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
 
-pub type TechnicalCommitteeInstance = pallet_collective::Instance1;
-
-// parameter_types! {
-// 	pub const MotionDuration: BlockNumber = 3 * DAYS;
-// 	pub const MaxProposals: u32 = 100;
-// 	pub const MaxMembers: u32 = 100;
-// }
+// Council
+pub type CouncilInstance = pallet_collective::Instance1;
 
 parameter_types! {
-	pub const MotionDuration: BlockNumber = 5 * MINUTES;
-	pub const MaxProposals: u32 = 100;
-	pub const MaxMembers: u32 = 100;
+	pub const CouncilMotionDuration: BlockNumber = prod_or_fast!(3 * DAYS, 2 * MINUTES);
+	pub const CouncilMaxProposals: u32 = 100;
+	pub const CouncilMaxMembers: u32 = 100;
+}
+
+impl pallet_collective::Config<CouncilInstance> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = CouncilMaxProposals;
+	type MaxMembers = CouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+pub type EnsureRootOrAllCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>,
+>;
+
+pub type EnsureRootOrHalfCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 2>,
+>;
+
+pub type EnsureRootOrTwoThirdsCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 2, 3>,
+>;
+
+pub type EnsureRootOrThreeFifthCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 3, 5>,
+>;
+
+pub type EnsureRootOrOneCouncil =
+	EnsureOneOf<EnsureRoot<AccountId>, pallet_collective::EnsureMember<AccountId, CouncilInstance>>;
+
+// Technical Committee
+pub type TechnicalCommitteeInstance = pallet_collective::Instance2;
+
+parameter_types! {
+	pub const TechnicalMotionDuration: BlockNumber = prod_or_fast!(3 * DAYS, 2 * MINUTES);
+	pub const TechnicalMaxProposals: u32 = 100;
+	pub const TechnicalMaxMembers: u32 = 100;
 }
 
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
@@ -574,33 +610,13 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Proposal = Call;
 	/// The maximum amount of time (in blocks) for technical committee members to vote on motions.
 	/// Motions may end in fewer blocks if enough votes are cast to determine the result.
-	type MotionDuration = MotionDuration;
+	type MotionDuration = TechnicalMotionDuration;
 	/// The maximum number of Proposlas that can be open in the technical committee at once.
-	type MaxProposals = MaxProposals;
+	type MaxProposals = TechnicalMaxProposals;
 	/// The maximum number of technical committee members.
-	type MaxMembers = MaxMembers;
+	type MaxMembers = TechnicalMaxMembers;
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
-}
-
-// parameter_types! {
-// 	pub const LaunchPeriod: BlockNumber = 1 * DAYS;
-// 	pub const VotingPeriod: BlockNumber = 5 * DAYS;
-// 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
-// 	pub const MinimumDeposit: Balance = 100 * TEER;
-// 	pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
-// 	pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
-// 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-// }
-
-parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 5 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 10 * MINUTES;
-	pub const FastTrackVotingPeriod: BlockNumber = 5 * MINUTES;
-	pub const MinimumDeposit: Balance = 100 * TEER;
-	pub const EnactmentPeriod: BlockNumber = 5 * MINUTES;
-	pub const VoteLockingPeriod: BlockNumber = 5 * MINUTES;
-	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
 }
 
 pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
@@ -613,6 +629,19 @@ pub type EnsureRootOrAllTechnicalCommittee = EnsureOneOf<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
+parameter_types! {
+	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 1 * MINUTES);
+	pub const VotingPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 1 * MINUTES);
+	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 1 * MINUTES);
+	pub const MinimumDeposit: Balance = 100 * TEER;
+	pub EnactmentPeriod: BlockNumber = prod_or_fast!(2 * DAYS, 1 * MINUTES);
+	pub const CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES);
+	pub const InstantAllowed: bool = true;
+	pub const MaxVotes: u32 = 100;
+	pub const MaxProposals: u32 = 100;
+	pub const PreimageByteDeposit: Balance = 10 * MICROTEER; // 10 times a tx fee
+}
+
 impl pallet_democracy::Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;
@@ -620,25 +649,25 @@ impl pallet_democracy::Config for Runtime {
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
-	type VoteLockingPeriod = VoteLockingPeriod;
+	type VoteLockingPeriod = EnactmentPeriod;
 	type MinimumDeposit = MinimumDeposit;
 	//// Only root is able to schedule a proposal to become a SuperMajorityApprove (default decline)
 	/// referendum once it is is legal for an externally proposed referendum
-	type ExternalOrigin = EnsureRoot<AccountId>;
+	type ExternalOrigin = EnsureRootOrHalfCouncil;
 	/// Everyone is able to schedules a proposal to become a majority-carries (Simple Majority)
 	/// referendum once it is legal for an externally proposed referendum
-	type ExternalMajorityOrigin = EnsureSigned<AccountId>;
+	type ExternalMajorityOrigin = EnsureRootOrHalfCouncil;
 	/// Only root is able to schedule a proposal to become a SuperMajorityAgainst (default accept)
 	/// referendum once it is legal for an externally proposed referendum
-	type ExternalDefaultOrigin = EnsureRoot<AccountId>;
+	type ExternalDefaultOrigin = EnsureRootOrAllCouncil;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
 	type InstantOrigin = EnsureRootOrAllTechnicalCommittee;
-	type InstantAllowed = ConstBool<true>;
+	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed.
-	type CancellationOrigin = EnsureRoot<AccountId>;
+	type CancellationOrigin = EnsureRootOrTwoThirdsCouncil;
 	type BlacklistOrigin = EnsureRoot<AccountId>;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
@@ -647,15 +676,14 @@ impl pallet_democracy::Config for Runtime {
 	// only do it once and it lasts only for the cooloff period.
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommitteeInstance>;
 	type CooloffPeriod = CooloffPeriod;
-	type PreimageByteDeposit = ConstU128<{ 10 * MICROTEER }>; // 10 times a tx fee
-	type OperationalPreimageOrigin =
-		pallet_collective::EnsureMember<AccountId, TechnicalCommitteeInstance>; // Does that make sense? Normally, that's council only
+	type PreimageByteDeposit = PreimageByteDeposit;
+	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilInstance>;
 	type Slash = Treasury;
 	type Scheduler = Scheduler;
 	type PalletsOrigin = OriginCaller;
-	type MaxVotes = ConstU32<100>;
+	type MaxVotes = MaxVotes;
 	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
-	type MaxProposals = ConstU32<100>;
+	type MaxProposals = MaxProposals;
 }
 
 impl orml_xcm::Config for Runtime {
@@ -686,11 +714,12 @@ construct_runtime! {
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 11,
 		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
 
-		// Governance
+		// Governance.
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 13,
 		Democracy: pallet_democracy::{Pallet, Storage, Config<T>, Event<T>, Call} = 14,
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 15,
 		TechnicalCommittee:
-			pallet_collective::<Instance1>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 15,
+			pallet_collective::<Instance2>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 16,
 
 		// Consensus.
 		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,

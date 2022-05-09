@@ -197,6 +197,7 @@ fn integritee_genesis_config(
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 10__000_000_000_000)).collect(),
 		},
 		democracy: DemocracyConfig::default(),
+		council: Default::default(),
 		technical_committee: Default::default(),
 		sudo: parachain_runtime::SudoConfig { key: Some(root_key) },
 		vesting: Default::default(),

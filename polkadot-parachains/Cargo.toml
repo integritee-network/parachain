@@ -112,3 +112,7 @@ runtime-benchmarks = [
 	'polkadot-service/runtime-benchmarks',
 	'parachain-runtime/runtime-benchmarks'
 ]
+fast-runtime = [
+	"polkadot-service/fast-runtime",
+	"parachain-runtime/fast-runtime",
+]
