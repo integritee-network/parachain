@@ -668,7 +668,7 @@ impl pallet_democracy::Config for Runtime {
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed.
 	type CancellationOrigin = EnsureRootOrTwoThirdsCouncil;
-	type BlacklistOrigin = EnsureRoot<AccountId>;
+	type BlacklistOrigin = EnsureRootOrAllCouncil;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
 	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee;
