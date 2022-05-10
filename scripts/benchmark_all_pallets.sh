@@ -10,6 +10,9 @@ mkdir -p $INTEGRITEE_RUNTIME_WEIGHT_DIR
 pallets=(
   "frame_system" \
   "pallet_balances" \
+  "pallet_collective_council" \
+  "pallet_collective_technical_committee" \
+  "pallet_democracy" \
   "pallet_timestamp" \
   "pallet_vesting" \
   "pallet_teerex" \
@@ -27,7 +30,7 @@ for pallet in ${pallets[*]}; do
   echo benchmarking "$pallet"...
 
   $COLLATOR \
-  benchmark \
+  benchmark pallet \
   --chain=integritee-rococo-local-dev \
   --steps=50 \
   --repeat=20 \

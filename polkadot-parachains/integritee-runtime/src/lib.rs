@@ -569,7 +569,7 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_collective_council::WeightInfo<Runtime>;
 }
 
 pub type EnsureRootOrAllCouncil = EnsureOneOf<
@@ -616,7 +616,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	/// The maximum number of technical committee members.
 	type MaxMembers = TechnicalMaxMembers;
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
-	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_collective_technical_committee::WeightInfo<Runtime>;
 }
 
 pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
@@ -682,7 +682,7 @@ impl pallet_democracy::Config for Runtime {
 	type Scheduler = Scheduler;
 	type PalletsOrigin = OriginCaller;
 	type MaxVotes = MaxVotes;
-	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_democracy::WeightInfo<Runtime>;
 	type MaxProposals = MaxProposals;
 }
 
@@ -797,6 +797,9 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_claims, Claims]
+		[pallet_collective, Council]
+		[pallet_collective, TechnicalCommittee]
+		[pallet_democracy, Democracy]
 		[pallet_multisig, Multisig]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
