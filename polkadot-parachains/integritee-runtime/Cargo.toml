@@ -69,17 +69,17 @@ cumulus-pallet-xcmp-queue = { git = "https://github.com/paritytech/cumulus",  br
 cumulus-pallet-xcm = { git = "https://github.com/paritytech/cumulus",  branch = "polkadot-v0.9.20", default-features = false }
 
 # Polkadot dependencies
-polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.19" }
-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.19" }
-xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.19" }
-xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.19" }
-pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.19" }
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.20" }
+xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.20" }
+xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.20" }
+xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.20" }
+pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.20" }
 
 # orml
-orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
-orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
-orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
-orml-xcm = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
+orml-xtokens = { git = "https://github.com/integritee-network/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
+orml-traits = { git = "https://github.com/integritee-network/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
+orml-xcm-support = { git = "https://github.com/integritee-network/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
+orml-xcm = { git = "https://github.com/integritee-network/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.20" }
 
 # Benchmarking
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.20" }

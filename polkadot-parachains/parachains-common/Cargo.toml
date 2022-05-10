@@ -31,11 +31,11 @@ sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features
 sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = "polkadot-v0.9.20" }
 
 # Polkadot dependencies
-polkadot-runtime-common = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.19" }
-polkadot-primitives = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.19" }
-polkadot-core-primitives = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.19" }
-xcm = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.19" }
-xcm-executor = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.19" }
+polkadot-runtime-common = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.20" }
+polkadot-primitives = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.20" }
+polkadot-core-primitives = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.20" }
+xcm = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.20" }
+xcm-executor = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = "release-v0.9.20" }
 
 [dev-dependencies]
 sp-io = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = "polkadot-v0.9.20" }
