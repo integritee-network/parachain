@@ -552,7 +552,9 @@ impl pallet_treasury::Config for Runtime {
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
 
-// Council
+/// Council collective instance declaration.
+/// The council primarly serves to optimize and balance the inclusive referendum system,
+/// by being allowed to porpose external democracy proposals and controls the treasury.
 pub type CouncilInstance = pallet_collective::Instance1;
 
 parameter_types! {
@@ -595,7 +597,9 @@ pub type EnsureRootOrThreeFifthCouncil = EnsureOneOf<
 pub type EnsureRootOrOneCouncil =
 	EnsureOneOf<EnsureRoot<AccountId>, pallet_collective::EnsureMember<AccountId, CouncilInstance>>;
 
-// Technical Committee
+/// Technical committee collective instance declaration.
+/// The technical committee primarly serves to optimize and balance the inclusive referendum system,
+/// by being allowed to porpose external democracy proposals and treasury control.
 pub type TechnicalCommitteeInstance = pallet_collective::Instance2;
 
 parameter_types! {
