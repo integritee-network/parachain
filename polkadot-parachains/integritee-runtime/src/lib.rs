@@ -571,7 +571,7 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = weights::pallet_collective_council::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 
 pub type EnsureRootOrAllCouncil = EnsureOneOf<
@@ -620,7 +620,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	/// The maximum number of technical committee members.
 	type MaxMembers = TechnicalMaxMembers;
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
-	type WeightInfo = weights::pallet_collective_technical_committee::WeightInfo<Runtime>;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 
 pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
