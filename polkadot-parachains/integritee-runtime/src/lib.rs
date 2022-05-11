@@ -598,8 +598,8 @@ pub type EnsureRootOrOneCouncil =
 	EnsureOneOf<EnsureRoot<AccountId>, pallet_collective::EnsureMember<AccountId, CouncilInstance>>;
 
 /// Technical committee collective instance declaration.
-/// The technical committee primarly serves to optimize and balance the inclusive referendum system,
-/// by being allowed to porpose external democracy proposals and treasury control.
+/// The technical committee primarly serves to safeguard against malicious referenda, implement bug
+/// fixes, reverse faulty runtime updates, or add new but battle-tested features.
 pub type TechnicalCommitteeInstance = pallet_collective::Instance2;
 
 parameter_types! {
