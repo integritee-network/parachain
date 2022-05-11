@@ -3644,6 +3644,8 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-claims",
+ "pallet-collective",
+ "pallet-democracy",
  "pallet-multisig",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
