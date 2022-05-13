@@ -434,6 +434,7 @@ impl pallet_scheduler::Config for Runtime {
 	type PalletsOrigin = OriginCaller;
 	type Call = Call;
 	type MaximumWeight = MaximumSchedulerWeight;
+	// one schedule is the founder allocation. We only allow RootOrigin here such that it takes a democracy proposal to change this schedule
 	type ScheduleOrigin = EnsureRoot<AccountId>;
 	type MaxScheduledPerBlock = MaxScheduledPerBlock;
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
@@ -532,13 +533,11 @@ parameter_types! {
 	pub const MaxApprovals: u32 = 10;
 }
 
-type RootOrigin = EnsureRoot<AccountId>;
-
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = pallet_balances::Pallet<Runtime>;
-	type ApproveOrigin = EnsureRootOrThreeFifthCouncil;
-	type RejectOrigin = EnsureRootOrHalfCouncil;
+	type ApproveOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type Event = Event;
 	type OnSlash = (); // No Proposal
 	type ProposalBond = ProposalBond;
@@ -574,24 +573,9 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 
-pub type EnsureRootOrAllCouncil = EnsureOneOf<
+pub type EnsureRootOrMoreThanHalfCouncil = EnsureOneOf<
 	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>,
->;
-
-pub type EnsureRootOrHalfCouncil = EnsureOneOf<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 2>,
->;
-
-pub type EnsureRootOrTwoThirdsCouncil = EnsureOneOf<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 2, 3>,
->;
-
-pub type EnsureRootOrThreeFifthCouncil = EnsureOneOf<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 3, 5>,
+	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>,
 >;
 
 pub type EnsureRootOrOneCouncil =
@@ -623,9 +607,9 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 }
 
-pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
+pub type EnsureRootOrMoreThanHalfTechnicalCommittee = EnsureOneOf<
 	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 2, 3>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 2>,
 >;
 
 pub type EnsureRootOrAllTechnicalCommittee = EnsureOneOf<
@@ -657,13 +641,13 @@ impl pallet_democracy::Config for Runtime {
 	type MinimumDeposit = MinimumDeposit;
 	//// Origin allowed to schedule a SuperMajorityApprove (default decline)
 	/// referendum once it is is legal for an externally proposed referendum
-	type ExternalOrigin = EnsureRootOrHalfCouncil;
+	type ExternalOrigin = EnsureRootOrMoreThanHalfCouncil;
 	/// Origin allowed to schedule a majority-carries (Simple Majority)
 	/// referendum once it is legal for an externally proposed referendum
-	type ExternalMajorityOrigin = EnsureRootOrHalfCouncil;
+	type ExternalMajorityOrigin = EnsureRootOrMoreThanHalfCouncil;
 	/// Origin allowed to schedule a SuperMajorityAgainst (default accept)
 	/// referendum once it is legal for an externally proposed referendum
-	type ExternalDefaultOrigin = EnsureRootOrAllCouncil;
+	type ExternalDefaultOrigin = EnsureRootOrMoreThanHalfCouncil;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
@@ -671,8 +655,8 @@ impl pallet_democracy::Config for Runtime {
 	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed.
-	type CancellationOrigin = EnsureRootOrTwoThirdsCouncil;
-	type BlacklistOrigin = EnsureRootOrAllCouncil;
+	type CancellationOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type BlacklistOrigin = EnsureRootOrMoreThanHalfCouncil;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
 	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee;
@@ -692,7 +676,7 @@ impl pallet_democracy::Config for Runtime {
 
 impl orml_xcm::Config for Runtime {
 	type Event = Event;
-	type SovereignOrigin = RootOrigin;
+	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
 construct_runtime! {
