@@ -578,9 +578,6 @@ pub type EnsureRootOrMoreThanHalfCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>,
 >;
 
-pub type EnsureRootOrOneCouncil =
-	EnsureOneOf<EnsureRoot<AccountId>, pallet_collective::EnsureMember<AccountId, CouncilInstance>>;
-
 /// Technical committee collective instance declaration.
 /// The technical committee primarly serves to safeguard against malicious referenda, implement bug
 /// fixes, reverse faulty runtime updates, or add new but battle-tested features.
@@ -648,14 +645,14 @@ impl pallet_democracy::Config for Runtime {
 	/// Origin allowed to schedule a SuperMajorityAgainst (default accept)
 	/// referendum once it is legal for an externally proposed referendum
 	type ExternalDefaultOrigin = EnsureRootOrMoreThanHalfCouncil;
-	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+	/// Majority of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
+	type FastTrackOrigin = EnsureRootOrMoreThanHalfTechnicalCommittee;
 	type InstantOrigin = EnsureRootOrAllTechnicalCommittee;
 	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed.
-	type CancellationOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type CancellationOrigin = EnsureRoot<AccountId>;
 	type BlacklistOrigin = EnsureRootOrMoreThanHalfCouncil;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
