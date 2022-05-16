@@ -18,7 +18,7 @@
 use crate::{
 	chain_spec,
 	chain_spec::{
-		integritee_chain_spec, shell_chain_spec, shell_kusama_config, shell_moonbase_config,
+		integritee_chain_spec, integritee_moonbase_config, shell_chain_spec, shell_kusama_config,
 		shell_polkadot_config, shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain,
 		ShellChainSpec,
 	},
@@ -77,7 +77,7 @@ fn load_spec(
 		"integritee-westend" => Box::new(shell_westend_config()?),
 		"integritee-kusama" => Box::new(shell_kusama_config()?),
 		"integritee-polkadot" => Box::new(shell_polkadot_config()?),
-		"integritee-moonbase" => Box::new(shell_moonbase_config()?),
+		"integritee-moonbase" => Box::new(integritee_moonbase_config()?),
 
 		// live config initialize
 		"integritee-rococo-fresh" => Box::new(shell_chain_spec(ROCOCO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Rococo)),

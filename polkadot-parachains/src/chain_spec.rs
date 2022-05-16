@@ -298,8 +298,8 @@ pub fn shell_polkadot_config() -> Result<ShellChainSpec, String> {
 	ShellChainSpec::from_json_bytes(&include_bytes!("../res/integritee-polkadot.json")[..])
 }
 
-pub fn shell_moonbase_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../res/integritee-moonbase.json")[..])
+pub fn integritee_moonbase_config() -> Result<IntegriteeChainSpec, String> {
+	IntegriteeChainSpec::from_json_bytes(&include_bytes!("../res/integritee-moonbase.json")[..])
 }
 
 impl ToString for RelayChain {
