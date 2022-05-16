@@ -1,6 +1,5 @@
 {
-  "bootNodes": [
-  ],
+  "bootNodes": [],
   "chainType": "Live",
   "codeSubstitutes": {},
   "genesis": {
@@ -37,8 +36,8 @@
       }
     }
   },
-  "id": "integritee-moonbase",
-  "name": "integritee-moonbase-alpha ",
+  "name": "Integritee Network (Moonbase)",
+  "id": "integritee-westend_moonbase_relay_testnet",
   "para_id": 2015,
   "properties": {
     "ss58Format": 13,
