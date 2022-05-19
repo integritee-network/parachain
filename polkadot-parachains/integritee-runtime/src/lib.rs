@@ -648,7 +648,7 @@ impl pallet_democracy::Config for Runtime {
 	/// Majority of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = EnsureRootOrMoreThanHalfTechnicalCommittee;
-	type InstantOrigin = EnsureRootOrAllTechnicalCommittee;
+	type InstantOrigin = EnsureRootOrMoreThanHalfTechnicalCommittee;
 	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed.
