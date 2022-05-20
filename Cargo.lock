@@ -3650,7 +3650,6 @@ dependencies = [
  "pallet-proxy",
  "pallet-randomness-collective-flip",
  "pallet-scheduler",
- "pallet-sudo",
  "pallet-teeracle",
  "pallet-teerex",
  "pallet-timestamp",
