@@ -116,8 +116,6 @@ pub struct Cli {
 	#[clap(long)]
 	pub no_hardware_benchmarks: bool,
 
-
-
 	/// Relay chain arguments
 	#[clap(raw = true, conflicts_with = "relay-chain-rpc-url")]
 	pub relaychain_args: Vec<String>,
