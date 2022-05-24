@@ -20,6 +20,7 @@
 
 use std::sync::Arc;
 
+use jsonrpsee::RpcModule;
 use sc_client_api::AuxStore;
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use sc_transaction_pool_api::TransactionPool;
@@ -30,7 +31,7 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use parachains_common::{AccountId, Balance, Block, Index as Nonce};
 
 /// A type representing all RPC extensions.
-pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
+pub type RpcExtension = RpcModule<()>;
 
 /// Full client dependencies
 pub struct FullDeps<C, P> {
@@ -57,14 +58,14 @@ where
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + Sync + Send + 'static,
 {
-	use frame_rpc_system::{FullSystem, SystemApi};
-	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
+	use frame_rpc_system::{SystemApiServer, SystemRpc};
+	use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
 
-	let mut io = jsonrpc_core::IoHandler::default();
+	let mut io = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe } = deps;
 
-	io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool, deny_unsafe)));
-	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
+	io.merge(SystemRpc::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	io.merge(TransactionPaymentRpc::new(client.clone()).into_rpc())?;
 
 	io
 }
