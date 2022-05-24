@@ -61,11 +61,10 @@ where
 	use frame_rpc_system::{SystemApiServer, SystemRpc};
 	use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
 
-	let mut io = RpcModule::new(());
+	let mut module = RpcExtension::new(());
 	let FullDeps { client, pool, deny_unsafe } = deps;
 
-	io.merge(SystemRpc::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
-	io.merge(TransactionPaymentRpc::new(client.clone()).into_rpc())?;
-
-	io
+	module.merge(SystemRpc::new(client.clone(), pool, deny_unsafe).into_rpc())?;
+	module.merge(TransactionPaymentRpc::new(client.clone()).into_rpc())?;
+	Ok(module)
 }
