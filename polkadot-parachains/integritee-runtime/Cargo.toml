@@ -54,8 +54,10 @@ pallet-utility = { git = "https://github.com/paritytech/substrate.git", default-
 
 # integritee pallets
 pallet-claims = { git = "https://github.com/integritee-network/pallets.git", default-features = false, branch = "polkadot-v0.9.22" }
+pallet-sidechain = { git = "https://github.com/integritee-network/pallets.git", default-features = false, branch = "polkadot-v0.9.22" }
 pallet-teerex = { git = "https://github.com/integritee-network/pallets.git", default-features = false, branch = "polkadot-v0.9.22" }
 pallet-teeracle = { git = "https://github.com/integritee-network/pallets.git", default-features = false, branch = "polkadot-v0.9.22" }
+
 
 # Cumulus dependencies
 cumulus-pallet-aura-ext = { git = "https://github.com/paritytech/cumulus",  branch = "polkadot-v0.9.22", default-features = false }
@@ -150,6 +152,7 @@ std = [
 	"orml-xcm/std",
 	# Integritee
 	"pallet-claims/std",
+	"pallet-sidechain/std",
 	"pallet-teeracle/std",
 	"pallet-teerex/std",
 ]
@@ -170,6 +173,7 @@ runtime-benchmarks = [
 	"pallet-multisig/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
+	"pallet-sidechain/runtime-benchmarks",
 	"pallet-teeracle/runtime-benchmarks",
 	"pallet-teerex/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
