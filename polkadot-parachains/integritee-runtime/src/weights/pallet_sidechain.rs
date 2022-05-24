@@ -26,7 +26,7 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions for `pallet_teerex`.
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Config> pallet_teerex::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> pallet_sidechain::WeightInfo for WeightInfo<T> {
 	// Storage: Teerex EnclaveIndex (r:1 w:0)
 	// Storage: Teerex EnclaveRegistry (r:1 w:0)
 	// Storage: Teerex WorkerForShard (r:0 w:1)
