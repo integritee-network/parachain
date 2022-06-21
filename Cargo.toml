@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-	"polkadot-parachains",
-    "polkadot-parachains/integritee-runtime",
-	"polkadot-parachains/shell-runtime",
-	"polkadot-parachains/parachains-common",
+	"parachains",
+    "parachains/integritee-runtime",
+	"parachains/shell-runtime",
+	"parachains/common",
 ]
 
 [profile.release]

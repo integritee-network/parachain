@@ -29,7 +29,7 @@ trie-root = "0.15.2"
 
 # Parachain runtimes
 parachain-runtime = { package = "integritee-runtime", path = "integritee-runtime" }
-parachains-common = { path = "parachains-common" }
+common = { path = "common" }
 shell-runtime = { package = "shell-runtime", path = "shell-runtime" }
 
 # Substrate dependencies
