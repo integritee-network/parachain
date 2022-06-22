@@ -28,7 +28,7 @@ SPECS = [
     "integritee-moonbase",
 ]
 COLLATOR = "target/release/integritee-collator"
-RES_DIR = "polkadot-parachains/chain-specs"
+RES_DIR = "parachains/chain-specs"
 
 
 def main(regenesis: bool):

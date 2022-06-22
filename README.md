@@ -21,9 +21,9 @@ All polkadot launch scripts can be found in the [polkadot-launch](/polkadot-laun
 Follow the steps provided in https://docs.substrate.io/tutorials/v3/cumulus/start-relay/
 
 But keep the following in mind:
-- Our chain has a paraid of 2015 on Rococo and Kusama (see [polkadot-parachains/src/command.rs#44-49](/polkadot-parachains/src/command.rs#44-49))
+- Our chain has a paraid of 2015 on Rococo and Kusama (see [parachains/src/command.rs#44-49](/parachains/src/command.rs#44-49))
 - For testing on rococo-local use the chain spec `integritee-rococo-local-dev`
-- More chain specs can be found in [polkadot-parachains/src/command.rs](/polkadot-parachains/src/command.rs)
+- More chain specs can be found in [parachains/src/command.rs](/parachains/src/command.rs)
 
 ## Runtime upgrade
 Two runtimes are contained in this repository. First, the shell-runtime, which has been extended compared to the upstream shell-runtime. It has some additional modules including sudo to facilitate a

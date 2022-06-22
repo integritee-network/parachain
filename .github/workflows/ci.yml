@@ -153,7 +153,7 @@ jobs:
         uses: chevdor/srtool-actions@v0.4.0
         with:
           chain: ${{ matrix.runtime }}
-          runtime_dir: polkadot-parachains/${{ matrix.runtime }}-runtime
+          runtime_dir: parachains/${{ matrix.runtime }}-runtime
 
       - name: Summary
         run: |
