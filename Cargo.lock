@@ -3407,7 +3407,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.5.27"
+version = "1.5.28"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -3489,7 +3489,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-runtime"
-version = "1.5.23"
+version = "1.5.24"
 dependencies = [
  "common",
  "cumulus-pallet-aura-ext",
