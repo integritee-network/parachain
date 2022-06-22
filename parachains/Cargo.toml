@@ -14,16 +14,16 @@ name = "integritee-collator"
 path = "src/main.rs"
 
 [dependencies]
-async-trait = "0.1.42"
+async-trait = "0.1.53"
 codec = { package = "parity-scale-codec", version = "3.0.0" }
 clap = { version = "3.1", features = ["derive"] }
 derive_more = "0.15.0"
 exit-future = "0.1.4"
 futures = { version = "0.3.1", features = ["compat"] }
 hex-literal = "0.3.4"
-log = "0.4.8"
+log = "0.4.17"
 parking_lot = "0.12.0"
-serde = { version = "1.0.132", features = ["derive"] }
+serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.64"
 trie-root = "0.15.2"
 
@@ -68,7 +68,7 @@ substrate-prometheus-endpoint = { git = "https://github.com/paritytech/substrate
 
 # RPC related dependencies
 jsonrpsee = { version = "0.13.1", features = ["server"] }
-frame-rpc-system = { package = "substrate-frame-rpc-system", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24" }
+substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24" }
 sc-transaction-pool-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24" }
 
