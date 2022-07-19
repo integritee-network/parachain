@@ -14,18 +14,14 @@ name = "integritee-collator"
 path = "src/main.rs"
 
 [dependencies]
-async-trait = "0.1.53"
+async-trait = "0.1.56"
+clap = { version = "3.2.6", features = ["derive", "deprecated"] }
 codec = { package = "parity-scale-codec", version = "3.0.0" }
-clap = { version = "3.1", features = ["derive"] }
-derive_more = "0.15.0"
-exit-future = "0.1.4"
-futures = { version = "0.3.1", features = ["compat"] }
+futures = "0.3.21"
 hex-literal = "0.3.4"
 log = "0.4.17"
-parking_lot = "0.12.0"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.64"
-trie-root = "0.15.2"
 
 # Parachain runtimes
 parachain-runtime = { package = "integritee-runtime", path = "integritee-runtime" }
@@ -67,8 +63,8 @@ sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch 
 substrate-prometheus-endpoint = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
 
 # RPC related dependencies
-jsonrpsee = { version = "0.13.1", features = ["server"] }
-substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+jsonrpsee = { version = "0.14.0", features = ["server"] }
+frame-rpc-system = { package = "substrate-frame-rpc-system", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
 sc-transaction-pool-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
 
@@ -86,11 +82,11 @@ cumulus-relay-chain-inprocess-interface = { git = "https://github.com/paritytech
 cumulus-relay-chain-rpc-interface = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.26" }
 
 # Polkadot dependencies
-xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.26" }
 polkadot-cli = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.26" }
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.26" }
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.26" }
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.26" }
+xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.26" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
@@ -98,9 +94,7 @@ substrate-build-script-utils = { git = "https://github.com/paritytech/substrate"
 [dev-dependencies]
 assert_cmd = "2.0"
 nix = "0.24"
-rand = "0.7.3"
-tempfile = "3.2.0"
-tokio = { version = "1.18.0", features = ["macros"] }
+tempfile = "3.3.0"
 
 # Substrate dependencies
 pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
