@@ -15,7 +15,7 @@ codec = { package = 'parity-scale-codec', version = '3.0.0', features = ['derive
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 
 # dependencies not existing upstream
-smallvec = "1.6.1"
+smallvec = "1.9.0"
 
 # Substrate dependencies
 sp-consensus-aura = { default-features = false, git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.27" }
