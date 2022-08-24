@@ -897,7 +897,7 @@ dependencies = [
 [[package]]
 name = "claims-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "parity-scale-codec",
  "rustc-hex",
@@ -1019,7 +1019,7 @@ dependencies = [
 [[package]]
 name = "common-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "sp-std",
 ]
@@ -1087,9 +1087,9 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1079fb8528d9f9c888b1e8aa651e6e079ade467323d58f75faf1d30b1808f540"
+checksum = "dc948ebb96241bb40ab73effeb80d9f93afaad49359d159a5e61be51619fe813"
 dependencies = [
  "libc",
 ]
@@ -3142,7 +3142,7 @@ dependencies = [
 [[package]]
 name = "ias-verify"
 version = "0.1.4"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "base64",
  "chrono",
@@ -5373,7 +5373,7 @@ dependencies = [
 [[package]]
 name = "pallet-claims"
 version = "0.9.12"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "claims-primitives",
  "frame-benchmarking",
@@ -5835,7 +5835,7 @@ dependencies = [
 [[package]]
 name = "pallet-sidechain"
 version = "0.9.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5931,7 +5931,7 @@ dependencies = [
 [[package]]
 name = "pallet-teeracle"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5954,7 +5954,7 @@ dependencies = [
 [[package]]
 name = "pallet-teerex"
 version = "0.9.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -9789,7 +9789,7 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 [[package]]
 name = "sidechain-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -10655,9 +10655,9 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "ss58-registry"
-version = "1.27.0"
+version = "1.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d04c6bfb58842576a5ea01b2ba9852d3d74d212d2ad5403f2789017f7db7848"
+checksum = "1c8a1e645fa0bd3e81a90e592a677f7ada3182ac338c4a71cd9ec0ba911f6abb"
 dependencies = [
  "Inflector",
  "num-format",
@@ -11004,7 +11004,7 @@ checksum = "c02424087780c9b71cc96799eaeddff35af2bc513278cda5c99fc1f5d026d3c1"
 [[package]]
 name = "teeracle-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "common-primitives",
  "sp-std",
@@ -11014,7 +11014,7 @@ dependencies = [
 [[package]]
 name = "teerex-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "ias-verify",
  "parity-scale-codec",
@@ -11057,7 +11057,7 @@ checksum = "507e9898683b6c43a9aa55b64259b721b52ba226e0f3779137e50ad114a4c90b"
 [[package]]
 name = "test-utils"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=tn/polkadot-v0.9.27#056df4fe625db17bc682986c62e87c6edf921ddb"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.27#fb6978fa96a71febff63a780b5f31db328c2b1e4"
 dependencies = [
  "hex-literal",
  "log",
