@@ -267,7 +267,7 @@ impl pallet_xcm::Config for Runtime {
 	type SendXcmOrigin = EnsureXcmOrigin<Origin, ()>; //We want to disallow users sending (arbitrary) XCMs from this chain
 	type XcmRouter = XcmRouter;
 	type ExecuteXcmOrigin = EnsureXcmOrigin<Origin, LocalOriginToLocation>; // Allow any local origin in XCM execution.
-	type XcmExecuteFilter = Nothing; // but disallow generic XCM execution. As a result only teleports and reserve transfers can be allowed.
+	type XcmExecuteFilter = Nothing; // Disable generic XCM execution. This does not affect Teleport or Reserve Transfer.
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Nothing; // Do not allow teleports
 	type XcmReserveTransferFilter = Everything; // Transfer are allowed
