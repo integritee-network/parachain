@@ -276,11 +276,9 @@ fn shell_genesis_config(
 
 pub enum RelayChain {
 	RococoLocal,
-	WestendLocal,
 	KusamaLocal,
 	PolkadotLocal,
 	Rococo,
-	Westend,
 	Kusama,
 	Polkadot,
 	Moonbase,
@@ -308,11 +306,9 @@ impl ToString for RelayChain {
 	fn to_string(&self) -> String {
 		match self {
 			RelayChain::RococoLocal => "rococo-local".into(),
-			RelayChain::WestendLocal => "westend-local".into(),
 			RelayChain::KusamaLocal => "kusama-local".into(),
 			RelayChain::PolkadotLocal => "polkadot-local".into(),
 			RelayChain::Rococo => "rococo".into(),
-			RelayChain::Westend => "westend".into(),
 			RelayChain::Kusama => "kusama".into(),
 			RelayChain::Polkadot => "polkadot".into(),
 			RelayChain::Moonbase => "westend_moonbase_relay_testnet".into(),
@@ -324,11 +320,9 @@ impl RelayChain {
 	fn chain_type(&self) -> ChainType {
 		match self {
 			RelayChain::RococoLocal => ChainType::Local,
-			RelayChain::WestendLocal => ChainType::Local,
 			RelayChain::KusamaLocal => ChainType::Local,
 			RelayChain::PolkadotLocal => ChainType::Local,
 			RelayChain::Rococo => ChainType::Live,
-			RelayChain::Westend => ChainType::Live,
 			RelayChain::Kusama => ChainType::Live,
 			RelayChain::Polkadot => ChainType::Live,
 			RelayChain::Moonbase => ChainType::Live,
@@ -337,11 +331,9 @@ impl RelayChain {
 	fn protocol_id(&self) -> &str {
 		match self {
 			RelayChain::RococoLocal => "teer-rl",
-			RelayChain::WestendLocal => "teer-wl",
 			RelayChain::KusamaLocal => "teer-kl",
 			RelayChain::PolkadotLocal => "teer-pl",
 			RelayChain::Rococo => "teer-r",
-			RelayChain::Westend => "teer-w",
 			RelayChain::Kusama => "teer-k",
 			RelayChain::Polkadot => "teer-p",
 			RelayChain::Moonbase => "teer-m",

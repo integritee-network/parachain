@@ -17,9 +17,6 @@ mkdir -p ${DUMP_DIR}
 chainspecs=("integritee-rococo-local" \
       "integritee-rococo-local-dev" \
       "integritee-rococo" \
-      "integritee-westend-local" \
-      "integritee-westend-local-dev" \
-      "integritee-westend" \
       "integritee-kusama-local" \
       "integritee-kusama-local-dev" \
       "integritee-kusama" \
@@ -29,8 +26,6 @@ chainspecs=("integritee-rococo-local" \
       "integritee-moonbase" \
       "shell-rococo-local" \
       "shell-rococo-local-dev" \
-      "shell-westend-local" \
-      "shell-westend-local-dev" \
       "shell-kusama-local" \
       "shell-kusama-local-dev" \
       "shell-polkadot-local" \

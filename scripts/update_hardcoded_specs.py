@@ -22,7 +22,6 @@ import subprocess
 
 SPECS = [
     "integritee-rococo",
-    "integritee-westend",
     "integritee-kusama",
     "integritee-polkadot",
     "integritee-moonbase",
