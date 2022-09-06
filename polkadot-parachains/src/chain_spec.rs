@@ -290,10 +290,6 @@ pub fn shell_rococo_config() -> Result<ShellChainSpec, String> {
 	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-rococo.json")[..])
 }
 
-pub fn shell_westend_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-westend.json")[..])
-}
-
 pub fn shell_kusama_config() -> Result<ShellChainSpec, String> {
 	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-kusama.json")[..])
 }
