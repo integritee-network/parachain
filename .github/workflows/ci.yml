@@ -228,7 +228,10 @@ jobs:
       fail-fast: false
       matrix:
         chain: [integritee]
-        config: [rococo, westend, kusama, polkadot, moonbase, shell-kusama-lease2]
+        config: [rococo, westend, kusama, polkadot, moonbase]
+        include:
+          - chain: shell
+            config: kusama-lease2
     steps:
       - name: Checkout
         uses: actions/checkout@v3
