@@ -1,12 +1,12 @@
 [package]
-name = 'shell-runtime'
+name = "shell-runtime"
 description = "The Integritee shell parachain runtime"
 # major.minor revision must match collator node. patch should match spec_version
-version = '1.5.4'
+version = "1.5.4"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
-edition = '2021'
+edition = "2021"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }

@@ -1,12 +1,12 @@
 [package]
-name = 'integritee-runtime'
+name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # patch revision must match runtime spec_version
-version = '1.5.26'
+version = "1.5.26"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
-edition = '2021'
+edition = "2021"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }

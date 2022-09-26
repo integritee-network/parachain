@@ -29,8 +29,8 @@ parachain-runtime = { package = "integritee-runtime", path = "integritee-runtime
 shell-runtime = { package = "shell-runtime", path = "shell-runtime" }
 
 # Substrate dependencies
-frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.27" }
-frame-benchmarking-cli = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.27" }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
+frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
 sc-chain-spec = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
 sc-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
@@ -106,8 +106,8 @@ default = []
 # allow workers to register without remote attestation for dev purposes
 skip-ias-check = ["parachain-runtime/skip-ias-check"]
 runtime-benchmarks = [
-    'polkadot-service/runtime-benchmarks',
-    'parachain-runtime/runtime-benchmarks',
+    "polkadot-service/runtime-benchmarks",
+    "parachain-runtime/runtime-benchmarks",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",
