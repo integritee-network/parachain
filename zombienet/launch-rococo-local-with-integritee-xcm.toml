@@ -54,14 +54,15 @@ name = "acala-collator01"
 command = "../../bin/acala"
 ws_port = 9984
 
-[[hrmpChannels]]
-sender =2015
+[[hrmp_channels]]
+sender = 2015
 recipient = 2000
-maxCapacity = 8
-maxMessageSize = 1024
+max_capacity = 8
+max_message_size = 512
 
-[[hrmpChannels]]
-sender =2000
+[[hrmp_channels]]
+sender = 2000
 recipient = 2015
-maxCapacity = 8
-maxMessageSize = 1024
+max_capacity = 8
+max_message_size = 512
+
