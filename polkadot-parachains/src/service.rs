@@ -47,7 +47,7 @@ use sc_consensus::{
 	BlockImportParams,
 };
 use sc_executor::WasmExecutor;
-use sc_network::NetworkService;
+use sc_network::{NetworkBlock, NetworkService};
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sp_api::{ApiExt, ConstructRuntimeApi};

@@ -463,10 +463,10 @@ impl CliConfiguration<Self> for RelayChainCli {
 	}
 
 	fn base_path(&self) -> Result<Option<BasePath>> {
-		Ok(self
-			.shared_params()
-			.base_path()
-			.or_else(|| self.base_path.clone().map(Into::into)))
+		match &self.shared_params().base_path {
+			Some(path) => Ok(Some(BasePath::new(path))),
+			None => Ok(self.base_path.clone().map(Into::into)),
+		}
 	}
 
 	fn rpc_http(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
