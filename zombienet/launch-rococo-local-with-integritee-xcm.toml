@@ -42,7 +42,6 @@ name = "integritee-collator02"
 command = "./target/release/integritee-collator"
 ws_port = 9995
 
-#this is not working !!!
 [[parachains]]
 id = 2000
 addToGenesis = true
