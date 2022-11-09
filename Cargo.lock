@@ -908,7 +908,7 @@ dependencies = [
 [[package]]
 name = "claims-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "parity-scale-codec",
  "rustc-hex",
@@ -1030,7 +1030,7 @@ dependencies = [
 [[package]]
 name = "common-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "sp-std",
 ]
@@ -2237,15 +2237,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "failure"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d32e9bd16cc02eae7db7ef620b392808b89f6a5e16bb3497d159c6b92a0f4f86"
-dependencies = [
- "backtrace",
-]
-
-[[package]]
 name = "fake-simd"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3173,7 +3164,7 @@ dependencies = [
 [[package]]
 name = "ias-verify"
 version = "0.1.4"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "base64",
  "chrono",
@@ -3956,7 +3947,7 @@ dependencies = [
  "prost",
  "prost-build",
  "rand 0.8.5",
- "ring 0.16.20",
+ "ring 0.16.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "rw-stream-sink",
  "sha2 0.10.2",
  "smallvec",
@@ -5410,7 +5401,7 @@ dependencies = [
 [[package]]
 name = "pallet-claims"
 version = "0.9.12"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "claims-primitives",
  "frame-benchmarking",
@@ -5872,7 +5863,7 @@ dependencies = [
 [[package]]
 name = "pallet-sidechain"
 version = "0.9.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5968,7 +5959,7 @@ dependencies = [
 [[package]]
 name = "pallet-teeracle"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5991,7 +5982,7 @@ dependencies = [
 [[package]]
 name = "pallet-teerex"
 version = "0.9.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7807,7 +7798,7 @@ dependencies = [
  "prost-types",
  "regex",
  "tempfile",
- "which 4.2.5",
+ "which",
 ]
 
 [[package]]
@@ -8169,19 +8160,6 @@ dependencies = [
 
 [[package]]
 name = "ring"
-version = "0.16.9"
-source = "git+https://github.com/scs/webpki-nostd.git#935d31c36fa9b6d55a3226572eaf2b3ded7cf437"
-dependencies = [
- "cc",
- "libc",
- "spin",
- "untrusted",
- "which 3.1.1",
- "winapi",
-]
-
-[[package]]
-name = "ring"
 version = "0.16.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3053cf52e236a3ed746dfc745aa9cacf1b791d846bdaf412f60a8d7d6e17c8fc"
@@ -8192,6 +8170,19 @@ dependencies = [
  "spin",
  "untrusted",
  "web-sys",
+ "winapi",
+]
+
+[[package]]
+name = "ring"
+version = "0.16.20"
+source = "git+https://github.com/integritee-network/ring.git?branch=integritee-adjustments#f663efa6478785a4a74d9de2684034ea7cabf29f"
+dependencies = [
+ "cc",
+ "libc",
+ "once_cell",
+ "spin",
+ "untrusted",
  "winapi",
 ]
 
@@ -8382,7 +8373,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5aab8ee6c7097ed6057f43c187a62418d0c05a4bd5f18b3571db50ee0f9ce033"
 dependencies = [
  "log",
- "ring 0.16.20",
+ "ring 0.16.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "sct",
  "webpki 0.22.0",
 ]
@@ -9537,7 +9528,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d53dcdb7c9f8158937a7981b48accfd39a43af418591a5d008c7b22b5e1b7ca4"
 dependencies = [
- "ring 0.16.20",
+ "ring 0.16.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "untrusted",
 ]
 
@@ -9824,7 +9815,7 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 [[package]]
 name = "sidechain-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9935,7 +9926,7 @@ dependencies = [
  "chacha20poly1305",
  "curve25519-dalek 4.0.0-pre.1",
  "rand_core 0.6.3",
- "ring 0.16.20",
+ "ring 0.16.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc_version 0.4.0",
  "sha2 0.10.2",
  "subtle",
@@ -11040,7 +11031,7 @@ checksum = "c02424087780c9b71cc96799eaeddff35af2bc513278cda5c99fc1f5d026d3c1"
 [[package]]
 name = "teeracle-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "common-primitives",
  "sp-std",
@@ -11050,7 +11041,7 @@ dependencies = [
 [[package]]
 name = "teerex-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "ias-verify",
  "parity-scale-codec",
@@ -11093,7 +11084,7 @@ checksum = "507e9898683b6c43a9aa55b64259b721b52ba226e0f3779137e50ad114a4c90b"
 [[package]]
 name = "test-utils"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.29#7ed394541f6770e72267ca6496b42d7ee3015570"
+source = "git+https://github.com/integritee-network/pallets.git?branch=tn/switch-to-newer-ring-fork#a12ae32fddfd0c5e35db0a54e2140fb3dcdde722"
 dependencies = [
  "hex-literal",
  "log",
@@ -12046,10 +12037,10 @@ dependencies = [
 [[package]]
 name = "webpki"
 version = "0.21.0"
-source = "git+https://github.com/scs/webpki-nostd.git#935d31c36fa9b6d55a3226572eaf2b3ded7cf437"
+source = "git+https://github.com/scs/webpki-nostd.git?branch=tn/switch-to-newer-ring-fork#e278fd31748f517acbaabf22c56b12c45f1d65af"
 dependencies = [
- "ring 0.16.20",
- "ring 0.16.9",
+ "ring 0.16.20 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ring 0.16.20 (git+https://github.com/integritee-network/ring.git?branch=integritee-adjustments)",
  "untrusted",
 ]
 
@@ -12059,7 +12050,7 @@ version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f095d78192e208183081cc07bc5515ef55216397af48b873e5edcd72637fa1bd"
 dependencies = [
- "ring 0.16.20",
+ "ring 0.16.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "untrusted",
 ]
 
@@ -12180,16 +12171,6 @@ dependencies = [
  "polkadot-runtime-common",
  "smallvec",
  "sp-runtime",
-]
-
-[[package]]
-name = "which"
-version = "3.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d011071ae14a2f6671d0b74080ae0cd8ebf3a6f8c9589a2cd45f23126fe29724"
-dependencies = [
- "failure",
- "libc",
 ]
 
 [[package]]
