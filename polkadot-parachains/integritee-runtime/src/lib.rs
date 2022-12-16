@@ -800,6 +800,7 @@ mod benches {
 		[pallet_collective, TechnicalCommittee]
 		[pallet_democracy, Democracy]
 		[pallet_multisig, Multisig]
+		[pallet_preimage, Preimage]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
 		[pallet_sidechain, Sidechain]
