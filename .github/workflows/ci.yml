@@ -73,6 +73,11 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ env.RUST_BIN_DIR }}-${{ matrix.binary }}
 
+      - name: Install protobuf
+          run: |
+            sudo apt update
+            sudo apt install --assume-yes protobuf-compiler
+
       - name: Release
         if: ${{ matrix.binary == 'release' }}
         run: cargo build --release
