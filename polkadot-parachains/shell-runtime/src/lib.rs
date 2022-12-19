@@ -132,17 +132,17 @@ parameter_types! {
 	pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
 		.base_block(BlockExecutionWeight::get())
 		.for_class(DispatchClass::all(), |weights| {
-			weights.base_extrinsic = ExtrinsicBaseWeight::get();
+			weights.base_extrinsic = ExtrinsicBaseWeight::get().set_proof_size(u64::MAX);
 		})
 		.for_class(DispatchClass::Normal, |weights| {
-			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+			weights.max_total = Some((NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT).set_proof_size(u64::MAX));
 		})
 		.for_class(DispatchClass::Operational, |weights| {
-			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT.into());
 			// Operational transactions have some extra reserved space, so that they
 			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
 			weights.reserved = Some(
-				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+				(MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT).set_proof_size(u64::MAX)
 			);
 		})
 		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
