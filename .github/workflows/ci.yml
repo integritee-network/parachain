@@ -17,7 +17,7 @@ on:
 
 env:
   VERBOSE: ${{ github.events.input.verbose }}
-  SUBWASM_VERSION: 0.17.0
+  SUBWASM_VERSION: 0.18.0
 
 
 jobs:
