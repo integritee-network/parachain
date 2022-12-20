@@ -48,7 +48,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
         rust: [stable]
         binary: [release]
     env:
@@ -202,6 +202,16 @@ jobs:
           echo "Compact Runtime: ${{ steps.srtool_build.outputs.wasm }}"
           echo "Compressed Runtime: ${{ steps.srtool_build.outputs.wasm_compressed }}"
 
+      # It takes a while to build the runtime, so let's save the artifact as soon as we have it.
+      - name: Archive Artifacts for ${{ matrix.runtime }}
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
+        with:
+          name: ${{ matrix.runtime }}-runtime
+          path: |
+            ${{ steps.srtool_build.outputs.wasm }}
+            ${{ steps.srtool_build.outputs.wasm_compressed }}
+            ${{ matrix.runtime }}-srtool-digest.json
+
       # We now get extra information thanks to subwasm
       - name: Install subwasm
         run: |
@@ -230,25 +240,15 @@ jobs:
 #          subwasm diff ${{ steps.srtool_build.outputs.wasm }} --chain-b ${{ matrix.chain }} > ${{ matrix.chain }}-diff.txt
 #          cat ${{ matrix.chain }}-diff.txt
 
-      - name: Upload ${{ matrix.runtime }} srtool json
-        uses: actions/upload-artifact@v2
+      - name: Archive Subwasm results
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
         with:
           name: ${{ matrix.runtime }}-srtool-json-${{ github.sha }}
           path: |
-            ${{ matrix.runtime }}-srtool-digest.json
             ${{ matrix.runtime }}-info.json
             ${{ matrix.runtime }}-compressed-info.json
             ${{ matrix.runtime }}-metadata.json
-#            ${{ matrix.runtime }}-diff.txt
-
-
-      - name: Upload ${{ matrix.runtime }} runtime
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
-          path: |
-            ${{ steps.srtool_build.outputs.wasm }}
-            ${{ steps.srtool_build.outputs.wasm_compressed }}
+            ${{ matrix.runtime }}-diff.txt
 
       - name: Slack Notification
         uses: 8398a7/action-slack@v3
@@ -294,7 +294,7 @@ jobs:
           sha256sum ${{ env.CHAIN_SPEC }}.json >> checksums.txt
 
       - name: Upload ${{ env.CHAIN_SPEC }} Files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
         with:
           name: ${{ env.CHAIN_SPEC }}-${{ github.sha }}
           path: |
