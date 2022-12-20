@@ -138,7 +138,7 @@ parameter_types! {
 			weights.max_total = Some((NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT).set_proof_size(u64::MAX));
 		})
 		.for_class(DispatchClass::Operational, |weights| {
-			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT.into());
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT.set_proof_size(u64::MAX));
 			// Operational transactions have some extra reserved space, so that they
 			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
 			weights.reserved = Some(
