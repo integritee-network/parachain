@@ -206,7 +206,7 @@ jobs:
       - name: Archive Artifacts for ${{ matrix.runtime }}
         uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
         with:
-          name: ${{ matrix.runtime }}-runtime
+          name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
           path: |
             ${{ steps.srtool_build.outputs.wasm }}
             ${{ steps.srtool_build.outputs.wasm_compressed }}
