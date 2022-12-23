@@ -110,7 +110,7 @@ jobs:
         rust: [stable]
         rust-target: [x86_64-unknown-linux-gnu]
 #        check: [fmt --all -- --check, clippy -- -D warnings]
-        check: [fmt --all -- --check] # skip clippy for now
+        check: [fmt --all -- --check, check --features runtime-benchmarks] # skip clippy for now
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
