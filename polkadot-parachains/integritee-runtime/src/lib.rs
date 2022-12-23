@@ -65,7 +65,8 @@ use frame_system::{
 pub use parachains_common as common;
 use parachains_common::{
 	opaque, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Signature,
-	AVERAGE_ON_INITIALIZE_RATIO, HOURS, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+	AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES, NORMAL_DISPATCH_RATIO,
+	SLOT_DURATION,
 };
 
 pub use pallet_balances::Call as BalancesCall;
@@ -89,7 +90,6 @@ pub mod xcm_config;
 
 pub type SessionHandlers = ();
 
-// added by integritee
 impl_opaque_keys! {
 	pub struct SessionKeys {
 		pub aura: Aura,
@@ -107,14 +107,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	transaction_version: 3,
 	state_version: 0,
 };
-
-pub const MILLISECS_PER_BLOCK: u64 = 12000;
-
-pub const EPOCH_DURATION_IN_BLOCKS: u32 = 10 * MINUTES;
-
-// These time units are defined in number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-pub const DAYS: BlockNumber = HOURS * 24;
 
 pub const TEER: Balance = 1_000_000_000_000;
 pub const MILLITEER: Balance = 1_000_000_000;
@@ -661,7 +653,7 @@ impl orml_xcm::Config for Runtime {
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
-construct_runtime! {
+construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
 		NodeBlock = opaque::Block,
@@ -712,11 +704,10 @@ construct_runtime! {
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
 	}
-}
+);
 
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
-/// Block header type as expected by this runtime.
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// A Block signed with a Justification
