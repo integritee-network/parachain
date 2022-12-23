@@ -15,7 +15,7 @@ parachain-info = { default-features = false, git = "https://github.com/paritytec
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 serde = { version = "1.0.140", default-features = false, optional = true, features = ["derive"] }
 
-common = { path = "../common", default-features = false }
+parachains-common = { path = "../common", default-features = false }
 
 # Substrate dependencies
 sp-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
@@ -135,7 +135,7 @@ std = [
     "pallet-utility/std",
     "pallet-xcm/std",
     "parachain-info/std",
-    "common/std",
+    "parachains-common/std",
     "cumulus-pallet-aura-ext/std",
     "cumulus-pallet-dmp-queue/std",
     "cumulus-pallet-parachain-system/std",

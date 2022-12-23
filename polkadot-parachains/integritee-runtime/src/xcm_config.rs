@@ -23,7 +23,6 @@ use super::{
 	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, XcmpQueue, TEER,
 };
 use codec::{Decode, Encode, MaxEncodedLen};
-use common::xcm_config::{DenyReserveTransferToRelayChain, DenyThenTry};
 use core::marker::PhantomData;
 use frame_support::{
 	pallet_prelude::Get,
@@ -39,6 +38,7 @@ use orml_traits::{
 };
 use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
+use parachains_common::xcm_config::{DenyReserveTransferToRelayChain, DenyThenTry};
 use polkadot_parachain::primitives::Sibling;
 use scale_info::TypeInfo;
 use sp_std::{

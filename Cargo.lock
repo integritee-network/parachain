@@ -952,32 +952,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "common"
-version = "1.4.0"
-dependencies = [
- "frame-executive",
- "frame-support",
- "frame-system",
- "pallet-assets",
- "pallet-authorship",
- "pallet-balances",
- "parity-scale-codec",
- "polkadot-core-primitives",
- "polkadot-primitives",
- "polkadot-runtime-common",
- "scale-info",
- "smallvec",
- "sp-consensus-aura",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "substrate-wasm-builder",
- "xcm",
- "xcm-executor",
-]
-
-[[package]]
 name = "common-primitives"
 version = "0.1.0"
 source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.36#77f9998ad4ec10e508f9d9761aec38139d47235e"
@@ -3392,7 +3366,6 @@ dependencies = [
  "assert_cmd",
  "async-trait",
  "clap",
- "common",
  "cumulus-client-cli",
  "cumulus-client-consensus-aura",
  "cumulus-client-consensus-common",
@@ -3415,6 +3388,7 @@ dependencies = [
  "nix 0.25.1",
  "pallet-sudo",
  "pallet-transaction-payment-rpc",
+ "parachains-common",
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
@@ -3470,7 +3444,6 @@ dependencies = [
 name = "integritee-runtime"
 version = "1.5.27"
 dependencies = [
- "common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -3513,6 +3486,7 @@ dependencies = [
  "pallet-vesting",
  "pallet-xcm",
  "parachain-info",
+ "parachains-common",
  "parity-scale-codec",
  "polkadot-parachain",
  "scale-info",
@@ -6335,6 +6309,32 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
+]
+
+[[package]]
+name = "parachains-common"
+version = "1.4.0"
+dependencies = [
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "pallet-assets",
+ "pallet-authorship",
+ "pallet-balances",
+ "parity-scale-codec",
+ "polkadot-core-primitives",
+ "polkadot-primitives",
+ "polkadot-runtime-common",
+ "scale-info",
+ "smallvec",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "substrate-wasm-builder",
+ "xcm",
+ "xcm-executor",
 ]
 
 [[package]]
