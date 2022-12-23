@@ -123,6 +123,11 @@ jobs:
       - name: Setup Rust toolchain
         run: rustup show
 
+      - name: Install protobuf
+        run: |
+          sudo apt update
+          sudo apt install --assume-yes protobuf-compiler
+
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.rust-target }}-${{ matrix.check }}
