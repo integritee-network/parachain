@@ -282,19 +282,20 @@ impl pallet_xcm::Config for Runtime {
 }
 
 parameter_types! {
-    pub const IntegriteeKsmParaId: u32 = 2015;
-    pub const ShellRuntimeParaId: u32 = 2223;
-    pub const WeightForParaSwap: XcmWeight = 10_000_000_000;
+	pub const IntegriteeKsmParaId: u32 = 2015;
+	pub const ShellRuntimeParaId: u32 = 2223;
+	pub const WeightForParaSwap: XcmWeight = 10_000_000_000;
 }
 
 impl pallet_xcm_transactor::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RelayCallBuilder = RelayCallBuilder;
-    type XcmSender = XcmRouter;
-    type ShellRuntimeParaId = ShellRuntimeParaId;
-    type IntegriteeKsmParaId = IntegriteeKsmParaId;
-    type WeightForParaSwap = WeightForParaSwap;
-    type WeightInfo = ();
+	type RuntimeEvent = RuntimeEvent;
+	type RelayCallBuilder = RelayCallBuilder;
+	type XcmSender = XcmRouter;
+	type SwapOrigin = EnsureRoot<AccountId>;
+	type ShellRuntimeParaId = ShellRuntimeParaId;
+	type IntegriteeKsmParaId = IntegriteeKsmParaId;
+	type WeightForParaSwap = WeightForParaSwap;
+	type WeightInfo = ();
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {

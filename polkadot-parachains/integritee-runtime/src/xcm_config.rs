@@ -19,8 +19,9 @@
 //!
 
 use super::{
-	AccountId, Balance, Balances, Convert, MaxInstructions, ParachainInfo, ParachainSystem,
-	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, XcmpQueue, TEER,
+	AccountId, Balance, Balances, Convert, EnsureRootOrMoreThanHalfCouncil, MaxInstructions,
+	ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
+	XcmpQueue, TEER,
 };
 use codec::{Decode, Encode, MaxEncodedLen};
 use core::marker::PhantomData;
@@ -28,7 +29,7 @@ use frame_support::{
 	pallet_prelude::Get,
 	parameter_types,
 	traits::{Everything, Nothing},
-	weights::{IdentityFee, WeighData},
+	weights::IdentityFee,
 	RuntimeDebug,
 };
 use frame_system::EnsureRoot;
@@ -290,6 +291,7 @@ impl pallet_xcm_transactor::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RelayCallBuilder = RelayCallBuilder;
 	type XcmSender = XcmRouter;
+	type SwapOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type ShellRuntimeParaId = ShellRuntimeParaId;
 	type IntegriteeKsmParaId = IntegriteeKsmParaId;
 	type WeightForParaSwap = WeightForParaSwap;

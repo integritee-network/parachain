@@ -954,6 +954,14 @@ dependencies = [
 [[package]]
 name = "common-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=add-custom-origin-xcm-transactor#d13f70bacdfdee8a8e3da41d047bf450518611c6"
+dependencies = [
+ "sp-std",
+]
+
+[[package]]
+name = "common-primitives"
+version = "0.1.0"
 source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.36#1c84e02179d6be9db14a8f7bdb753abb1938c1ba"
 dependencies = [
  "sp-std",
@@ -6210,7 +6218,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-transactor"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.36#1c84e02179d6be9db14a8f7bdb753abb1938c1ba"
+source = "git+https://github.com/integritee-network/pallets.git?branch=add-custom-origin-xcm-transactor#d13f70bacdfdee8a8e3da41d047bf450518611c6"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -11231,7 +11239,7 @@ name = "teeracle-primitives"
 version = "0.1.0"
 source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.36#1c84e02179d6be9db14a8f7bdb753abb1938c1ba"
 dependencies = [
- "common-primitives",
+ "common-primitives 0.1.0 (git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.36)",
  "sp-std",
  "substrate-fixed",
 ]
@@ -12748,9 +12756,9 @@ dependencies = [
 [[package]]
 name = "xcm-transactor-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.36#1c84e02179d6be9db14a8f7bdb753abb1938c1ba"
+source = "git+https://github.com/integritee-network/pallets.git?branch=add-custom-origin-xcm-transactor#d13f70bacdfdee8a8e3da41d047bf450518611c6"
 dependencies = [
- "common-primitives",
+ "common-primitives 0.1.0 (git+https://github.com/integritee-network/pallets.git?branch=add-custom-origin-xcm-transactor)",
  "cumulus-primitives-core",
  "frame-support",
  "parity-scale-codec",
