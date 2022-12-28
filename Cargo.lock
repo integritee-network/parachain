@@ -9918,6 +9918,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-vesting",
  "pallet-xcm",
+ "pallet-xcm-transactor",
  "parachain-info",
  "parachains-common",
  "parity-scale-codec",
@@ -9939,6 +9940,7 @@ dependencies = [
  "xcm",
  "xcm-builder",
  "xcm-executor",
+ "xcm-transactor-primitives",
 ]
 
 [[package]]
