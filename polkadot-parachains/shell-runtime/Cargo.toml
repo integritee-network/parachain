@@ -55,11 +55,11 @@ parachain-info = { default-features = false, git = "https://github.com/paritytec
 
 # Polkadot dependencies
 pallet-xcm = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
+pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "coax1d-xcm-transactor-integration" }
 polkadot-parachain = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
 xcm = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
 xcm-builder = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
 xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.36" }
-pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "coax1d-xcm-transactor-integration" }
 
 # other integritee deps
 xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "coax1d-xcm-transactor-integration" }
