@@ -289,7 +289,7 @@ parameter_types! {
 
 impl pallet_xcm_transactor::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type RelayCallBuilder = RelayCallBuilder;
+	type RelayCallBuilder = RelayCallBuilder<ShellRuntimeParaId>;
 	type XcmSender = XcmRouter;
 	type SwapOrigin = EnsureRoot<AccountId>;
 	type ShellRuntimeParaId = ShellRuntimeParaId;

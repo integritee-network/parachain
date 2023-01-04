@@ -263,6 +263,7 @@ fn shell_genesis_config(
 		parachain_system: Default::default(),
 		aura: shell_runtime::AuraConfig { authorities: initial_authorities },
 		aura_ext: Default::default(),
+		polkadot_xcm: Default::default(),
 	}
 }
 
