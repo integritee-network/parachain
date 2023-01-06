@@ -46,7 +46,7 @@ use std::net::SocketAddr;
 // manual registrations of parathreads via the UI.
 const LOCAL_PARA_ID: u32 = 2001;
 const SHELL_LOCAL_PARA_ID: u32 = 2002;
-const SHELL_PARA_ID: u32 = 2223;
+// const SHELL_PARA_ID: u32 = 2223;
 const ROCOCO_PARA_ID: u32 = 2015;
 const WESTEND_PARA_ID: u32 = 2081;
 const KUSAMA_PARA_ID: u32 = 2015;
