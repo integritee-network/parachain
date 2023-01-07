@@ -381,7 +381,7 @@ jobs:
           echo "{runtime_ver}={$runtime_ver}" >> $GITHUB_OUTPUT
 
       - name: Upload compressed ${{ matrix.runtime }} wasm
-        uses: actions/upload-release-asset@v1
+        uses: shogo82148/actions-upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
