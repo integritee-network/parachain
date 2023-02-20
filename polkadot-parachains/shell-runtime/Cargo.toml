@@ -65,9 +65,9 @@ xcm-executor = { default-features = false, git = "https://github.com/paritytech/
 xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.37" }
 
 # orml
-orml-traits = { default-features = false, git = "https://github.com/UniqueNetwork/open-runtime-module-library.git", branch = "feature/polkadot-v0.9.36" }
-orml-xcm = { default-features = false, git = "https://github.com/UniqueNetwork/open-runtime-module-library.git", branch = "feature/polkadot-v0.9.36" }
-orml-xcm-support = { default-features = false, git = "https://github.com/UniqueNetwork/open-runtime-module-library.git", branch = "feature/polkadot-v0.9.36" }
+orml-traits = { default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "polkadot-v0.9.37" }
+orml-xcm = { default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "polkadot-v0.9.37" }
+orml-xcm-support = { default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "polkadot-v0.9.37" }
 
 [dev-dependencies]
 hex = "0.4.3"
