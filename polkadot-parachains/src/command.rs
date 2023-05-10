@@ -19,8 +19,8 @@ use crate::{
 	chain_spec,
 	chain_spec::{
 		integritee_chain_spec, integritee_moonbase_config, shell_chain_spec, shell_kusama_config,
-		shell_kusama_lease2_config, shell_kusama_lease3_config, shell_polkadot_config, shell_rococo_config,
-		shell_westend_config, GenesisKeys, RelayChain, ShellChainSpec,
+		shell_kusama_lease2_config, shell_kusama_lease3_config, shell_polkadot_config,
+		shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain, ShellChainSpec,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
 	service::{
