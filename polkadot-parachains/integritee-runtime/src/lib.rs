@@ -59,7 +59,7 @@ pub use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
+	EnsureRoot, EnsureWithSuccess
 };
 
 pub use parachains_common as common;
@@ -511,11 +511,12 @@ parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * MILLITEER;
 	pub const ProposalBondMaximum: Balance = 500 * TEER;
-	pub const SpendPeriod: BlockNumber = 6 * DAYS;
+	pub const SpendPeriod: BlockNumber = prod_or_fast!(6 * DAYS, 6 * MINUTES);
 	pub const Burn: Permill = Permill::from_percent(1);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const DataDepositPerByte: Balance = 100 * MILLITEER;
 	pub const MaxApprovals: u32 = 10;
+	pub const MaxBalance: Balance = Balance::max_value();
 }
 
 impl pallet_treasury::Config for Runtime {
@@ -532,15 +533,15 @@ impl pallet_treasury::Config for Runtime {
 	type Burn = (); //No burn
 	type BurnDestination = (); //No burn
 	type SpendFunds = Bounties;
+	type SpendOrigin = EnsureWithSuccess<EnsureRoot<AccountId>, AccountId, MaxBalance>;
 	type MaxApprovals = MaxApprovals; //0:cannot approve any proposal
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>; // Same as kusama
 }
 
 parameter_types! {
 	pub const BountyDepositBase: Balance = 1 * TEER;
-	pub const BountyDepositPayoutDelay: BlockNumber = 4 * DAYS;
-	pub const BountyUpdatePeriod: BlockNumber = 90 * DAYS;
+	pub const BountyDepositPayoutDelay: BlockNumber = prod_or_fast!(4 * DAYS, 4 * MINUTES);
+	pub const BountyUpdatePeriod: BlockNumber = prod_or_fast!(90 * DAYS, 15 * MINUTES);
 	pub const MaximumReasonLength: u32 = 16384;
 	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
 	pub const CuratorDepositMin: Balance = 1 * TEER;
@@ -639,11 +640,11 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 1 * MINUTES);
-	pub const VotingPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 1 * MINUTES);
-	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 1 * MINUTES);
+	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
+	pub const VotingPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
+	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 2 * MINUTES);
 	pub const MinimumDeposit: Balance = 100 * TEER;
-	pub EnactmentPeriod: BlockNumber = prod_or_fast!(2 * DAYS, 1 * MINUTES);
+	pub EnactmentPeriod: BlockNumber = prod_or_fast!(2 * DAYS, 1);
 	pub const CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES);
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
