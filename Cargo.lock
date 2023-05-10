@@ -3655,6 +3655,8 @@ dependencies = [
  "orml-xtokens",
  "pallet-aura",
  "pallet-balances",
+ "pallet-bounties",
+ "pallet-child-bounties",
  "pallet-claims",
  "pallet-collective",
  "pallet-democracy",
