@@ -123,6 +123,8 @@ std = [
     "frame-system-rpc-runtime-api/std",
     "pallet-aura/std",
     "pallet-balances/std",
+    "pallet-bounties/std",
+    "pallet-child-bounties/std",
     "pallet-collective/std",
     "pallet-democracy/std",
     "pallet-randomness-collective-flip/std",
@@ -177,6 +179,8 @@ runtime-benchmarks = [
     # actual pallets to be benchmarked
     "frame-system/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
+    "pallet-bounties/runtime-benchmarks",
+    "pallet-child-bounties/runtime-benchmarks",
     "pallet-claims/runtime-benchmarks",
     "pallet-collective/runtime-benchmarks",
     "pallet-democracy/runtime-benchmarks",
