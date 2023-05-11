@@ -59,7 +59,7 @@ pub use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureWithSuccess
+	EnsureRoot, EnsureWithSuccess,
 };
 
 pub use parachains_common as common;
@@ -329,8 +329,8 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				matches!(
 					c,
 					RuntimeCall::Treasury { .. } |
-					RuntimeCall::Bounties(..) |
-					RuntimeCall::ChildBounties(..)
+						RuntimeCall::Bounties(..) |
+						RuntimeCall::ChildBounties(..)
 				)
 			},
 			ProxyType::CancelProxy => {
@@ -699,8 +699,6 @@ impl orml_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
-
-
 
 construct_runtime!(
 	pub enum Runtime where
