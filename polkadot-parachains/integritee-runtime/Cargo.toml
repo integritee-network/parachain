@@ -37,6 +37,8 @@ frame-system-rpc-runtime-api = { default-features = false, git = "https://github
 # pallets
 pallet-aura = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+pallet-bounties = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+pallet-child-bounties = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-collective = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-democracy = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 pallet-multisig = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
@@ -121,6 +123,8 @@ std = [
     "frame-system-rpc-runtime-api/std",
     "pallet-aura/std",
     "pallet-balances/std",
+    "pallet-bounties/std",
+    "pallet-child-bounties/std",
     "pallet-collective/std",
     "pallet-democracy/std",
     "pallet-randomness-collective-flip/std",
@@ -175,6 +179,8 @@ runtime-benchmarks = [
     # actual pallets to be benchmarked
     "frame-system/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
+    "pallet-bounties/runtime-benchmarks",
+    "pallet-child-bounties/runtime-benchmarks",
     "pallet-claims/runtime-benchmarks",
     "pallet-collective/runtime-benchmarks",
     "pallet-democracy/runtime-benchmarks",

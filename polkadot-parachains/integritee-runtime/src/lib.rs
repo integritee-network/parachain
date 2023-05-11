@@ -59,7 +59,7 @@ pub use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
+	EnsureRoot, EnsureWithSuccess,
 };
 
 pub use parachains_common as common;
@@ -317,6 +317,8 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				// Specifically omitting Indices `transfer`, `force_transfer`
 				// Specifically omitting the entire Balances pallet
 				RuntimeCall::Treasury {..} |
+				RuntimeCall::Bounties(..) |
+				RuntimeCall::ChildBounties(..) |
 //				RuntimeCall::Vesting(pallet_vesting::Call::vest {..}) |
 //				Call::::Vesting(pallet_vesting::Call::vest_other {..}) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
@@ -324,7 +326,12 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				RuntimeCall::Multisig {..}
 			),
 			ProxyType::Governance => {
-				matches!(c, RuntimeCall::Treasury { .. })
+				matches!(
+					c,
+					RuntimeCall::Treasury { .. } |
+						RuntimeCall::Bounties(..) |
+						RuntimeCall::ChildBounties(..)
+				)
 			},
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
@@ -504,10 +511,12 @@ parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * MILLITEER;
 	pub const ProposalBondMaximum: Balance = 500 * TEER;
-	pub const SpendPeriod: BlockNumber = 6 * DAYS;
+	pub const SpendPeriod: BlockNumber = prod_or_fast!(6 * DAYS, 6 * MINUTES);
 	pub const Burn: Permill = Permill::from_percent(1);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+	pub const DataDepositPerByte: Balance = 100 * MILLITEER;
 	pub const MaxApprovals: u32 = 10;
+	pub const MaxBalance: Balance = Balance::max_value();
 }
 
 impl pallet_treasury::Config for Runtime {
@@ -523,10 +532,48 @@ impl pallet_treasury::Config for Runtime {
 	type SpendPeriod = SpendPeriod; //Cannot be 0: Error: Thread 'tokio-runtime-worker' panicked at 'attempt to calculate the remainder with a divisor of zero
 	type Burn = (); //No burn
 	type BurnDestination = (); //No burn
-	type SpendFunds = (); //No spend, no bounty
+	type SpendFunds = Bounties;
+	type SpendOrigin = EnsureWithSuccess<EnsureRoot<AccountId>, AccountId, MaxBalance>;
 	type MaxApprovals = MaxApprovals; //0:cannot approve any proposal
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>; // Same as kusama
+}
+
+parameter_types! {
+	pub const BountyDepositBase: Balance = 1 * TEER;
+	pub const BountyDepositPayoutDelay: BlockNumber = prod_or_fast!(4 * DAYS, 4 * MINUTES);
+	pub const BountyUpdatePeriod: BlockNumber = prod_or_fast!(90 * DAYS, 15 * MINUTES);
+	pub const MaximumReasonLength: u32 = 16384;
+	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
+	pub const CuratorDepositMin: Balance = 1 * TEER;
+	pub const CuratorDepositMax: Balance = 100 * TEER;
+	pub const BountyValueMinimum: Balance = 100 * TEER;
+}
+
+impl pallet_bounties::Config for Runtime {
+	type BountyDepositBase = BountyDepositBase;
+	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
+	type BountyUpdatePeriod = BountyUpdatePeriod;
+	type CuratorDepositMultiplier = CuratorDepositMultiplier;
+	type CuratorDepositMin = CuratorDepositMin;
+	type CuratorDepositMax = CuratorDepositMax;
+	type BountyValueMinimum = BountyValueMinimum;
+	type ChildBountyManager = ChildBounties;
+	type DataDepositPerByte = DataDepositPerByte;
+	type RuntimeEvent = RuntimeEvent;
+	type MaximumReasonLength = MaximumReasonLength;
+	type WeightInfo = weights::pallet_bounties::WeightInfo<Runtime>;
+}
+
+parameter_types! {
+	pub const MaxActiveChildBountyCount: u32 = 100;
+	pub const ChildBountyValueMinimum: Balance = BountyValueMinimum::get() / 10;
+}
+
+impl pallet_child_bounties::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxActiveChildBountyCount = MaxActiveChildBountyCount;
+	type ChildBountyValueMinimum = ChildBountyValueMinimum;
+	type WeightInfo = weights::pallet_child_bounties::WeightInfo<Runtime>;
 }
 
 /// Council collective instance declaration.
@@ -593,11 +640,11 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 1 * MINUTES);
-	pub const VotingPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 1 * MINUTES);
-	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 1 * MINUTES);
+	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
+	pub const VotingPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
+	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 2 * MINUTES);
 	pub const MinimumDeposit: Balance = 100 * TEER;
-	pub EnactmentPeriod: BlockNumber = prod_or_fast!(2 * DAYS, 1 * MINUTES);
+	pub EnactmentPeriod: BlockNumber = prod_or_fast!(2 * DAYS, 1);
 	pub const CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES);
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
@@ -684,6 +731,8 @@ construct_runtime!(
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 15,
 		TechnicalCommittee:
 			pallet_collective::<Instance2>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 16,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 18,
+		ChildBounties: pallet_child_bounties = 19,
 
 		// Consensus.
 		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
@@ -751,6 +800,8 @@ mod benches {
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
+		[pallet_bounties, Bounties]
+		[pallet_child_bounties, ChildBounties]
 		[pallet_claims, Claims]
 		[pallet_collective, Council]
 		[pallet_collective, TechnicalCommittee]
