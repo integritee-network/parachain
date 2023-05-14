@@ -34,7 +34,7 @@ impl<T: frame_system::Config> pallet_teerex::WeightInfo for WeightInfo<T> {
 	// Storage: Teerex AllowSGXDebugMode (r:1 w:0)
 	// Storage: Teerex EnclaveIndex (r:1 w:0)
 	// Storage: Teerex EnclaveRegistry (r:0 w:1)
-	fn register_enclave() -> Weight {
+	fn register_ias_enclave() -> Weight {
 		// Minimum execution time: 1_330_900 nanoseconds.
 		Weight::from_ref_time(1_388_799_000)
 			.saturating_add(T::DbWeight::get().reads(3))
