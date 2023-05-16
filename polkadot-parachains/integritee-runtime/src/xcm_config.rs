@@ -59,7 +59,7 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 use xcm_transactor_primitives::*;
 
-/// Todo: figure out how to make this const.
+/// Fixme: figure out how to make this const?
 fn teer_general_key() -> Junction {
 	GeneralKey { length: 4, data: b"TEER".to_vec().try_into().unwrap() }
 }
