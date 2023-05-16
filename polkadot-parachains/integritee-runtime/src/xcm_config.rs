@@ -224,9 +224,8 @@ where
 }
 
 parameter_types! {
-	// One XCM operation is 1_000_000 weight - almost certainly a conservative estimate.
-	// Todo: check 0
-	pub const UnitWeightCost: Weight= Weight::from_parts(200_000_000u64, 0);
+	// Weight for one XCM operation. Copied from moonbeam.
+	pub UnitWeightCost: Weight = Weight::from_parts(200_000_000u64, DEFAULT_PROOF_SIZE);
 
 	// One TEER buys 1 second of weight.
 	pub const WeightPrice: (MultiLocation, u128) = (MultiLocation::parent(), TEER);
