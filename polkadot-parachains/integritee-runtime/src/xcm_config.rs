@@ -247,8 +247,8 @@ pub type Barrier = DenyThenTry<
 pub struct SafeCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 	fn contains(_call: &RuntimeCall) -> bool {
-		// TODO review
-		// This needs to be addressed at EVM level
+		// This is safe, as we prevent arbitrary xcm-transact executions.
+		// For rationale, see:https://github.com/paritytech/polkadot/blob/19fdd197aff085f7f66e54942999fd536e7df475/runtime/kusama/src/xcm_config.rs#L171
 		true
 	}
 }
