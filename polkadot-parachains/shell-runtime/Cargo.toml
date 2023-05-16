@@ -124,3 +124,12 @@ std = [
     "cumulus-pallet-aura-ext/std",
     "sp-consensus-aura/std",
 ]
+# Weird cargo behaviour: We have to feature gate the `runtime-benchmarks` behind
+# a feature here. Otherwise the feature is automatically activated in dependencies
+# when we compile the whole workspace with the `runtime-benchmarks` feature, which
+# leads to compiler erros in the `shell-runtime` because the benchmarks are not
+# implemented.
+runtime-benchmarks = [
+    "pallet-xcm/runtime-benchmarks",
+    "xcm-builder/runtime-benchmarks",
+]
