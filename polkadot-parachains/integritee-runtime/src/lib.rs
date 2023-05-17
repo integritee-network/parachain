@@ -807,7 +807,7 @@ mod benches {
 		[pallet_claims, Claims]
 		[pallet_collective, Council]
 		// Fixme #177: For some reason they benchmarks write both in the pallet_collective weight
-		// file. No reason to run both before we fix that as the pallet_collective benchmark
+		// file. No reason to run both before we fix that, as the pallet_collective benchmark
 		// takes the longest.
 		// [pallet_collective, TechnicalCommittee]
 		[pallet_democracy, Democracy]
