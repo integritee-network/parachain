@@ -806,7 +806,7 @@ mod benches {
 		[pallet_child_bounties, ChildBounties]
 		[pallet_claims, Claims]
 		[pallet_collective, Council]
-		// Fixme #177: For some reason they benchmarks write both to the pallet_collective weight
+		// Fixme #177: For some reason the benchmarks write both to the same pallet_collective weight
 		// file. No reason to run both before we fix that, as the pallet_collective benchmark
 		// takes the longest.
 		// [pallet_collective, TechnicalCommittee]
