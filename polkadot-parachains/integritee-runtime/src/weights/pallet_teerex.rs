@@ -41,20 +41,28 @@ impl<T: frame_system::Config> pallet_teerex::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 
-	// TODO benchmark dcap registration
 	fn register_dcap_enclave() -> Weight {
 		Weight::from_ref_time(3_969_500_000)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
-	// TODO benchmark dcap registration
 	fn register_quoting_enclave() -> Weight {
 		Weight::from_ref_time(3_969_500_000)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
-	
-	// Storage: Teerex EnclaveIndex (r:1 w:2)
+
+	fn register_tcb_info() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `57`
+		//  Estimated: `560`
+		// Minimum execution time: 1_816_099 nanoseconds.
+		Weight::from_ref_time(3_147_800_000)
+			.saturating_add(Weight::from_proof_size(560))
+			.saturating_add(T::DbWeight::get().reads(1))
+}
+
+		// Storage: Teerex EnclaveIndex (r:1 w:2)
 	// Storage: Teerex EnclaveCount (r:1 w:1)
 	// Storage: Teerex EnclaveRegistry (r:1 w:2)
 	fn unregister_enclave() -> Weight {
@@ -74,9 +82,21 @@ impl<T: frame_system::Config> pallet_teerex::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(1))
 	}
 
-	fn publish_hash() -> Weight {
-		Weight::from_ref_time(3_969_500_000)
-			.saturating_add(T::DbWeight::get().reads(2))
+	fn publish_hash(l: u32, t: u32) -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `362`
+		//  Estimated: `8511 + t * (2475 ±0)`
+		// Minimum execution time: 41_400 nanoseconds.
+		Weight::from_ref_time(28_179_644)
+			.saturating_add(Weight::from_proof_size(8511))
+			// Standard Error: 21_336
+			.saturating_add(Weight::from_ref_time(318_271).saturating_mul(l.into()))
+			// Standard Error: 467_546
+			.saturating_add(Weight::from_ref_time(7_329_090).saturating_mul(t.into()))
+			.saturating_add(T::DbWeight::get().reads(3))
+			.saturating_add(T::DbWeight::get().reads((1_u64).saturating_mul(t.into())))
 			.saturating_add(T::DbWeight::get().writes(1))
+			.saturating_add(T::DbWeight::get().writes((1_u64).saturating_mul(t.into())))
+			.saturating_add(Weight::from_proof_size(2475).saturating_mul(t.into()))
 	}
 }
