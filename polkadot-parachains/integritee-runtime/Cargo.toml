@@ -53,14 +53,14 @@ pallet-utility = { default-features = false, git = "https://github.com/paritytec
 pallet-vesting = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 
 # integritee pallets
-pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.39" }
-pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.39" }
-pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.39" }
-pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.39" }
-pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.39" }
+pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/update-test-weights" }
+pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/update-test-weights" }
+pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/update-test-weights" }
+pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/update-test-weights" }
+pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/update-test-weights" }
 
 # other integritee deps
-xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.39" }
+xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/update-test-weights" }
 
 # Cumulus dependencies
 cumulus-pallet-aura-ext = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.39" }
