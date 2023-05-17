@@ -59,10 +59,13 @@ use xcm_builder::{
 use xcm_executor::XcmExecutor;
 use xcm_transactor_primitives::*;
 
-/// Fixme: figure out how to make this const?
-fn teer_general_key() -> Junction {
-	GeneralKey { length: 4, data: b"TEER".to_vec().try_into().unwrap() }
+const fn teer_general_key() -> Junction {
+	const TEER_KEY: [u8; 32] = *b"TEER0000000000000000000000000000";
+	GeneralKey { length: 4, data: TEER_KEY }
 }
+
+const TEER_GENERAL_KEY: Junction = teer_general_key();
+
 parameter_types! {
 	pub const RelayChainLocation: MultiLocation = MultiLocation::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
@@ -74,7 +77,7 @@ parameter_types! {
 
 	pub SelfReserve: MultiLocation = MultiLocation {
 		parents:0,
-		interior: Junctions::X1(teer_general_key())
+		interior: Junctions::X1(TEER_GENERAL_KEY)
 	};
 }
 
@@ -103,7 +106,7 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 		match id {
 			CurrencyId::TEER => Some(MultiLocation::new(
 				1,
-				X2(Parachain(ParachainInfo::parachain_id().into()), teer_general_key()),
+				X2(Parachain(ParachainInfo::parachain_id().into()), TEER_GENERAL_KEY),
 			)),
 		}
 	}
@@ -118,12 +121,12 @@ impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 		match location {
 			MultiLocation { parents, interior } if parents == 1 => match interior {
 				X2(Parachain(para_id), junction)
-					if junction == teer_general_key() && para_id == self_para_id =>
+					if junction == TEER_GENERAL_KEY && para_id == self_para_id =>
 					Some(CurrencyId::TEER),
 				_ => None,
 			},
 			MultiLocation { parents, interior } if parents == 0 => match interior {
-				X1(junction) if junction == teer_general_key() => Some(CurrencyId::TEER),
+				X1(junction) if junction == TEER_GENERAL_KEY => Some(CurrencyId::TEER),
 				_ => None,
 			},
 			_ => None,
