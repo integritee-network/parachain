@@ -818,6 +818,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_treasury, Treasury]
 		[pallet_vesting, Vesting]
+		[pallet_xcm, PolkadotXcm]
 		[pallet_utility, Utility]
 	);
 }
