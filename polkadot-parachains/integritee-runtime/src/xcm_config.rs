@@ -23,6 +23,7 @@ use super::{
 	ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 	XcmpQueue, TEER,
 };
+use crate::weights;
 use codec::{Decode, Encode, MaxEncodedLen};
 use core::marker::PhantomData;
 use cumulus_primitives_core::GlobalConsensus;
@@ -316,8 +317,7 @@ impl pallet_xcm::Config for Runtime {
 	type TrustedLockers = ();
 	type SovereignAccountOf = LocationToAccountId;
 	type MaxLockers = ConstU32<8>;
-	// TODO pallet-xcm weights
-	type WeightInfo = pallet_xcm::TestWeightInfo;
+	type WeightInfo = weights::pallet_xcm::WeightInfo<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type ReachableDest = ReachableDest;
 }
