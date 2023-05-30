@@ -1,5 +1,5 @@
 use core::marker::PhantomData;
-use frame_support::{log, weights::Weight};
+use frame_support::{log, traits::ProcessMessageError, weights::Weight};
 use xcm::latest::prelude::*;
 use xcm_executor::traits::ShouldExecute;
 
@@ -24,7 +24,7 @@ where
 		message: &mut [Instruction<RuntimeCall>],
 		max_weight: Weight,
 		weight_credit: &mut Weight,
-	) -> Result<(), ()> {
+	) -> Result<(), ProcessMessageError> {
 		Deny::should_execute(origin, message, max_weight, weight_credit)?;
 		Allow::should_execute(origin, message, max_weight, weight_credit)
 	}
@@ -38,7 +38,7 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 		message: &mut [Instruction<RuntimeCall>],
 		_max_weight: Weight,
 		_weight_credit: &mut Weight,
-	) -> Result<(), ()> {
+	) -> Result<(), ProcessMessageError> {
 		if message.iter().any(|inst| {
 			matches!(
 				inst,
@@ -52,7 +52,7 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 					}
 			)
 		}) {
-			return Err(()) // Deny
+			return Err(ProcessMessageError::Unsupported) // Deny
 		}
 
 		// An unexpected reserve transfer has arrived from the Relay Chain. Generally, `IsReserve`
