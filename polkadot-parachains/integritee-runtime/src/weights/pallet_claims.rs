@@ -39,7 +39,7 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 	// Storage: Balances Locks (r:1 w:1)
 	fn claim() -> Weight {
 		// Minimum execution time: 198_000 nanoseconds.
-		Weight::from_ref_time(215_500_000)
+		Weight::from_parts(215_500_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(7))
 			.saturating_add(T::DbWeight::get().writes(6))
 	}
@@ -49,7 +49,7 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 	// Storage: Claims Signing (r:0 w:1)
 	fn mint_claim() -> Weight {
 		// Minimum execution time: 20_200 nanoseconds.
-		Weight::from_ref_time(22_100_000)
+		Weight::from_parts(22_100_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
@@ -62,7 +62,7 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 	// Storage: Balances Locks (r:1 w:1)
 	fn claim_attest() -> Weight {
 		// Minimum execution time: 204_300 nanoseconds.
-		Weight::from_ref_time(226_000_000)
+		Weight::from_parts(226_000_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(7))
 			.saturating_add(T::DbWeight::get().writes(6))
 	}
@@ -76,7 +76,7 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 	// Storage: Balances Locks (r:1 w:1)
 	fn attest() -> Weight {
 		// Minimum execution time: 122_600 nanoseconds.
-		Weight::from_ref_time(144_700_000)
+		Weight::from_parts(144_700_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(8))
 			.saturating_add(T::DbWeight::get().writes(7))
 	}
@@ -86,7 +86,7 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 	// Storage: Claims Preclaims (r:1 w:1)
 	fn move_claim() -> Weight {
 		// Minimum execution time: 35_200 nanoseconds.
-		Weight::from_ref_time(38_000_000)
+		Weight::from_parts(38_000_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(7))
 	}
