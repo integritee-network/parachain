@@ -91,6 +91,10 @@ polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch =
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.42" }
 xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.42" }
 
+# Temporary pin only
+# See https://github.com/bluejekyll/trust-dns/issues/1946 for more details.
+enum-as-inner = "=0.5.1"
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
 

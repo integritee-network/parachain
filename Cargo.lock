@@ -3815,6 +3815,7 @@ dependencies = [
  "cumulus-relay-chain-interface",
  "cumulus-relay-chain-minimal-node",
  "cumulus-relay-chain-rpc-interface",
+ "enum-as-inner",
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures",
