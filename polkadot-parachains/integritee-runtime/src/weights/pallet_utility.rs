@@ -33,30 +33,30 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
 	/// The range of component `c` is `[0, 1000]`.
 	fn batch(c: u32, ) -> Weight {
 		// Minimum execution time: 19_200 nanoseconds.
-		Weight::from_ref_time(71_295_023)
+		Weight::from_parts(71_295_023, 0u64)
 			// Standard Error: 39_173
-			.saturating_add(Weight::from_ref_time(5_906_041).saturating_mul(c.into()))
+			.saturating_add(Weight::from_parts(5_906_041, 0u64).saturating_mul(c.into()))
 	}
 	fn as_derivative() -> Weight {
 		// Minimum execution time: 11_200 nanoseconds.
-		Weight::from_ref_time(12_100_000)
+		Weight::from_parts(12_100_000, 0u64)
 	}
 	/// The range of component `c` is `[0, 1000]`.
 	fn batch_all(c: u32, ) -> Weight {
 		// Minimum execution time: 18_500 nanoseconds.
-		Weight::from_ref_time(10_228_964)
+		Weight::from_parts(10_228_964, 0u64)
 			// Standard Error: 45_306
-			.saturating_add(Weight::from_ref_time(6_465_805).saturating_mul(c.into()))
+			.saturating_add(Weight::from_parts(6_465_805, 0u64).saturating_mul(c.into()))
 	}
 	fn dispatch_as() -> Weight {
 		// Minimum execution time: 21_200 nanoseconds.
-		Weight::from_ref_time(21_700_000)
+		Weight::from_parts(21_700_000, 0u64)
 	}
 	/// The range of component `c` is `[0, 1000]`.
 	fn force_batch(c: u32, ) -> Weight {
 		// Minimum execution time: 18_100 nanoseconds.
-		Weight::from_ref_time(24_823_687)
+		Weight::from_parts(24_823_687, 0u64)
 			// Standard Error: 37_496
-			.saturating_add(Weight::from_ref_time(6_015_059).saturating_mul(c.into()))
+			.saturating_add(Weight::from_parts(6_015_059, 0u64).saturating_mul(c.into()))
 	}
 }

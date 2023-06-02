@@ -36,7 +36,7 @@ impl<T: frame_system::Config> pallet_teeracle::WeightInfo for WeightInfo<T> {
 	// Storage: Teeracle ExchangeRates (r:1 w:1)
 	fn update_exchange_rate() -> Weight {
 		// Minimum execution time: 51_200 nanoseconds.
-		Weight::from_ref_time(52_200_000)
+		Weight::from_parts(52_200_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -46,21 +46,21 @@ impl<T: frame_system::Config> pallet_teeracle::WeightInfo for WeightInfo<T> {
 	// Storage: Teeracle OracleData (r:0 w:1)
 	fn update_oracle() -> Weight {
 		// Minimum execution time: 43_800 nanoseconds.
-		Weight::from_ref_time(44_700_000)
+		Weight::from_parts(44_700_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Teeracle Whitelists (r:1 w:1)
 	fn add_to_whitelist() -> Weight {
 		// Minimum execution time: 26_000 nanoseconds.
-		Weight::from_ref_time(26_500_000)
+		Weight::from_parts(26_500_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	// Storage: Teeracle Whitelists (r:1 w:1)
 	fn remove_from_whitelist() -> Weight {
 		// Minimum execution time: 28_200 nanoseconds.
-		Weight::from_ref_time(28_800_000)
+		Weight::from_parts(28_800_000, 0u64)
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
