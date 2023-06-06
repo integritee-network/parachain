@@ -320,7 +320,6 @@ impl pallet_xcm::Config for Runtime {
 	type WeightInfo = weights::pallet_xcm::WeightInfo<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type ReachableDest = ReachableDest;
-	type AdminOrigin = EnsureRoot<AccountId>;
 }
 
 parameter_types! {

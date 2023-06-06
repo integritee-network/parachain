@@ -34,12 +34,12 @@ impl<T: frame_system::Config> pallet_timestamp::WeightInfo for WeightInfo<T> {
 	// Storage: Teerex EnclaveRegistry (r:1 w:0)
 	fn set() -> Weight {
 		// Minimum execution time: 17_400 nanoseconds.
-		Weight::from_parts(17_800_000, 0u64)
+		Weight::from_ref_time(17_800_000)
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
 	fn on_finalize() -> Weight {
 		// Minimum execution time: 6_700 nanoseconds.
-		Weight::from_parts(6_900_000, 0u64)
+		Weight::from_ref_time(6_900_000)
 	}
 }

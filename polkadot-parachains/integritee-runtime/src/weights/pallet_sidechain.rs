@@ -37,7 +37,7 @@ impl<T: frame_system::Config> pallet_sidechain::WeightInfo for WeightInfo<T> {
 	// Storage: Sidechain LatestSidechainBlockConfirmation (r:0 w:1)
 	fn confirm_imported_sidechain_block() -> Weight {
 		// Minimum execution time: 43_100 nanoseconds.
-		Weight::from_parts(44_900_000, 0u64)
+		Weight::from_ref_time(44_900_000)
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 	}
