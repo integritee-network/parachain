@@ -588,6 +588,7 @@ parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = prod_or_fast!(3 * DAYS, 2 * MINUTES);
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
+	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
 impl pallet_collective::Config<CouncilInstance> for Runtime {
@@ -600,7 +601,7 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 	type SetMembersOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type MaxProposalWeight = ();
+	type MaxProposalWeight = MaxProposalWeight;
 }
 
 pub type EnsureRootOrMoreThanHalfCouncil = EitherOfDiverse<
@@ -633,7 +634,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 	type SetMembersOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type MaxProposalWeight = ();
+	type MaxProposalWeight = MaxProposalWeight;
 }
 
 pub type EnsureRootOrMoreThanHalfTechnicalCommittee = EitherOfDiverse<
