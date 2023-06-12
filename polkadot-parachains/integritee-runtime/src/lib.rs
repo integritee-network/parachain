@@ -102,7 +102,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 33,
+	spec_version: 34,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 5,
@@ -588,6 +588,7 @@ parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = prod_or_fast!(3 * DAYS, 2 * MINUTES);
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
+	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
 impl pallet_collective::Config<CouncilInstance> for Runtime {
@@ -600,7 +601,7 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 	type SetMembersOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type MaxProposalWeight = ();
+	type MaxProposalWeight = MaxProposalWeight;
 }
 
 pub type EnsureRootOrMoreThanHalfCouncil = EitherOfDiverse<
@@ -633,7 +634,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 	type SetMembersOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type MaxProposalWeight = ();
+	type MaxProposalWeight = MaxProposalWeight;
 }
 
 pub type EnsureRootOrMoreThanHalfTechnicalCommittee = EitherOfDiverse<
