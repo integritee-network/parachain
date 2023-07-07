@@ -14,17 +14,14 @@ diener update --polkadot --branch release-v0.9.xx
 
 ## Launch a local setup including a Relay Chain and a Parachain
 
-### Polkadot-launch
+### Zombienet
 
-Install polkadot-launch according to the instruction in [polkadot-launch](https://github.com/paritytech/polkadot-launch#install)
-
-and use it with
-
+1. Download zombienet from the releases in the [zombienet](https://github.com/paritytech/zombienet) repository.
+2. Copy it to `~/.local/bin/`
+3. Launch it in your terminal
 ```
-polkadot-launch launch-rococo-local-with-integritee.json
+zombienet-linux-x64 spawn --provider native zombienet/rococo-local-with-integritee-and-shell.toml
 ```
-
-All polkadot launch scripts can be found in the [polkadot-launch](/polkadot-launch/) folder.
 
 ### Manually launch a local Rococo Testnet
 
@@ -43,8 +40,8 @@ needs to be upgraded whereas the client can remain the same. Hence, all modules 
 ### Upgrade procedure
 Prepare a local shell network and generate the `integritee-runtime` wasm blob, which contains the upgraded runtime to be executed after the runtime upgrade.
 ```bash
-# launch local setup
-node ../polkadot-launch/dist/cli.js polkadot-launch/launch-rococo-local-with-shell.json
+# spawn local setup
+zombienet-linux-x64 spawn --provider native zombienet/rococo-local-with-shell.toml
 
 # generate wasm blob
  ./target/release/integritee-collator export-genesis-wasm --chain integritee-rococo-local-dev > integritee-rococo-local-dev.wasm
