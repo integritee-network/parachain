@@ -40,7 +40,7 @@ needs to be upgraded whereas the client can remain the same. Hence, all modules 
 ### Upgrade procedure
 Prepare a local shell network and generate the `integritee-runtime` wasm blob, which contains the upgraded runtime to be executed after the runtime upgrade.
 ```bash
-# spawn local setup
+# spawn local setup (NOTE: the shell-runtime parachain id needs to be changed to match the integritee-runtime's.)
 zombienet-linux-x64 spawn --provider native zombienet/rococo-local-with-shell.toml
 
 # generate wasm blob
