@@ -324,7 +324,7 @@ impl pallet_xcm::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ShellRuntimeParaId: u32 = 2223u32;
+	pub const ShellRuntimeParaId: u32 = 2267u32;
 	pub const IntegriteeKsmParaId: u32 = 2015u32;
 }
 
