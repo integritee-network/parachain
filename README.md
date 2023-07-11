@@ -23,6 +23,8 @@ diener update --polkadot --branch release-v0.9.xx
 zombienet-linux-x64 spawn --provider native zombienet/rococo-local-with-integritee-and-shell.toml
 ```
 
+**Note:** You can also set a chain-spec path to the zombienet config, but the config param is named `chain_spec_path`.
+
 ### Manually launch a local Rococo Testnet
 
 Follow the steps provided in https://docs.substrate.io/tutorials/v3/cumulus/start-relay/
