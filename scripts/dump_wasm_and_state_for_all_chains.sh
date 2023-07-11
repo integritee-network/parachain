@@ -9,8 +9,8 @@
 #
 # All arguments are optional.
 
-COLLATOR=${2:-./target/release/integritee-collator}
-DUMP_DIR=${3:-./chain_dumps}
+COLLATOR=${1:-./target/release/integritee-collator}
+DUMP_DIR=${2:-./chain_dumps}
 
 mkdir -p ${DUMP_DIR}
 

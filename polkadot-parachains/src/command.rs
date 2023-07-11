@@ -103,17 +103,17 @@ fn load_spec(
 		"integritee-polkadot-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
 		"integritee-polkadot-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
 
-		"shell-rococo-local" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
-		"shell-rococo-local-dev" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
+		"shell-rococo-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
+		"shell-rococo-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
 
-		"shell-westend-local" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
-		"shell-westend-local-dev" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
+		"shell-westend-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
+		"shell-westend-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
 
-		"shell-kusama-local" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
-		"shell-kusama-local-dev" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
+		"shell-kusama-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
+		"shell-kusama-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
 
-		"shell-polkadot-local" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
-		"shell-polkadot-local-dev" => Box::new(shell_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
+		"shell-polkadot-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
+		"shell-polkadot-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
 
 		"" => panic!("Please supply chain_spec to be loaded."),
 		path => {
