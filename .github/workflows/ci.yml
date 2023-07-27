@@ -81,7 +81,7 @@ jobs:
 
       - name: Release
         if: ${{ matrix.binary == 'release' }}
-        run: cargo build --release
+        run: cargo build --release --locked
 
       # Upload artifacts
       - name: Upload integritee-collator
