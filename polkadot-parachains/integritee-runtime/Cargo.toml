@@ -53,14 +53,14 @@ pallet-utility = { default-features = false, git = "https://github.com/paritytec
 pallet-vesting = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
 
 # integritee pallets
-pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42-xcm-error" }
-pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42-xcm-error" }
-pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42-xcm-error" }
-pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42-xcm-error" }
-pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42-xcm-error" }
+pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
+pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
+pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
+pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
+pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
 
 # other integritee deps
-xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42-xcm-error" }
+xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
 
 # Cumulus dependencies
 cumulus-pallet-aura-ext = { default-features = false, git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.42" }
@@ -100,7 +100,6 @@ substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", bran
 
 [features]
 default = ["std"]
-skip-ias-check = ["pallet-teerex/skip-ias-check"]
 std = [
     "codec/std",
     "log/std",
