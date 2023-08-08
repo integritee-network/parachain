@@ -58,6 +58,7 @@ pallet-sidechain = { default-features = false, git = "https://github.com/integri
 pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
 pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
 pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
+pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
 
 # other integritee deps
 xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.42" }
@@ -162,6 +163,7 @@ std = [
     "pallet-sidechain/std",
     "pallet-teeracle/std",
     "pallet-teerex/std",
+    "pallet-enclave-bridge/std",
 ]
 runtime-benchmarks = [
     # support stuff
@@ -181,6 +183,7 @@ runtime-benchmarks = [
     "pallet-claims/runtime-benchmarks",
     "pallet-collective/runtime-benchmarks",
     "pallet-democracy/runtime-benchmarks",
+    "pallet-enclave-bridge/runtime-benchmarks",
     "pallet-multisig/runtime-benchmarks",
     "pallet-proxy/runtime-benchmarks",
     "pallet-preimage/runtime-benchmarks",

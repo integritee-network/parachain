@@ -80,6 +80,7 @@ pub use sp_runtime::{Perbill, Permill};
 // TEE
 use common::fee::{SlowAdjustingFeeUpdate, WeightToFee};
 pub use pallet_claims;
+pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
@@ -210,7 +211,7 @@ parameter_types! {
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = Moment;
-	type OnTimestampSet = Teerex;
+	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
@@ -322,6 +323,10 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				RuntimeCall::Treasury {..} |
 				RuntimeCall::Bounties(..) |
 				RuntimeCall::ChildBounties(..) |
+				// EnclaveBridge contains shielding and unshielding, which qualifies as transfer
+				RuntimeCall::Teerex(_) |
+				RuntimeCall::Teeracle(_) |
+				RuntimeCall::Sidechain(_) |
 //				RuntimeCall::Vesting(pallet_vesting::Call::vest {..}) |
 //				Call::::Vesting(pallet_vesting::Call::vest_other {..}) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
@@ -464,15 +469,20 @@ impl pallet_aura::Config for Runtime {
 // Integritee pallet
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
-	pub const MaxSilenceTime: Moment = 172_800_000; // 48h
+	pub const MaxAttestationRenewalPeriod: Moment =172_800_000; // 48h
 }
 
 impl pallet_teerex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Currency = pallet_balances::Pallet<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
-	type MaxSilenceTime = MaxSilenceTime;
+	type MaxAttestationRenewalPeriod = MaxAttestationRenewalPeriod;
 	type WeightInfo = weights::pallet_teerex::WeightInfo<Runtime>;
+}
+
+impl pallet_enclave_bridge::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = pallet_balances::Pallet<Runtime>;
+	type WeightInfo = weights::pallet_enclave_bridge::WeightInfo<Runtime>;
 }
 
 // Integritee pallet
@@ -762,6 +772,7 @@ construct_runtime!(
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
+		EnclaveBridge: pallet_enclave_bridge::{Pallet, Call, Storage, Event<T>} = 54,
 	}
 );
 
@@ -825,6 +836,7 @@ mod benches {
 		[pallet_sidechain, Sidechain]
 		[pallet_teeracle, Teeracle]
 		[pallet_teerex, Teerex]
+		[pallet_enclave_bridge, EnclaveBridge]
 		[pallet_timestamp, Timestamp]
 		[pallet_treasury, Treasury]
 		[pallet_vesting, Vesting]

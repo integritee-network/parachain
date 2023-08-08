@@ -3932,6 +3932,7 @@ dependencies = [
  "pallet-claims",
  "pallet-collective",
  "pallet-democracy",
+ "pallet-enclave-bridge",
  "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
@@ -6180,9 +6181,12 @@ version = "0.10.0"
 source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v0.9.42#1b56b65f78e8fac9cc446e6577e7e7f3bc515cf6"
 dependencies = [
  "enclave-bridge-primitives",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "hex-literal 0.3.4",
  "log",
+ "pallet-balances",
  "pallet-teerex",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -6193,6 +6197,7 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "teerex-primitives",
+ "test-utils",
 ]
 
 [[package]]

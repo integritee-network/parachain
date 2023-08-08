@@ -10,6 +10,7 @@ pub mod pallet_child_bounties;
 pub mod pallet_claims;
 pub mod pallet_collective;
 pub mod pallet_democracy;
+pub mod pallet_enclave_bridge;
 pub mod pallet_multisig;
 pub mod pallet_preimage;
 pub mod pallet_proxy;

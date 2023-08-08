@@ -236,7 +236,7 @@ fn integritee_genesis_config(
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
 		polkadot_xcm: Default::default(),
-		teerex: TeerexConfig { allow_sgx_debug_mode: true },
+		teerex: TeerexConfig { allow_sgx_debug_mode: true , allow_skipping_attestation: true },
 		claims: Default::default(),
 		treasury: Default::default(),
 	}
