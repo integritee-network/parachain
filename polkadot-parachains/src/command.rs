@@ -374,15 +374,27 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
 			if cfg!(feature = "try-runtime") {
-				// grab the task manager.
+				use parachain_runtime::MILLISECS_PER_BLOCK;
+				use try_runtime_cli::block_building_info::timestamp_with_aura_info;
+
 				let runner = cli.create_runner(cmd)?;
+
+				type HostFunctions = (
+					sp_io::SubstrateHostFunctions,
+					frame_benchmarking::benchmarking::HostFunctions,
+				);
+
+				// grab the task manager.
 				let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
-				let _task_manager =
-					TaskManager::new(runner.config().tokio_handle.clone(), *registry)
+				let task_manager =
+					sc_service::TaskManager::new(runner.config().tokio_handle.clone(), *registry)
 						.map_err(|e| format!("Error: {:?}", e))?;
 
-				// Todo: integritee implement block analogous to cumulus upstream
-				Err("Chain doesn't support try-runtime".into())
+				let info_provider = timestamp_with_aura_info(MILLISECS_PER_BLOCK);
+
+				runner.async_run(|_| {
+					Ok((cmd.run::<Block, HostFunctions, _>(Some(info_provider)), task_manager))
+				})
 			} else {
 				Err("Try-runtime must be enabled by `--features try-runtime`.".into())
 			}

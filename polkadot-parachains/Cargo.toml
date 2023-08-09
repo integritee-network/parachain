@@ -126,7 +126,8 @@ fast-runtime = [
     "polkadot-service/fast-runtime",
     "parachain-runtime/fast-runtime",
 ]
-# Todo: incorporate try runtime stuff
+
 try-runtime = [
     "try-runtime-cli/try-runtime",
+    "parachain-runtime/try-runtime"
 ]
