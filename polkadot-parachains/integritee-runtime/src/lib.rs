@@ -808,10 +808,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem, // Solochain: AllPalletsReversedWithSystemFirst, Statemint: AllPallets. Which one to take?
-	(
-		// can migrate from v0 or v1 to v2
-		pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,
-	),
+	(pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,),
 >;
 
 #[cfg(feature = "runtime-benchmarks")]
