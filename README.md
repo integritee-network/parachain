@@ -72,6 +72,16 @@ The benchmarks are run with the following script:
 ./scripts/benchmark_all_pallets.sh
 ```
 
+## state migrations try-runtime
+
+```
+cargo build --release --features try-runtime
+./target/release/integritee-collator try-runtime \
+  --chain integritee-kusama \
+  --runtime ./target/release/wbuild/integritee-runtime/integritee_runtime.wasm \
+  on-runtime-upgrade --checks=all \
+  live --uri wss://kusama.api.integritee.network:443
+```
 
 ## More Resources
 * Thorough Readme about Rococo and Collators in general in the original [repository](https://github.com/paritytech/cumulus) of this fork.

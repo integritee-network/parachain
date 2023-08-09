@@ -64,6 +64,7 @@ use frame_system::{
 };
 
 pub use parachains_common as common;
+pub use parachains_common::MILLISECS_PER_BLOCK;
 use parachains_common::{
 	opaque, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Signature,
 	AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES, NORMAL_DISPATCH_RATIO,
@@ -80,6 +81,7 @@ pub use sp_runtime::{Perbill, Permill};
 // TEE
 use common::fee::{SlowAdjustingFeeUpdate, WeightToFee};
 pub use pallet_claims;
+pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
@@ -102,10 +104,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 36,
+	spec_version: 37,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 5,
+	transaction_version: 6,
 	state_version: 0,
 };
 
@@ -210,7 +212,7 @@ parameter_types! {
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = Moment;
-	type OnTimestampSet = Teerex;
+	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
@@ -322,6 +324,10 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				RuntimeCall::Treasury {..} |
 				RuntimeCall::Bounties(..) |
 				RuntimeCall::ChildBounties(..) |
+				// EnclaveBridge contains shielding and unshielding, which qualifies as transfer
+				RuntimeCall::Teerex(_) |
+				RuntimeCall::Teeracle(_) |
+				RuntimeCall::Sidechain(_) |
 //				RuntimeCall::Vesting(pallet_vesting::Call::vest {..}) |
 //				Call::::Vesting(pallet_vesting::Call::vest_other {..}) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
@@ -464,15 +470,20 @@ impl pallet_aura::Config for Runtime {
 // Integritee pallet
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
-	pub const MaxSilenceTime: Moment = 172_800_000; // 48h
+	pub const MaxAttestationRenewalPeriod: Moment =172_800_000; // 48h
 }
 
 impl pallet_teerex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Currency = pallet_balances::Pallet<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
-	type MaxSilenceTime = MaxSilenceTime;
+	type MaxAttestationRenewalPeriod = MaxAttestationRenewalPeriod;
 	type WeightInfo = weights::pallet_teerex::WeightInfo<Runtime>;
+}
+
+impl pallet_enclave_bridge::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = pallet_balances::Pallet<Runtime>;
+	type WeightInfo = weights::pallet_enclave_bridge::WeightInfo<Runtime>;
 }
 
 // Integritee pallet
@@ -747,7 +758,6 @@ construct_runtime!(
 		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
 		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
 
-
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Storage, Config} = 31,
@@ -762,6 +772,7 @@ construct_runtime!(
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
+		EnclaveBridge: pallet_enclave_bridge::{Pallet, Call, Storage, Event<T>} = 54,
 	}
 );
 
@@ -797,7 +808,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem, // Solochain: AllPalletsReversedWithSystemFirst, Statemint: AllPallets. Which one to take?
-	(),
+	(pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,),
 >;
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -825,6 +836,7 @@ mod benches {
 		[pallet_sidechain, Sidechain]
 		[pallet_teeracle, Teeracle]
 		[pallet_teerex, Teerex]
+		[pallet_enclave_bridge, EnclaveBridge]
 		[pallet_timestamp, Timestamp]
 		[pallet_treasury, Treasury]
 		[pallet_vesting, Vesting]
@@ -967,7 +979,7 @@ impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade(checks: bool) -> (Weight, Weight) {
+		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
 			(weight, RuntimeBlockWeights::get().max_block)
 		}
