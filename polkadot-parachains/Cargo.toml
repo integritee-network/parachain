@@ -129,5 +129,5 @@ fast-runtime = [
 
 try-runtime = [
     "try-runtime-cli/try-runtime",
-    "parachain-runtime/try-runtime"
+    "parachain-runtime/try-runtime",
 ]
