@@ -74,7 +74,7 @@ hex = "0.4.3"
 hex-literal = "0.3.4"
 
 [build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
+substrate-wasm-builder = { optional = true, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
 
 [features]
 default = ["std"]
@@ -94,6 +94,7 @@ std = [
     "sp-block-builder/std",
     "sp-transaction-pool/std",
     "sp-inherents/std",
+    "substrate-wasm-builder",
     "frame-support/std",
     "frame-executive/std",
     "frame-system/std",
