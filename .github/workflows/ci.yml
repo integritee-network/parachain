@@ -197,10 +197,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install cargo-about
-        uses: baptiste0928/cargo-install@v1
+        uses: baptiste0928/cargo-install@v2
         with:
           crate: cargo-about
-          version: "0.5"
+          version: "0.5.6"
 
       - name: Run license check
         # Explicitly use stable because otherwise cargo will trigger a download of
