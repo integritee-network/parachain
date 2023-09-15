@@ -104,7 +104,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 37,
+	spec_version: 38,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 6,
@@ -808,7 +808,10 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem, // Solochain: AllPalletsReversedWithSystemFirst, Statemint: AllPallets. Which one to take?
-	(pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,),
+	(
+		pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,
+		pallet_teerex::migrations::v2::MigrateV1toV2<Runtime>,
+	),
 >;
 
 #[cfg(feature = "runtime-benchmarks")]
