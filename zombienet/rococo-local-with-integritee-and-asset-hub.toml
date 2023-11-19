@@ -2,9 +2,9 @@
 timeout = 10000
 
 [relaychain]
-chain = "rococo-local"
 default_command = "~/bin/polkadot-v0.9.42"
 default_args = [ "-lparachain=debug" ]
+chain = "rococo-local"
 
     [[relaychain.nodes]]
     name = "alice"
@@ -28,12 +28,12 @@ cumulus_based = true
 chain = "integritee-rococo-local-dev"
 
     [[parachains.collators]]
-    name = "integritee-collator01"
+    name = "integritee-collator-1"
     command = "./target/release/integritee-collator"
     ws_port = 9944
 
     [[parachains.collators]]
-    name = "integritee-collator02"
+    name = "integritee-collator-2"
     command = "./target/release/integritee-collator"
     ws_port = 9945
 
@@ -44,13 +44,13 @@ cumulus_based = true
 chain = "statemine-local"
 
     [[parachains.collators]]
-    name = "alice"
+    name = "asset-hub-collator-1"
     validator = true
     command = "~/bin/polkadot-parachain-v0.9.42"
     ws_port = 9954
 
     [[parachains.collators]]
-    name = "bob"
+    name = "asset-hub-collator-2"
     validator = true
     command = "~/bin/polkadot-parachain-v0.9.42"
     ws_port = 9955

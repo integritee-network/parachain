@@ -17,7 +17,9 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
-use parachain_runtime::{CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig};
+use parachain_runtime::{
+	CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig, TEER,
+};
 use parachains_common::{AccountId, AuraId};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::{ChainType, GenericChainSpec};
@@ -222,7 +224,7 @@ fn integritee_genesis_config(
 				.to_vec(),
 		},
 		balances: parachain_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 10__000_000_000_000)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect(),
 		},
 		democracy: DemocracyConfig::default(),
 		council: CouncilConfig { phantom: Default::default(), members: vec![root_key.clone()] },
@@ -255,7 +257,7 @@ fn shell_genesis_config(
 				.to_vec(),
 		},
 		balances: shell_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 10__000_000_000_000)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 10 * TEER)).collect(),
 		},
 		sudo: shell_runtime::SudoConfig { key: Some(root_key) },
 		vesting: Default::default(),
