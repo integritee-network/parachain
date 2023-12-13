@@ -64,12 +64,11 @@ use frame_system::{
 };
 
 pub use parachains_common as common;
-pub use parachains_common::MILLISECS_PER_BLOCK;
 use parachains_common::{
-	opaque, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Signature,
-	AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES, NORMAL_DISPATCH_RATIO,
-	SLOT_DURATION,
+	opaque, AccountId, AuraId, Balance, BlockNumber, Index, Signature, AVERAGE_ON_INITIALIZE_RATIO,
+	DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
+pub use parachains_common::{Hash, Header, MILLISECS_PER_BLOCK};
 
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
