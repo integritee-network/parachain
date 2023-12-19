@@ -34,8 +34,6 @@ polkadot-runtime-common = { default-features = false, git = "https://github.com/
 xcm = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.42" }
 xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.42" }
 
-[build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
 
 [features]
 default = ["std"]

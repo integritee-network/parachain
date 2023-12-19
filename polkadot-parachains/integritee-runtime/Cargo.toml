@@ -100,10 +100,6 @@ cumulus-primitives-parachain-inherent = { git = 'https://github.com/paritytech/c
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.42" }
 polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.42" }
 
-
-[build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
-
 [features]
 default = ["std"]
 std = [
