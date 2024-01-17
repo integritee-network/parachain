@@ -90,6 +90,9 @@ pub use pallet_teerex::Call as TeerexCall;
 mod helpers;
 mod weights;
 
+// todo: temporary. remove after fixing
+mod migrations_fix;
+
 pub mod xcm_config;
 
 pub type SessionHandlers = ();
@@ -802,6 +805,46 @@ pub type UncheckedExtrinsic =
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra>;
 
+/// Migrations to apply on runtime upgrade.
+pub type Migrations = (
+	// Scheduler
+	// fixing the scheduler with a local migration is necessary because we have missed intermediate
+	// migrations. mainnet at V0, jumping to V4 here
+	// future: v1.6.0 is still at V4.
+	migrations_fix::scheduler::v4::MigrateToV4<Runtime>,
+	// XcmpQueue
+	// code says it's V2, but we have V3 onchain. how come?
+	// v1.0.0: V3 (can migrate V1/V2 to V3) from here onwards we should be consistent
+	// v1.4.0: V4
+	//cumulus_pallet_xcmp_queue::migration::migrate_to_v3<Runtime>,
+
+	// DmpQueue
+	// code says it's V1 but we have V2 onchain. how come?
+	// at spec_version 29 it was at 1. (release https://github.com/integritee-network/parachain/releases/tag/1.5.33) (polkadot-v0.9.36)
+	// next spec_version was v35 where it went to 2
+	// v35 is https://github.com/integritee-network/parachain/releases/tag/1.5.40 (polkadot-v0.9.42)
+	// v1.0.0: V2 (can migrate V0 and V1 to V2) from here onwards we should be consistent
+	// v1.6.0 is still V2
+
+	// PolkadotXcm
+	// mainnet is at V0
+	pallet_xcm::migration::v1::MigrateToV1<Runtime>,
+	// Collective
+	// migration changes the pallet name prefix (back in 2021). no need to touch this. I guess this has been left untouched when we migrated solo to para
+	// for consistency, we will bruteforce to V4
+	// future: v1.6.0 is still at V4.
+	// as we have no issues with collectives, we won't change a running system !
+	// migrations_fix::collective::v4::MigrateToV4<Runtime, Instance1>,
+	//
+	// Democracy
+	pallet_democracy::migrations::v1::Migration<Runtime>,
+	// Multisig
+	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+	// Balances: mainnet at V0. this here brings us to V1
+	// future: v1.6.0 is still at V1
+	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
+);
+
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -809,10 +852,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem, // Solochain: AllPalletsReversedWithSystemFirst, Statemint: AllPallets. Which one to take?
-	(
-		pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,
-		pallet_teerex::migrations::v2::MigrateV1toV2<Runtime>,
-	),
+	Migrations,
 >;
 
 #[cfg(feature = "runtime-benchmarks")]
