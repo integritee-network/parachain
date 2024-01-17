@@ -60,13 +60,13 @@ jobs:
 
       - name: Build ${{ matrix.runtime.name }}
         run: |
-          cargo build --profile production -p ${{ matrix.runtime.package }} --features try-runtime -q --locked
+          cargo build --release -p ${{ matrix.runtime.package }} --features try-runtime -q --locked
 
       - name: Check migrations
         run: |
           PACKAGE_NAME=${{ matrix.runtime.package }}
           RUNTIME_BLOB_NAME=$(echo $PACKAGE_NAME | sed 's/-/_/g').compact.compressed.wasm
-          RUNTIME_BLOB_PATH=./target/production/wbuild/$PACKAGE_NAME/$RUNTIME_BLOB_NAME
+          RUNTIME_BLOB_PATH=./target/release/wbuild/$PACKAGE_NAME/$RUNTIME_BLOB_NAME
 
           # When running on relay, we don't need weight checks.
           EXTRA_FLAGS=""
