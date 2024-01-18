@@ -3,7 +3,7 @@ timeout = 10000
 
 [relaychain]
 default_command = "~/bin/polkadot-v0.9.42"
-default_args = [ "-lparachain=debug" ]
+default_args = [ "-lparachain=debug --state-pruning=archive --blocks-pruning=archive" ]
 chain = "rococo-local"
 
     [[relaychain.nodes]]
@@ -29,12 +29,12 @@ chain = "integritee-rococo-local-dev"
 
     [[parachains.collators]]
     name = "integritee-collator-1"
-    command = "./target/release/integritee-collator"
+    command = "~/bin/integritee-collator-v1.6.4"
     ws_port = 9944
 
     [[parachains.collators]]
     name = "integritee-collator-2"
-    command = "./target/release/integritee-collator"
+    command = "~/bin/integritee-collator-v1.6.4"
     ws_port = 9945
 
 [[parachains]]
@@ -46,13 +46,13 @@ chain = "integritee-rococo-local-dev"
     [[parachains.collators]]
     name = "asset-hub-collator-1"
     validator = true
-    command = "./target/release/integritee-collator"
+    command = "~/bin/integritee-collator-v1.6.4"
     ws_port = 9954
 
     [[parachains.collators]]
     name = "asset-hub-collator-2"
     validator = true
-    command = "./target/release/integritee-collator"
+    command = "~/bin/integritee-collator-v1.6.4"
     ws_port = 9955
 
 [[hrmp_channels]]

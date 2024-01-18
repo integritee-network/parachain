@@ -79,6 +79,7 @@ parameter_types! {
 		parents:0,
 		interior: Junctions::X1(TEER_GENERAL_KEY)
 	};
+	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
 }
 
 // Supported Currencies.

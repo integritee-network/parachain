@@ -1,0 +1,9 @@
+[
+  {
+    "name": "integritee",
+    "package": "integritee-runtime",
+    "path": "polkadot-parachains/integritee-runtime",
+    "uri": "wss://kusama.api.integritee.network:443",
+    "is_relay": false
+  }
+]
