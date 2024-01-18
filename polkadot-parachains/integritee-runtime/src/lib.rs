@@ -812,10 +812,12 @@ pub type Migrations = (
 	// migrations. mainnet at V0, jumping to V4 here
 	// future: v1.6.0 is still at V4.
 	migrations_fix::scheduler::v4::MigrateToV4<Runtime>,
+	//
 	// XcmpQueue
 	// code says it's V2, but we have V3 onchain. how come?
 	// v1.0.0: V3 (can migrate V1/V2 to V3) from here onwards we should be consistent
 	// v1.4.0: V4
+	// Plan: upgrade to v1.0.0. then we're aligned
 	//cumulus_pallet_xcmp_queue::migration::migrate_to_v3<Runtime>,
 
 	// DmpQueue
@@ -825,25 +827,26 @@ pub type Migrations = (
 	// v35 is https://github.com/integritee-network/parachain/releases/tag/1.5.40 (polkadot-v0.9.42)
 	// v1.0.0: V2 (can migrate V0 and V1 to V2) from here onwards we should be consistent
 	// v1.6.0 is still V2
+	// Plan: upgrade to v1.0.0. then we're aligned
 
 	// PolkadotXcm
 	// mainnet is at V0. migration fails with corrupt storage because the the entries have been written with the new version already
-	// therefore it should be safe to just bruteforce the storageVersion to 1
-	//pallet_xcm::migration::v1::MigrateToV1<Runtime>,
+	// therefore it should be safe to just bruteforce the storageVersion to 1 and then test that we can still decode VersionNotifyTargets (only thing the original migration changes)
 	migrations_fix::xcm::v1::MigrateToV1<Runtime>,
 	// Collective
 	// migration changes the pallet name prefix (back in 2021). no need to touch this. I guess this has been left untouched when we migrated solo to para
 	// for consistency, we will bruteforce to V4
 	// future: v1.6.0 is still at V4.
-	// as we have no issues with collectives, we won't change a running system !
+	// Plan: as we have no issues with collectives, we won't change a running system !
 	// migrations_fix::collective::v4::MigrateToV4<Runtime, Instance1>,
 	//
 	// Democracy
-	// as we don't have issues with this, let's not change a running system. we will simply bump StorageVersion
 	pallet_democracy::migrations::v1::Migration<Runtime>,
+	//
 	// Multisig
 	// this migration takes 500ms. We'll skip this until we have async backing
 	//pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+	//
 	// Balances: mainnet at V0. this here brings us to V1
 	// future: v1.6.0 is still at V1
 	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
