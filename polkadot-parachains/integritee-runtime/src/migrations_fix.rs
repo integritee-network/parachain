@@ -187,3 +187,75 @@ pub mod collective {
 		}
 	}
 }
+
+//PolkadotXcm pallet
+pub mod xcm {
+	// this is necessary because migrations from v0 to v3 are no longer available in the scheduler
+	// pallet code and migrating is only possible from v3. The strategy here is to empty the agenda
+	// (has been empty since genesis)
+	use frame_support::traits::OnRuntimeUpgrade;
+	use pallet_xcm::*;
+	use sp_std::vec::Vec;
+
+	/// The log target.
+	const TARGET: &'static str = "runtime::fix::xcm::migration";
+
+	pub mod v1 {
+		use super::*;
+		use frame_support::pallet_prelude::*;
+		use xcm::{prelude::XcmVersion, v3::QueryId, VersionedMultiLocation};
+
+		#[frame_support::storage_alias]
+		pub(super) type VersionNotifyTargets<T: Config> = StorageDoubleMap<
+			Pallet<T>,
+			Twox64Concat,
+			XcmVersion,
+			Blake2_128Concat,
+			VersionedMultiLocation,
+			(QueryId, Weight, XcmVersion),
+			OptionQuery,
+		>;
+
+		pub struct MigrateToV1<T>(sp_std::marker::PhantomData<T>);
+
+		impl<T: Config> OnRuntimeUpgrade for MigrateToV1<T> {
+			#[cfg(feature = "try-runtime")]
+			fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+				let targets = VersionNotifyTargets::<T>::iter_prefix_values(3).count() as u32;
+				log::info!(target: TARGET, "found {} VersionNotifyTargets", targets);
+				Ok(targets.encode())
+			}
+
+			fn on_runtime_upgrade() -> Weight {
+				let onchain_version = Pallet::<T>::on_chain_storage_version();
+				if onchain_version > 0 {
+					log::warn!(
+						target: TARGET,
+						"skipping v0 to v1 migration: executed on wrong storage version.\
+					Expected version 0, found {:?}",
+						onchain_version,
+					);
+					return T::DbWeight::get().reads(1)
+				}
+				log::info!(target: TARGET, "migrating from {:?} to 1", onchain_version);
+				StorageVersion::new(1).put::<Pallet<T>>();
+
+				T::DbWeight::get().reads_writes(1, 1)
+			}
+
+			#[cfg(feature = "try-runtime")]
+			fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+				ensure!(StorageVersion::get::<Pallet<T>>() == 1, "Must upgrade");
+				let old_targets: u32 = Decode::decode(&mut &state[..])
+					.expect("pre_upgrade provides a valid state; qed");
+				let targets = VersionNotifyTargets::<T>::iter_prefix_values(3);
+				assert_eq!(
+					old_targets,
+					targets.count() as u32,
+					"must preserve all targets and be able to decode storage"
+				);
+				Ok(())
+			}
+		}
+	}
+}

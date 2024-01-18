@@ -827,8 +827,10 @@ pub type Migrations = (
 	// v1.6.0 is still V2
 
 	// PolkadotXcm
-	// mainnet is at V0
-	pallet_xcm::migration::v1::MigrateToV1<Runtime>,
+	// mainnet is at V0. migration fails with corrupt storage because the the entries have been written with the new version already
+	// therefore it should be safe to just bruteforce the storageVersion to 1
+	//pallet_xcm::migration::v1::MigrateToV1<Runtime>,
+	migrations_fix::xcm::v1::MigrateToV1<Runtime>,
 	// Collective
 	// migration changes the pallet name prefix (back in 2021). no need to touch this. I guess this has been left untouched when we migrated solo to para
 	// for consistency, we will bruteforce to V4
@@ -837,9 +839,11 @@ pub type Migrations = (
 	// migrations_fix::collective::v4::MigrateToV4<Runtime, Instance1>,
 	//
 	// Democracy
+	// as we don't have issues with this, let's not change a running system. we will simply bump StorageVersion
 	pallet_democracy::migrations::v1::Migration<Runtime>,
 	// Multisig
-	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+	// this migration takes 500ms. We'll skip this until we have async backing
+	//pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
 	// Balances: mainnet at V0. this here brings us to V1
 	// future: v1.6.0 is still at V1
 	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
