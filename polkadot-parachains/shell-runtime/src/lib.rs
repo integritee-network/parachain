@@ -52,7 +52,7 @@ pub use frame_support::{
 use frame_system::limits::{BlockLength, BlockWeights};
 pub use parachains_common as common;
 use parachains_common::{
-	opaque, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
+	AccountId, AuraId, Balance, BlockNumber, Hash, Header, Nonce, Signature,
 	AVERAGE_ON_INITIALIZE_RATIO, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
 

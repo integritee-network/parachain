@@ -3666,7 +3666,6 @@ dependencies = [
 name = "integritee-runtime"
 version = "1.7.42"
 dependencies = [
- "claims-primitives",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
