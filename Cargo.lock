@@ -6701,7 +6701,7 @@ dependencies = [
 
 [[package]]
 name = "parachains-common"
-version = "1.4.0"
+version = "1.7.0"
 dependencies = [
  "frame-executive",
  "frame-support",
@@ -10622,7 +10622,7 @@ dependencies = [
 
 [[package]]
 name = "shell-runtime"
-version = "1.5.12"
+version = "1.7.13"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
