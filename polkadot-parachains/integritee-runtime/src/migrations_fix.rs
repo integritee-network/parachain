@@ -101,7 +101,7 @@ pub mod scheduler {
 
 		impl<T: Config> OnRuntimeUpgrade for MigrateToV4<T> {
 			#[cfg(feature = "try-runtime")]
-			fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+			fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 				let agendas = v1::Agenda::<T>::iter_keys().count() as u32;
 				let lookups = v1::Lookup::<T>::iter_keys().count() as u32;
 				log::info!(target: TARGET, "agendas present which will be left untouched: {}/{}...", agendas, lookups);
@@ -126,7 +126,7 @@ pub mod scheduler {
 			}
 
 			#[cfg(feature = "try-runtime")]
-			fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+			fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 				ensure!(StorageVersion::get::<Pallet<T>>() == 4, "Must upgrade");
 
 				let agendas = Agenda::<T>::iter_keys().count() as u32;
@@ -158,7 +158,7 @@ pub mod collective {
 
 		impl<T: Config> OnRuntimeUpgrade for MigrateToV4<T> {
 			#[cfg(feature = "try-runtime")]
-			fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+			fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 				Ok((0u32).encode())
 			}
 
@@ -180,7 +180,7 @@ pub mod collective {
 			}
 
 			#[cfg(feature = "try-runtime")]
-			fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+			fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 				ensure!(StorageVersion::get::<Pallet<T>>() == 4, "Must upgrade");
 				Ok(())
 			}
@@ -220,7 +220,7 @@ pub mod xcm {
 
 		impl<T: Config> OnRuntimeUpgrade for MigrateToV1<T> {
 			#[cfg(feature = "try-runtime")]
-			fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+			fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 				let targets = VersionNotifyTargets::<T>::iter_prefix_values(3).count() as u32;
 				log::info!(target: TARGET, "found {} VersionNotifyTargets", targets);
 				Ok(targets.encode())
@@ -244,7 +244,7 @@ pub mod xcm {
 			}
 
 			#[cfg(feature = "try-runtime")]
-			fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+			fn post_upgrade(state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 				ensure!(StorageVersion::get::<Pallet<T>>() == 1, "Must upgrade");
 				let old_targets: u32 = Decode::decode(&mut &state[..])
 					.expect("pre_upgrade provides a valid state; qed");
