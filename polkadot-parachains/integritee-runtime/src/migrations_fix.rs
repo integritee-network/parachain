@@ -152,6 +152,7 @@ pub mod collective {
 	pub mod v4 {
 		use super::*;
 		use frame_support::pallet_prelude::*;
+		use sp_std::vec::Vec;
 
 		/// Migrate the scheduler pallet from V0 to V4 without changing storage. the only active schedule has been submitted already in V4
 		pub struct MigrateToV4<T>(sp_std::marker::PhantomData<T>);
@@ -202,6 +203,7 @@ pub mod xcm {
 	pub mod v1 {
 		use super::*;
 		use frame_support::pallet_prelude::*;
+		use sp_std::vec::Vec;
 		use xcm::{prelude::XcmVersion, v3::QueryId, VersionedMultiLocation};
 
 		#[frame_support::storage_alias]

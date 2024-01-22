@@ -46,11 +46,11 @@ chain = "shell-rococo-local-dev"
 [[parachains.collators]]
 name = "shell-collator01"
 command = "./target/release/integritee-collator"
-args = ["-lparachain=debug --base-path /tmp/shell01"]
+#args = ["-lparachain=debug --base-path /tmp/shell01 -- --base-path /tmp/shellrelay01"]
 ws_port = 9954
 
 [[parachains.collators]]
 name = "shell-collator02"
 command = "./target/release/integritee-collator"
-args = ["-lparachain=debug --base-path /tmp/shell02"]
+#args = ["-lparachain=debug --base-path /tmp/shell02 -- --base-path /tmp/shellrelay02"]
 ws_port = 9955
