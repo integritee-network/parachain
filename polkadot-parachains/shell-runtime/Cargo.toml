@@ -20,6 +20,7 @@ frame-executive = { default-features = false, git = "https://github.com/parityte
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+frame-try-runtime = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v1.0.0", optional = true }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sp-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sp-block-builder = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -132,4 +133,24 @@ std = [
 runtime-benchmarks = [
     "pallet-xcm/runtime-benchmarks",
     "xcm-builder/runtime-benchmarks",
+]
+
+try-runtime = [
+    "frame-try-runtime/try-runtime",
+    "frame-system/try-runtime",
+    "frame-executive/try-runtime",
+    "cumulus-pallet-parachain-system/try-runtime",
+    "cumulus-pallet-aura-ext/try-runtime",
+    "cumulus-pallet-xcmp-queue/try-runtime",
+    "cumulus-pallet-xcm/try-runtime",
+    "cumulus-pallet-dmp-queue/try-runtime",
+    "orml-xcm/try-runtime",
+    "parachain-info/try-runtime",
+    "pallet-aura/try-runtime",
+    "pallet-balances/try-runtime",
+    "pallet-timestamp/try-runtime",
+    "pallet-transaction-payment/try-runtime",
+    "pallet-vesting/try-runtime",
+    "pallet-xcm/try-runtime",
+    "pallet-xcm-transactor/try-runtime",
 ]

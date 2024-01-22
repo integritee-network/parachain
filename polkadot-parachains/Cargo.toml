@@ -120,6 +120,7 @@ runtime-benchmarks = [
     "try-runtime-cli/try-runtime",
     "polkadot-service/runtime-benchmarks",
     "parachain-runtime/runtime-benchmarks",
+    "shell-runtime/runtime-benchmarks",
     "polkadot-cli/runtime-benchmarks",
 ]
 fast-runtime = [
@@ -130,4 +131,5 @@ fast-runtime = [
 try-runtime = [
     "try-runtime-cli/try-runtime",
     "parachain-runtime/try-runtime",
+    "shell-runtime/try-runtime",
 ]

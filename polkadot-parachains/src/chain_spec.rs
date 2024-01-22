@@ -30,10 +30,11 @@ use std::str::FromStr;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type IntegriteeChainSpec =
-	sc_service::GenericChainSpec<parachain_runtime::GenesisConfig, Extensions>;
+	sc_service::GenericChainSpec<parachain_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// Specialized `ChainSpec` for the shell parachain runtime.
-pub type ShellChainSpec = sc_service::GenericChainSpec<shell_runtime::GenesisConfig, Extensions>;
+pub type ShellChainSpec =
+	sc_service::GenericChainSpec<shell_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
@@ -216,12 +217,13 @@ fn integritee_genesis_config(
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<AuraId>,
 	id: ParaId,
-) -> parachain_runtime::GenesisConfig {
-	parachain_runtime::GenesisConfig {
+) -> parachain_runtime::RuntimeGenesisConfig {
+	parachain_runtime::RuntimeGenesisConfig {
 		system: parachain_runtime::SystemConfig {
 			code: parachain_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
+			_config: Default::default(),
 		},
 		balances: parachain_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect(),
@@ -233,12 +235,19 @@ fn integritee_genesis_config(
 			members: vec![root_key],
 		},
 		vesting: Default::default(),
-		parachain_info: parachain_runtime::ParachainInfoConfig { parachain_id: id },
+		parachain_info: parachain_runtime::ParachainInfoConfig {
+			parachain_id: id,
+			_config: Default::default(),
+		},
 		aura: parachain_runtime::AuraConfig { authorities: initial_authorities },
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
 		polkadot_xcm: Default::default(),
-		teerex: TeerexConfig { allow_sgx_debug_mode: true, allow_skipping_attestation: true },
+		teerex: TeerexConfig {
+			allow_sgx_debug_mode: true,
+			allow_skipping_attestation: true,
+			_config: Default::default(),
+		},
 		claims: Default::default(),
 		treasury: Default::default(),
 	}
@@ -249,19 +258,23 @@ fn shell_genesis_config(
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<AuraId>,
 	parachain_id: ParaId,
-) -> shell_runtime::GenesisConfig {
-	shell_runtime::GenesisConfig {
+) -> shell_runtime::RuntimeGenesisConfig {
+	shell_runtime::RuntimeGenesisConfig {
 		system: shell_runtime::SystemConfig {
 			code: shell_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
+			_config: Default::default(),
 		},
 		balances: shell_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 10 * TEER)).collect(),
 		},
 		sudo: shell_runtime::SudoConfig { key: Some(root_key) },
 		vesting: Default::default(),
-		parachain_info: shell_runtime::ParachainInfoConfig { parachain_id },
+		parachain_info: shell_runtime::ParachainInfoConfig {
+			parachain_id,
+			_config: Default::default(),
+		},
 		parachain_system: Default::default(),
 		aura: shell_runtime::AuraConfig { authorities: initial_authorities },
 		aura_ext: Default::default(),

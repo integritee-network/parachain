@@ -161,14 +161,6 @@ impl SubstrateCli for Cli {
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		load_spec(id)
 	}
-
-	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		if chain_spec.is_shell() {
-			&shell_runtime::VERSION
-		} else {
-			&parachain_runtime::VERSION
-		}
-	}
 }
 
 impl SubstrateCli for RelayChainCli {
@@ -204,10 +196,6 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
-	}
-
-	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		polkadot_cli::Cli::native_runtime_version(chain_spec)
 	}
 }
 
@@ -306,14 +294,10 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|_config| {
-				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				let state_version = Cli::native_runtime_version(&spec).state_version();
-				cmd.run::<crate::service::Block>(&*spec, state_version)
-			})
-		},
+		Some(Subcommand::ExportGenesisState(cmd)) =>
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(async move { cmd.run(&*config.chain_spec, &*components.client) })
+			}),
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|_config| {
@@ -328,13 +312,7 @@ pub fn run() -> Result<()> {
 			match cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| {
-							if config.chain_spec.is_shell() {
-								cmd.run::<Block, ShellParachainRuntimeExecutor>(config)
-							} else {
-								cmd.run::<Block, IntegriteeParachainRuntimeExecutor>(config)
-							}
-						})
+						runner.sync_run(|config| cmd.run::<Block, ()>(config))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 				You can enable it with `--features runtime-benchmarks`."
@@ -352,14 +330,13 @@ pub fn run() -> Result<()> {
 					)
 					.into()),
 				#[cfg(feature = "runtime-benchmarks")]
-				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					construct_benchmark_partials!(config, |partials| {
-						let db = partials.backend.expose_db();
-						let storage = partials.backend.expose_storage();
-
-						cmd.run(config, partials.client.clone(), db, storage)
-					})
-				}),
+				BenchmarkCmd::Storage(_) =>
+					return Err(sc_cli::Error::Input(
+						"Compile with --features=runtime-benchmarks \
+						to enable storage benchmarks."
+							.into(),
+					)
+					.into()),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
 				// NOTE: this allows the Client to leniently implement
@@ -477,12 +454,8 @@ impl DefaultConfigurationValues for RelayChainCli {
 		30334
 	}
 
-	fn rpc_ws_listen_port() -> u16 {
+	fn rpc_listen_port() -> u16 {
 		9945
-	}
-
-	fn rpc_http_listen_port() -> u16 {
-		9934
 	}
 
 	fn prometheus_listen_port() -> u16 {
@@ -514,16 +487,8 @@ impl CliConfiguration<Self> for RelayChainCli {
 			.or_else(|| self.base_path.clone().map(Into::into)))
 	}
 
-	fn rpc_http(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+	fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
 		self.base.base.rpc_http(default_listen_port)
-	}
-
-	fn rpc_ipc(&self) -> Result<Option<String>> {
-		self.base.base.rpc_ipc()
-	}
-
-	fn rpc_ws(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
-		self.base.base.rpc_ws(default_listen_port)
 	}
 
 	fn prometheus_config(
@@ -569,8 +534,8 @@ impl CliConfiguration<Self> for RelayChainCli {
 		self.base.base.rpc_methods()
 	}
 
-	fn rpc_ws_max_connections(&self) -> Result<Option<usize>> {
-		self.base.base.rpc_ws_max_connections()
+	fn rpc_max_connections(&self) -> Result<u32> {
+		self.base.base.rpc_max_connections()
 	}
 
 	fn rpc_cors(&self, is_dev: bool) -> Result<Option<Vec<String>>> {
