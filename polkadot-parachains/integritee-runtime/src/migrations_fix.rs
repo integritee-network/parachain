@@ -90,8 +90,6 @@ pub mod scheduler {
 			ValueQuery,
 		>;
 
-		pub(crate) type TaskName = [u8; 32];
-
 		#[frame_support::storage_alias]
 		pub(crate) type Lookup<T: Config> =
 			StorageMap<Pallet<T>, Twox64Concat, TaskName, TaskAddress<BlockNumberFor<T>>>;
@@ -144,7 +142,6 @@ pub mod collective {
 	// (has been empty since genesis)
 	use frame_support::traits::OnRuntimeUpgrade;
 	use pallet_collective::*;
-	use sp_std::vec::Vec;
 
 	/// The log target.
 	const TARGET: &'static str = "runtime::fix::collective::migration";
@@ -195,7 +192,6 @@ pub mod xcm {
 	// (has been empty since genesis)
 	use frame_support::traits::OnRuntimeUpgrade;
 	use pallet_xcm::*;
-	use sp_std::vec::Vec;
 
 	/// The log target.
 	const TARGET: &'static str = "runtime::fix::xcm::migration";
