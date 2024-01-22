@@ -29,11 +29,13 @@ chain = "integritee-rococo-local-dev"
 
 [[parachains.collators]]
 name = "integritee-collator01"
-command = "~/bin/integritee-collator-v1.6.4"
+#command = "~/bin/integritee-collator-v1.6.4"
+command = "./target/release/integritee-collator"
 ws_port = 9944
 
 [[parachains.collators]]
 name = "integritee-collator02"
-command = "~/bin/integritee-collator-v1.6.4"
+#command = "~/bin/integritee-collator-v1.6.4"
+command = "./target/release/integritee-collator"
 ws_port = 9945
 
