@@ -90,6 +90,9 @@ pub mod scheduler {
 			ValueQuery,
 		>;
 
+		#[allow(dead_code)]
+		type TaskName = [u8; 32];
+
 		#[frame_support::storage_alias]
 		pub(crate) type Lookup<T: Config> =
 			StorageMap<Pallet<T>, Twox64Concat, TaskName, TaskAddress<BlockNumberFor<T>>>;
