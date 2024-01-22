@@ -260,3 +260,108 @@ pub mod xcm {
 		}
 	}
 }
+
+/// the bounties pallet experienced a manual version fix which we didn't implement. this bruteforces v4
+/// https://github.com/paritytech/substrate/commit/9957da3cbb027f9b754c453a4d58a62665e532ef
+pub mod bounties {
+	// this is necessary because migrations from v0 to v3 are no longer available in the scheduler
+	// pallet code and migrating is only possible from v3. The strategy here is to empty the agenda
+	// (has been empty since genesis)
+	use frame_support::traits::OnRuntimeUpgrade;
+	use pallet_bounties::*;
+
+	/// The log target.
+	const TARGET: &'static str = "runtime::fix::bounties::migration";
+
+	pub mod v4 {
+		use super::*;
+		use frame_support::pallet_prelude::*;
+		use sp_std::vec::Vec;
+
+		pub struct MigrateToV4<T>(sp_std::marker::PhantomData<T>);
+
+		impl<T: Config> OnRuntimeUpgrade for MigrateToV4<T> {
+			#[cfg(feature = "try-runtime")]
+			fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+				Ok(0u32.encode())
+			}
+
+			fn on_runtime_upgrade() -> Weight {
+				let onchain_version = Pallet::<T>::on_chain_storage_version();
+				if onchain_version >= 4 {
+					log::warn!(
+						target: TARGET,
+						"skipping v0 to v4 migration: executed on wrong storage version.\
+					Expected version 0, found {:?}",
+						onchain_version,
+					);
+					return T::DbWeight::get().reads(1)
+				}
+				log::info!(target: TARGET, "migrating from {:?} to 4", onchain_version);
+				StorageVersion::new(4).put::<Pallet<T>>();
+
+				T::DbWeight::get().reads_writes(1, 1)
+			}
+
+			#[cfg(feature = "try-runtime")]
+			fn post_upgrade(state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
+				ensure!(StorageVersion::get::<Pallet<T>>() == 4, "Must upgrade");
+				Ok(())
+			}
+		}
+	}
+}
+
+/// the bounties pallet experienced a manual version fix which we didn't implement. this bruteforces v4
+/// https://github.com/paritytech/substrate/commit/9957da3cbb027f9b754c453a4d58a62665e532ef
+pub mod preimage {
+	// this is necessary because migrations from v0 to v3 are no longer available in the scheduler
+	// pallet code and migrating is only possible from v3. The strategy here is to empty the agenda
+	// (has been empty since genesis)
+	use frame_support::traits::OnRuntimeUpgrade;
+	use pallet_preimage::*;
+
+	/// The log target.
+	const TARGET: &'static str = "runtime::fix::preimage::migration";
+
+	pub mod v1 {
+		use super::*;
+		use frame_support::pallet_prelude::*;
+		use sp_std::vec::Vec;
+
+		pub struct MigrateToV1<T>(sp_std::marker::PhantomData<T>);
+
+		impl<T: Config> OnRuntimeUpgrade for MigrateToV1<T> {
+			#[cfg(feature = "try-runtime")]
+			fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+				let images = PreimageFor::<T>::iter_values().count() as u32;
+				let status = StatusFor::<T>::iter_values().count() as u32;
+				assert_eq!(images, status);
+				Ok(0u32.encode())
+			}
+
+			fn on_runtime_upgrade() -> Weight {
+				let onchain_version = Pallet::<T>::on_chain_storage_version();
+				if onchain_version >= 1 {
+					log::warn!(
+						target: TARGET,
+						"skipping v0 to v1 migration: executed on wrong storage version.\
+					Expected version 0, found {:?}",
+						onchain_version,
+					);
+					return T::DbWeight::get().reads(1)
+				}
+				log::info!(target: TARGET, "migrating from {:?} to 1", onchain_version);
+				StorageVersion::new(1).put::<Pallet<T>>();
+
+				T::DbWeight::get().reads_writes(1, 1)
+			}
+
+			#[cfg(feature = "try-runtime")]
+			fn post_upgrade(state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
+				ensure!(StorageVersion::get::<Pallet<T>>() == 1, "Must upgrade");
+				Ok(())
+			}
+		}
+	}
+}
