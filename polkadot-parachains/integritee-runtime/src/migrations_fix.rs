@@ -151,10 +151,10 @@ pub mod collective {
 		use frame_support::{pallet_prelude::*, traits::Instance};
 		use sp_std::vec::Vec;
 
-		pub struct MigrateToV4<T: Config<I>, I: 'static>(sp_std::marker::PhantomData<(T, I)>);
-		impl<T: Config<I>, I: Instance + 'static> OnRuntimeUpgrade for MigrateToV4<T, I> {
+		pub struct MigrateToV4<T: Config<I>, I: 'static>(PhantomData<(T, I)>);
+		impl<T: Config<I>, I: 'static> OnRuntimeUpgrade for MigrateToV4<T, I> {
 			#[cfg(feature = "try-runtime")]
-			fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+			fn pre_upgrade() -> Result<Vec<u8>, DispatchError> {
 				Ok((0u32).encode())
 			}
 
@@ -176,7 +176,7 @@ pub mod collective {
 			}
 
 			#[cfg(feature = "try-runtime")]
-			fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
+			fn post_upgrade(_state: Vec<u8>) -> Result<(), DispatchError> {
 				ensure!(StorageVersion::get::<Pallet<T, I>>() == 4, "Must upgrade");
 				Ok(())
 			}

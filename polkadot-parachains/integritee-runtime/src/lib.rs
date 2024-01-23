@@ -832,8 +832,8 @@ pub type Migrations = (
 	// migration changes the pallet name prefix (back in 2021). no need to touch this. I guess this has been left untouched when we migrated solo to para
 	// for consistency, we will bruteforce to V4
 	// future: v1.6.0 is still at V4.
-	migrations_fix::collective::v4::MigrateToV4<Runtime, Instance1>,
-	migrations_fix::collective::v4::MigrateToV4<Runtime, Instance2>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, CouncilInstance>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, TechnicalCommitteeInstance>,
 );
 
 /// Executive: handles dispatch to the various modules.
