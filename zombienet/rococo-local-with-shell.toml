@@ -3,7 +3,7 @@ timeout = 10000
 
 [relaychain]
 chain = "rococo-local"
-default_command = "~/bin/polkadot-v0.9.43"
+default_command = "~/bin/polkadot-v0.9.42"
 default_args = [ "-lparachain=debug" ]
 
 [[relaychain.nodes]]
@@ -30,9 +30,9 @@ chain = "shell-rococo-local-dev"
 [[parachains.collators]]
 name = "shell-collator01"
 command = "./target/release/integritee-collator"
-ws_port = 9954
+ws_port = 9944
 
 [[parachains.collators]]
 name = "shell-collator02"
 command = "./target/release/integritee-collator"
-ws_port = 9955
+ws_port = 9945

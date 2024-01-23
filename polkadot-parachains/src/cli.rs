@@ -1,19 +1,3 @@
-// Copyright 2019-2021 Parity Technologies (UK) Ltd.
-// This file is part of Cumulus.
-
-// Cumulus is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Cumulus is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
-
 use std::path::PathBuf;
 
 /// Sub-commands supported by the collator.
@@ -64,12 +48,25 @@ pub enum Subcommand {
 	TryRuntime,
 }
 
+const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
+	r#"<bold><underline>Examples:</></>
+   <bold>integritee-collator build-spec --disable-default-bootnode > plain-parachain-chainspec.json</>
+           Export a chainspec for a local testnet in json format.
+   <bold>integritee-collator --chain plain-parachain-chainspec.json --tmp -- --chain rococo-local</>
+           Launch a full node with chain specification loaded from plain-parachain-chainspec.json.
+   <bold>integritee-collator</>
+           Launch a full node with default parachain <italic>local-testnet</> and relay chain <italic>rococo-local</>.
+   <bold>integritee-collator --collator</>
+           Launch a collator with default parachain <italic>local-testnet</> and relay chain <italic>rococo-local</>.
+ "#
+);
 #[derive(Debug, clap::Parser)]
 #[command(
 	propagate_version = true,
 	args_conflicts_with_subcommands = true,
 	subcommand_negates_reqs = true
 )]
+#[clap(after_help = AFTER_HELP_EXAMPLE)]
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,
@@ -89,7 +86,7 @@ pub struct Cli {
 
 	/// Relay chain arguments
 	#[arg(raw = true)]
-	pub relaychain_args: Vec<String>,
+	pub relay_chain_args: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -112,7 +109,11 @@ impl RelayChainCli {
 	) -> Self {
 		let extension = crate::chain_spec::Extensions::try_get(&*para_config.chain_spec);
 		let chain_id = extension.map(|e| e.relay_chain.clone());
-		let base_path = para_config.base_path.as_ref().map(|x| x.path().join("polkadot"));
-		Self { base_path, chain_id, base: clap::Parser::parse_from(relay_chain_args) }
+		let base_path = para_config.base_path.path().join("polkadot");
+		Self {
+			base_path: Some(base_path),
+			chain_id,
+			base: clap::Parser::parse_from(relay_chain_args),
+		}
 	}
 }

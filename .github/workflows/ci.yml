@@ -249,8 +249,6 @@ jobs:
         uses: chevdor/srtool-actions@v0.7.0
         with:
           image: paritytech/srtool
-          # Can remove that when we can build with stable, see: https://github.com/integritee-network/parachain/issues/200
-          tag: 1.66.1
           chain: ${{ matrix.runtime }}
           runtime_dir: polkadot-parachains/${{ matrix.runtime }}-runtime
 

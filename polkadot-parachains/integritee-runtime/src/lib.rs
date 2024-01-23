@@ -25,7 +25,11 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use frame_support::traits::{EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced};
+use frame_support::{
+	instances::{Instance1, Instance2},
+	traits::{ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced},
+};
+pub use opaque::*;
 use pallet_collective;
 use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
 use sp_api::impl_runtime_apis;
@@ -36,7 +40,6 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
-
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -64,12 +67,12 @@ use frame_system::{
 };
 
 pub use parachains_common as common;
-use parachains_common::{
-	opaque, AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
-	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
-};
 pub use parachains_common::{
-	AccountId, Balance, BlockNumber, Hash, Header, Index, Signature, MILLISECS_PER_BLOCK,
+	AccountId, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
+};
+use parachains_common::{
+	AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
+	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
 
 pub use pallet_balances::Call as BalancesCall;
@@ -97,6 +100,23 @@ pub mod xcm_config;
 
 pub type SessionHandlers = ();
 
+/// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
+/// the specifics of the runtime. They can then be made to be agnostic over specific formats
+/// of data like extrinsics, allowing for them to continue syncing the network through upgrades
+/// to even the core data structures.
+pub mod opaque {
+	use super::*;
+	use sp_runtime::{generic, traits::BlakeTwo256};
+
+	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
+	/// Opaque block header type.
+	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+	/// Opaque block type.
+	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+	/// Opaque block identifier type.
+	pub type BlockId = generic::BlockId<Block>;
+}
+
 impl_opaque_keys! {
 	pub struct SessionKeys {
 		pub aura: Aura,
@@ -108,7 +128,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 41,
+	spec_version: 42,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 6,
@@ -183,14 +203,13 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
+	type Block = generic::Block<Header, UncheckedExtrinsic>;
 	type AccountId = AccountId;
 	type RuntimeCall = RuntimeCall;
 	type Lookup = AccountIdLookup<AccountId, ()>;
-	type Index = Index;
-	type BlockNumber = BlockNumber;
+	type Nonce = Nonce;
 	type Hash = Hash;
 	type Hashing = BlakeTwo256;
-	type Header = Header;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type BlockHashCount = BlockHashCount;
@@ -243,7 +262,7 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
-	type HoldIdentifier = ();
+	type RuntimeHoldReason = ();
 	type FreezeIdentifier = ();
 	type MaxHolds = ();
 	type MaxFreezes = ();
@@ -469,6 +488,7 @@ impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
 	type MaxAuthorities = MaxAuthorities;
+	type AllowMultipleBlocksPerSlot = ConstBool<false>;
 }
 
 // Integritee pallet
@@ -725,19 +745,16 @@ impl orml_xcm::Config for Runtime {
 }
 
 construct_runtime!(
-	pub enum Runtime where
-		Block = Block,
-		NodeBlock = opaque::Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
+	pub enum Runtime
 	{
 		// Basic.
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>} = 0,
+		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>} = 0,
 		ParachainSystem: cumulus_pallet_parachain_system::{
-			Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
+			Pallet, Call, Config<T>, Storage, Inherent, Event<T>, ValidateUnsigned,
 		} = 1,
 		// RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 2,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
-		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 4,
+		ParachainInfo: parachain_info::{Pallet, Storage, Config<T>} = 4,
 		Preimage: pallet_preimage = 5,
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 6,
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 7,
@@ -750,7 +767,7 @@ construct_runtime!(
 		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
 
 		// Governance.
-		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 13,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config<T>, Event<T>} = 13,
 		Democracy: pallet_democracy::{Pallet, Storage, Config<T>, Event<T>, Call} = 14,
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 15,
 		TechnicalCommittee:
@@ -760,11 +777,11 @@ construct_runtime!(
 
 		// Consensus.
 		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config<T>} = 24,
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Storage, Config} = 31,
+		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Storage, Config<T>} = 31,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 34,
@@ -772,7 +789,7 @@ construct_runtime!(
 		XcmTransactor: pallet_xcm_transactor = 36,
 
 		// Integritee pallets.
-		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
+		Teerex: pallet_teerex::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
@@ -807,49 +824,16 @@ pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, Si
 
 /// Migrations to apply on runtime upgrade.
 pub type Migrations = (
-	// Scheduler
-	// fixing the scheduler with a local migration is necessary because we have missed intermediate
-	// migrations. mainnet at V0, jumping to V4 here
-	// future: v1.6.0 is still at V4.
-	migrations_fix::scheduler::v4::MigrateToV4<Runtime>,
-	//
-	// XcmpQueue
-	// code says it's V2, but we have V3 onchain. how come?
-	// v1.0.0: V3 (can migrate V1/V2 to V3) from here onwards we should be consistent
-	// v1.4.0: V4
-	// Plan: upgrade to v1.0.0. then we're aligned
-	//cumulus_pallet_xcmp_queue::migration::migrate_to_v3<Runtime>,
-
-	// DmpQueue
-	// code says it's V1 but we have V2 onchain. how come?
-	// at spec_version 29 it was at 1. (release https://github.com/integritee-network/parachain/releases/tag/1.5.33) (polkadot-v0.9.36)
-	// next spec_version was v35 where it went to 2
-	// v35 is https://github.com/integritee-network/parachain/releases/tag/1.5.40 (polkadot-v0.9.42)
-	// v1.0.0: V2 (can migrate V0 and V1 to V2) from here onwards we should be consistent
-	// v1.6.0 is still V2
-	// Plan: upgrade to v1.0.0. then we're aligned
-
-	// PolkadotXcm
-	// mainnet is at V0. migration fails with corrupt storage because the the entries have been written with the new version already
-	// therefore it should be safe to just bruteforce the storageVersion to 1 and then test that we can still decode VersionNotifyTargets (only thing the original migration changes)
-	migrations_fix::xcm::v1::MigrateToV1<Runtime>,
+	migrations_fix::preimage::v1::MigrateToV1<Runtime>,
+	migrations_fix::bounties::v4::MigrateToV4<Runtime>,
+	// Multisig
+	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
 	// Collective
 	// migration changes the pallet name prefix (back in 2021). no need to touch this. I guess this has been left untouched when we migrated solo to para
 	// for consistency, we will bruteforce to V4
 	// future: v1.6.0 is still at V4.
-	// Plan: as we have no issues with collectives, we won't change a running system !
-	// migrations_fix::collective::v4::MigrateToV4<Runtime, Instance1>,
-	//
-	// Democracy
-	pallet_democracy::migrations::v1::Migration<Runtime>,
-	//
-	// Multisig
-	// this migration takes 500ms. We'll skip this until we have async backing
-	//pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
-	//
-	// Balances: mainnet at V0. this here brings us to V1
-	// future: v1.6.0 is still at V1
-	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, CouncilInstance>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, TechnicalCommitteeInstance>,
 );
 
 /// Executive: handles dispatch to the various modules.
@@ -984,8 +968,8 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
-		fn account_nonce(account: AccountId) -> Index {
+	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
+		fn account_nonce(account: AccountId) -> Nonce {
 			System::account_nonce(account)
 		}
 	}
