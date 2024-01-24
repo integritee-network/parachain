@@ -37,6 +37,8 @@ frame-try-runtime = { git = "https://github.com/paritytech/substrate.git", defau
 
 # pallets
 pallet-aura = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+pallet-assets = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+pallet-asset-registry = { default-features = false, git = "https://github.com/paritytech/trappist", branch = "polkadot-v1.0.0" }
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 pallet-bounties = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 pallet-child-bounties = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
@@ -52,6 +54,7 @@ pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "
 pallet-treasury = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-vesting = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
+pallet-withdraw-teleport = { default-features = false, git = "https://github.com/paritytech/trappist", branch = "polkadot-v1.0.0" }
 
 # integritee pallets
 pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
@@ -127,6 +130,8 @@ std = [
     "orml-xcm/std",
     "orml-xtokens/std",
     "pallet-aura/std",
+    "pallet-assets/std",
+    "pallet-asset-registry/std",
     "pallet-balances/std",
     "pallet-bounties/std",
     "pallet-child-bounties/std",
@@ -147,6 +152,7 @@ std = [
     "pallet-treasury/std",
     "pallet-utility/std",
     "pallet-vesting/std",
+    "pallet-withdraw-teleport/std",
     "pallet-xcm-transactor/std",
     "pallet-xcm/std",
     "parachain-info/std",
@@ -182,6 +188,8 @@ runtime-benchmarks = [
     "xcm-builder/runtime-benchmarks",
     # actual pallets to be benchmarked
     "frame-system/runtime-benchmarks",
+    "pallet-assets/runtime-benchmarks",
+    "pallet-asset-registry/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
     "pallet-child-bounties/runtime-benchmarks",
@@ -200,6 +208,7 @@ runtime-benchmarks = [
     "pallet-treasury/runtime-benchmarks",
     "pallet-vesting/runtime-benchmarks",
     "pallet-utility/runtime-benchmarks",
+    "pallet-withdraw-teleport/runtime-benchmarks",
     "cumulus-pallet-xcmp-queue/runtime-benchmarks",
 ]
 
@@ -216,6 +225,8 @@ try-runtime = [
     "orml-xcm/try-runtime",
     "parachain-info/try-runtime",
     "pallet-aura/try-runtime",
+    "pallet-assets/try-runtime",
+    "pallet-asset-registry/try-runtime",
     "pallet-balances/try-runtime",
     "pallet-bounties/try-runtime",
     "pallet-child-bounties/try-runtime",
@@ -235,6 +246,7 @@ try-runtime = [
     "pallet-treasury/try-runtime",
     "pallet-vesting/try-runtime",
     "pallet-utility/try-runtime",
+    "pallet-withdraw-teleport/try-runtime",
     "pallet-xcm/try-runtime",
     "pallet-xcm-transactor/try-runtime",
 ]

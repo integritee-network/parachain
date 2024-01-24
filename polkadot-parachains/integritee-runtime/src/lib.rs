@@ -71,8 +71,8 @@ pub use parachains_common::{
 	AccountId, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
 };
 use parachains_common::{
-	AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
-	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+	AssetIdForTrustBackedAssets, AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS,
+	MAXIMUM_BLOCK_WEIGHT, MINUTES, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
 
 pub use pallet_balances::Call as BalancesCall;
@@ -89,6 +89,7 @@ pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
+use sp_runtime::traits::ConstU128;
 
 mod helpers;
 mod weights;
@@ -744,6 +745,64 @@ impl orml_xcm::Config for Runtime {
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
+pub type AssetBalance = Balance;
+
+impl pallet_assets::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = AssetBalance;
+	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
+	type AssetId = AssetIdForTrustBackedAssets;
+	type AssetIdParameter = codec::Compact<AssetIdForTrustBackedAssets>;
+	type Currency = Balances;
+	type CreateOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = ConstU128<{ TEER }>;
+	type AssetAccountDeposit = ConstU128<{ TEER }>;
+	type MetadataDepositBase = ConstU128<{ TEER }>;
+	type MetadataDepositPerByte = ConstU128<{ 10 * MILLITEER }>;
+	type ApprovalDeposit = ConstU128<{ 10 * MILLITEER }>;
+	type StringLimit = ConstU32<50>;
+	type Freezer = ();
+	type Extra = ();
+	type CallbackHandle = ();
+	type WeightInfo = weights::pallet_assets::WeightInfo<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+pub struct AssetRegistryBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_asset_registry::BenchmarkHelper<AssetIdForTrustBackedAssets>
+	for AssetRegistryBenchmarkHelper
+{
+	fn get_registered_asset() -> AssetIdForTrustBackedAssets {
+		use sp_runtime::traits::StaticLookup;
+
+		let root = frame_system::RawOrigin::Root.into();
+		let asset_id = 1;
+		let caller = frame_benchmarking::whitelisted_caller();
+		let caller_lookup = <Runtime as frame_system::Config>::Lookup::unlookup(caller);
+		Assets::force_create(root, asset_id.into(), caller_lookup, true, 1)
+			.expect("Should have been able to force create asset");
+		asset_id
+	}
+}
+
+impl pallet_asset_registry::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ReserveAssetModifierOrigin = EnsureRoot<Self::AccountId>;
+	type Assets = Assets;
+	type WeightInfo = weights::pallet_asset_registry::WeightInfo<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = AssetRegistryBenchmarkHelper;
+}
+
+impl pallet_withdraw_teleport::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = weights::pallet_withdraw_teleport::WeightInfo<Runtime>;
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -787,6 +846,9 @@ construct_runtime!(
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 34,
 		OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
+		Assets: pallet_assets = 41,
+		AssetRegistry: pallet_asset_registry::{Pallet, Call, Storage, Event<T>} = 42,
+		WithdrawTeleport: pallet_withdraw_teleport = 43,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
@@ -854,6 +916,8 @@ extern crate frame_benchmarking;
 mod benches {
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
+		[pallet_asset_registry, AssetRegistry]
+		[pallet_assets, Assets]
 		[pallet_balances, Balances]
 		[pallet_bounties, Bounties]
 		[pallet_child_bounties, ChildBounties]
@@ -877,6 +941,7 @@ mod benches {
 		[pallet_vesting, Vesting]
 		[pallet_xcm, PolkadotXcm]
 		[pallet_utility, Utility]
+		[pallet_withdraw_teleport, WithdrawTeleport]
 	);
 }
 
