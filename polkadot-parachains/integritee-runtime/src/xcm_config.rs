@@ -60,7 +60,7 @@ use xcm_executor::XcmExecutor;
 use xcm_transactor_primitives::*;
 
 const fn teer_general_key() -> Junction {
-	const TEER_KEY: [u8; 32] = *b"TEER0000000000000000000000000000";
+	const TEER_KEY: [u8; 32] = *b"TEER\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 	GeneralKey { length: 4, data: TEER_KEY }
 }
 

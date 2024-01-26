@@ -25,9 +25,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use frame_support::{
-	instances::{Instance1, Instance2},
-	traits::{ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced},
+use frame_support::traits::{
+	ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
 };
 pub use opaque::*;
 use pallet_collective;
@@ -93,9 +92,6 @@ pub use pallet_teerex::Call as TeerexCall;
 mod helpers;
 mod weights;
 
-// todo: temporary. remove after fixing
-mod migrations_fix;
-
 pub mod xcm_config;
 
 pub type SessionHandlers = ();
@@ -128,7 +124,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 42,
+	spec_version: 43,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 6,
@@ -823,18 +819,7 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra>;
 
 /// Migrations to apply on runtime upgrade.
-pub type Migrations = (
-	migrations_fix::preimage::v1::MigrateToV1<Runtime>,
-	migrations_fix::bounties::v4::MigrateToV4<Runtime>,
-	// Multisig
-	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
-	// Collective
-	// migration changes the pallet name prefix (back in 2021). no need to touch this. I guess this has been left untouched when we migrated solo to para
-	// for consistency, we will bruteforce to V4
-	// future: v1.6.0 is still at V4.
-	migrations_fix::collective::v4::MigrateToV4<Runtime, CouncilInstance>,
-	migrations_fix::collective::v4::MigrateToV4<Runtime, TechnicalCommitteeInstance>,
-);
+pub type Migrations = ();
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
