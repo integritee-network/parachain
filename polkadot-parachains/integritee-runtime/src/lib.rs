@@ -740,6 +740,12 @@ impl orml_xcm::Config for Runtime {
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
+impl pallet_sudo::Config for Runtime {
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -768,6 +774,8 @@ construct_runtime!(
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 15,
 		TechnicalCommittee:
 			pallet_collective::<Instance2>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 16,
+		// was at index 5 before, but storage prefix goes by name only
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 18,
 		ChildBounties: pallet_child_bounties = 19,
 
@@ -819,7 +827,11 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra>;
 
 /// Migrations to apply on runtime upgrade.
-pub type Migrations = ();
+pub type Migrations = (
+	// Balances: mainnet at V0. this here brings us to V1
+	// future: v1.6.0 is still at V1
+	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
+);
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
