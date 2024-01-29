@@ -842,6 +842,7 @@ pub type Migrations = (
 	migrations_fix::dmp_queue::v2::MigrateToV2<Runtime>,
 	migrations_fix::xcmp_queue::v3::MigrateToV3<Runtime>,
 	migrations_fix::democracy::v1::MigrateToV1<Runtime>,
+	cumulus_pallet_parachain_system::migration::Migration<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
