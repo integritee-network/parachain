@@ -28,6 +28,7 @@ use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::traits::{
 	ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
 };
+mod migrations_fix;
 pub use opaque::*;
 use pallet_collective;
 use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
@@ -828,9 +829,19 @@ pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, Si
 
 /// Migrations to apply on runtime upgrade.
 pub type Migrations = (
-	// Balances: mainnet at V0. this here brings us to V1
-	// future: v1.6.0 is still at V1
+	migrations_fix::scheduler::v4::MigrateToV4<Runtime>,
+	migrations_fix::xcm::v1::MigrateToV1<Runtime>,
 	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
+	migrations_fix::preimage::v1::MigrateToV1<Runtime>,
+	migrations_fix::bounties::v4::MigrateToV4<Runtime>,
+	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, CouncilInstance>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, TechnicalCommitteeInstance>,
+	pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,
+	pallet_teerex::migrations::v2::MigrateV1toV2<Runtime>,
+	migrations_fix::dmp_queue::v2::MigrateToV2<Runtime>,
+	migrations_fix::xcmp_queue::v3::MigrateToV3<Runtime>,
+	migrations_fix::democracy::v1::MigrateToV1<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
