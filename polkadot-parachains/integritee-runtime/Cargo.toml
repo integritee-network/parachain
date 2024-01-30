@@ -2,7 +2,7 @@
 name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # patch revision must match runtime spec_version
-version = "1.7.43"
+version = "1.7.44"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -12,7 +12,7 @@ edition = "2021"
 codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ["derive"] }
 log = { version = "0.4.17", default-features = false }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
-
+smallvec = "1.11.0"
 parachains-common = { path = "../common", default-features = false }
 
 # Substrate dependencies
@@ -92,6 +92,7 @@ orml-xtokens = { default-features = false, git = "https://github.com/open-web3-s
 frame-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 frame-system-benchmarking = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 hex-literal = { version = "0.3.4", optional = true }
+
 
 [dev-dependencies]
 hex-literal = "0.3.4"

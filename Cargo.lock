@@ -3687,7 +3687,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-runtime"
-version = "1.7.43"
+version = "1.7.44"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
@@ -3742,6 +3742,7 @@ dependencies = [
  "polkadot-primitives",
  "polkadot-runtime-parachains",
  "scale-info",
+ "smallvec",
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
