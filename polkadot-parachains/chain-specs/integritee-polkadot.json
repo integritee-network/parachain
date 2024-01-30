@@ -37,7 +37,7 @@
     }
   },
   "id": "integritee-polkadot",
-  "name": "Integritee Shell",
+  "name": "Integritee Network (Polkadot)",
   "para_id": 2039,
   "properties": {
     "ss58Format": 13,
