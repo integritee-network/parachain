@@ -225,6 +225,7 @@ fn integritee_genesis_config(
 				.to_vec(),
 			_config: Default::default(),
 		},
+		sudo: parachain_runtime::SudoConfig { key: Some(root_key.clone()) },
 		balances: parachain_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect(),
 		},

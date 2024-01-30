@@ -28,6 +28,7 @@ use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::traits::{
 	ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
 };
+mod migrations_fix;
 pub use opaque::*;
 use pallet_collective;
 use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
@@ -740,6 +741,12 @@ impl orml_xcm::Config for Runtime {
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
+impl pallet_sudo::Config for Runtime {
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -768,6 +775,8 @@ construct_runtime!(
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 15,
 		TechnicalCommittee:
 			pallet_collective::<Instance2>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 16,
+		// was at index 5 before, but storage prefix goes by name only
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 18,
 		ChildBounties: pallet_child_bounties = 19,
 
@@ -819,7 +828,22 @@ pub type UncheckedExtrinsic =
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra>;
 
 /// Migrations to apply on runtime upgrade.
-pub type Migrations = ();
+pub type Migrations = (
+	migrations_fix::scheduler::v4::MigrateToV4<Runtime>,
+	migrations_fix::xcm::v1::MigrateToV1<Runtime>,
+	pallet_balances::migration::MigrateToTrackInactive<Runtime, xcm_config::CheckingAccount>,
+	migrations_fix::preimage::v1::MigrateToV1<Runtime>,
+	migrations_fix::bounties::v4::MigrateToV4<Runtime>,
+	pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, CouncilInstance>,
+	migrations_fix::collective::v4::MigrateToV4<Runtime, TechnicalCommitteeInstance>,
+	pallet_teerex::migrations::v1::MigrateV0toV1<Runtime>,
+	pallet_teerex::migrations::v2::MigrateV1toV2<Runtime>,
+	migrations_fix::dmp_queue::v2::MigrateToV2<Runtime>,
+	migrations_fix::xcmp_queue::v3::MigrateToV3<Runtime>,
+	migrations_fix::democracy::v1::MigrateToV1<Runtime>,
+	cumulus_pallet_parachain_system::migration::Migration<Runtime>,
+);
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
