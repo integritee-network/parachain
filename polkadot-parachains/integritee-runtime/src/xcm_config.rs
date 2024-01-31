@@ -21,21 +21,17 @@
 use super::{
 	AccountId, Balance, Balances, Convert, EnsureRootOrMoreThanHalfCouncil, MaxInstructions,
 	ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
-	XcmpQueue, MILLITEER, TEER,
+	XcmpQueue, TEER,
 };
 use crate::weights;
 use codec::{Decode, Encode, MaxEncodedLen};
 use core::marker::PhantomData;
 use cumulus_primitives_core::GlobalConsensus;
 use frame_support::{
-	match_types,
 	pallet_prelude::{Get, Weight},
 	parameter_types,
 	traits::{Everything, Nothing},
-	weights::{
-		constants::ExtrinsicBaseWeight, FeePolynomial, IdentityFee, WeightToFeeCoefficient,
-		WeightToFeeCoefficients, WeightToFeePolynomial,
-	},
+	weights::IdentityFee,
 	RuntimeDebug,
 };
 use frame_system::EnsureRoot;
@@ -45,12 +41,9 @@ use orml_traits::{
 };
 use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
-use parachains_common::fee::WeightToFee;
 use polkadot_parachain::primitives::Sibling;
 use scale_info::TypeInfo;
-use smallvec::smallvec;
 use sp_core::ConstU32;
-use sp_runtime::Perbill;
 use sp_std::{
 	convert::{From, Into},
 	prelude::*,
@@ -58,12 +51,10 @@ use sp_std::{
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
-	AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, CurrencyAdapter,
-	DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin, FixedWeightBounds,
-	ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
-	WeightInfoBounds, WithComputedOrigin,
+	AllowTopLevelPaidExecutionFrom, CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry,
+	EnsureXcmOrigin, FixedWeightBounds, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
 use xcm_executor::XcmExecutor;
 use xcm_transactor_primitives::*;
@@ -238,53 +229,22 @@ where
 
 parameter_types! {
 	// Weight for one XCM operation. Copied from moonbeam.
-	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000_000u64, 1_000_000);
+	pub UnitWeightCost: Weight = Weight::from_parts(200_000_000u64, DEFAULT_PROOF_SIZE);
 
 	// One TEER buys 1 second of weight.
 	pub const WeightPrice: (MultiLocation, u128) = (MultiLocation::parent(), TEER);
 }
 
-match_types! {
-	pub type ParentOrParentsExecutivePlurality: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: Here } |
-		MultiLocation { parents: 1, interior: X1(Plurality { id: BodyId::Executive, .. }) }
-	};
-}
-match_types! {
-	pub type ParentOrSiblings: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: Here } |
-		MultiLocation { parents: 1, interior: X1(_) }
-	};
-}
-match_types! {
-	pub type AssetHub: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
-	};
-}
-pub type Barrier = TrailingSetTopicAsId<
-	DenyThenTry<
-		DenyReserveTransferToRelayChain,
-		(
-			TakeWeightCredit,
-			// Expected responses are OK.
-			AllowKnownQueryResponses<PolkadotXcm>,
-			// Allow XCMs with some computed origins to pass through.
-			WithComputedOrigin<
-				(
-					// If the message is one that immediately attemps to pay for execution, then
-					// allow it.
-					AllowTopLevelPaidExecutionFrom<Everything>,
-					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
-					// get free execution.
-					AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
-					// Subscriptions for version tracking are OK.
-					AllowSubscriptionsFrom<ParentOrSiblings>,
-				),
-				UniversalLocation,
-				ConstU32<8>,
-			>,
-		),
-	>,
+pub type Barrier = DenyThenTry<
+	DenyReserveTransferToRelayChain,
+	(
+		TakeWeightCredit,
+		AllowTopLevelPaidExecutionFrom<Everything>,
+		// Expected responses are OK.
+		AllowKnownQueryResponses<PolkadotXcm>,
+		// Subscriptions for version tracking are OK.
+		AllowSubscriptionsFrom<Everything>,
+	),
 >;
 
 pub struct SafeCallFilter;
@@ -300,8 +260,6 @@ parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 }
 
-pub type Traders = (UsingComponents<WeightToFee, SelfReserve, AccountId, Balances, ()>);
-
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type RuntimeCall = RuntimeCall;
@@ -313,11 +271,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type IsTeleporter = (); // No teleport for now. Better be safe than sorry.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
-	type Weigher = WeightInfoBounds<
-		crate::weights::xcm::IntegriteeXcmWeight<RuntimeCall>,
-		RuntimeCall,
-		MaxInstructions,
-	>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Trader = UsingComponents<IdentityFee<Balance>, SelfReserve, AccountId, Balances, ()>;
 	type ResponseHandler = PolkadotXcm;
 	type SubscriptionService = PolkadotXcm;
@@ -354,11 +308,7 @@ impl pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
 	type XcmTeleportFilter = Nothing; // Do not allow teleports
 	type XcmReserveTransferFilter = Everything; // Transfer are allowed
-	type Weigher = WeightInfoBounds<
-		crate::weights::xcm::IntegriteeXcmWeight<RuntimeCall>,
-		RuntimeCall,
-		MaxInstructions,
-	>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
@@ -433,7 +383,7 @@ parameter_types! {
 pub const DEFAULT_PROOF_SIZE: u64 = 128 * 1024;
 
 parameter_types! {
-	pub const BaseXcmWeight: Weight= Weight::from_parts(1_000_000_000u64, 1_000_000);
+	pub const BaseXcmWeight: Weight= Weight::from_parts(200_000_000u64, DEFAULT_PROOF_SIZE);
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
@@ -465,11 +415,7 @@ impl orml_xtokens::Config for Runtime {
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;
 	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
-	type Weigher = WeightInfoBounds<
-		crate::weights::xcm::IntegriteeXcmWeight<RuntimeCall>,
-		RuntimeCall,
-		MaxInstructions,
-	>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type BaseXcmWeight = BaseXcmWeight;
 	type UniversalLocation = UniversalLocation;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
