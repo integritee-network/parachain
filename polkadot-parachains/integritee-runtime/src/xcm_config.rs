@@ -76,6 +76,7 @@ parameter_types! {
 
 	pub SelfReserve: MultiLocation = MultiLocation {
 		parents:0,
+		//todo: why not `interior: Here` ?
 		interior: Junctions::X1(TEER_GENERAL_KEY)
 	};
 	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
@@ -228,7 +229,7 @@ where
 
 parameter_types! {
 	// Weight for one XCM operation. Copied from moonbeam.
-	pub UnitWeightCost: Weight = Weight::from_parts(200_000_000u64, DEFAULT_PROOF_SIZE);
+	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
 
 	// One TEER buys 1 second of weight.
 	pub const WeightPrice: (MultiLocation, u128) = (MultiLocation::parent(), TEER);
@@ -379,10 +380,10 @@ parameter_types! {
 }
 
 /// Copied from moonbeam: https://github.com/PureStake/moonbeam/blob/095031d171b0c163e5649ee35acbc36eef681a82/primitives/xcm/src/ethereum_xcm.rs#L34
-pub const DEFAULT_PROOF_SIZE: u64 = 128 * 1024;
+pub const DEFAULT_PROOF_SIZE: u64 = 1024;
 
 parameter_types! {
-	pub const BaseXcmWeight: Weight= Weight::from_parts(200_000_000u64, DEFAULT_PROOF_SIZE);
+	pub const BaseXcmWeight: Weight= Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
