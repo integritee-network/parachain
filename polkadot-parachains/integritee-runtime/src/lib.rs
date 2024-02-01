@@ -39,6 +39,8 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
+use sp_runtime::traits::IdentityLookup;
+use frame_support::traits::tokens::PayFromAccount;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -58,13 +60,14 @@ pub use frame_support::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight},
 		IdentityFee, Weight,
 	},
-	PalletId, RuntimeDebug, StorageValue,
+	PalletId, StorageValue,
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureWithSuccess,
 };
-
+use sp_runtime::RuntimeDebug;
+use frame_support::traits::tokens::ConversionFromAssetBalance;
 pub use parachains_common as common;
 pub use parachains_common::{
 	AccountId, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
@@ -73,7 +76,6 @@ use parachains_common::{
 	AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
 	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
-
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use scale_info::TypeInfo;
@@ -259,6 +261,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = ();
 	type FreezeIdentifier = ();
 	type MaxHolds = ();
 	type MaxFreezes = ();
@@ -445,8 +448,6 @@ impl pallet_preimage::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
 }
 
 parameter_types! {
@@ -546,11 +547,23 @@ parameter_types! {
 	pub const ProposalBondMinimum: Balance = 100 * MILLITEER;
 	pub const ProposalBondMaximum: Balance = 500 * TEER;
 	pub const SpendPeriod: BlockNumber = prod_or_fast!(6 * DAYS, 6 * MINUTES);
+	pub const PayoutSpendPeriod: BlockNumber = prod_or_fast!(6 * DAYS, 6 * MINUTES);
 	pub const Burn: Permill = Permill::from_percent(1);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const DataDepositPerByte: Balance = 100 * MILLITEER;
 	pub const MaxApprovals: u32 = 10;
 	pub const MaxBalance: Balance = Balance::max_value();
+	pub TreasuryAccount: AccountId = Treasury::account_id();
+}
+
+pub struct NoConversion;
+impl ConversionFromAssetBalance<u128, (), u128> for NoConversion {
+	type Error = ();
+	fn from_asset_balance(balance: Balance, _asset_id: ()) -> Result<Balance, Self::Error> {
+		return Ok(balance)
+	}
+	#[cfg(feature = "runtime-benchmarks")]
+	fn ensure_successful(_: ()) {}
 }
 
 impl pallet_treasury::Config for Runtime {
@@ -570,6 +583,15 @@ impl pallet_treasury::Config for Runtime {
 	type SpendOrigin = EnsureWithSuccess<EnsureRoot<AccountId>, AccountId, MaxBalance>;
 	type MaxApprovals = MaxApprovals; //0:cannot approve any proposal
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
+	type AssetKind = ();
+	type Beneficiary = AccountId;
+	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
+	type Paymaster = PayFromAccount<Balances, TreasuryAccount>;
+	type BalanceConverter = NoConversion;
+	type PayoutPeriod = PayoutSpendPeriod;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+
 }
 
 parameter_types! {

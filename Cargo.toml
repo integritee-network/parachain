@@ -56,7 +56,7 @@ pallet-assets = { version = "26.0.0", default-features = false }
 pallet-aura = { version = "24.0.0", default-features = false }
 pallet-authorship = { version = "25.0.0", default-features = false }
 pallet-balances = { version = "25.0.0", default-features = false }
-pallet-bounties = { version = "25.0.0", default-features = false }
+pallet-bounties = { version = "24.0.0", default-features = false }
 pallet-child-bounties = { version = "24.0.0", default-features = false }
 pallet-collective = { version = "25.0.0", default-features = false }
 pallet-democracy = { version = "25.0.0", default-features = false }
