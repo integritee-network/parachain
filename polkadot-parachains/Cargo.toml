@@ -16,10 +16,10 @@ path = "src/main.rs"
 [dependencies]
 async-trait = { workspace = true }
 clap = { workspace = true }
-parity-scale-codec = { workspace = true, features = ["std"] }
 futures = { workspace = true, features = ["std"] }
 hex-literal = { workspace = true }
 log = { workspace = true, features = ["std"] }
+parity-scale-codec = { workspace = true, features = ["std"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 
@@ -104,20 +104,16 @@ substrate-build-script-utils = { workspace = true }
 [dev-dependencies]
 assert_cmd = { workspace = true }
 nix = { workspace = true }
+pallet-sudo = { workspace = true, features = ["std"] }
+polkadot-cli = { workspace = true, features = ["rococo-native"]} # purge_chain_works works with rococo-local and needs to allow this
+substrate-test-client = { workspace = true }
+substrate-test-runtime-client = { workspace = true }
 tempfile = { workspace = true }
 tokio = { workspace = true }
 wait-timeout = { workspace = true }
-# purge_chain_works works with rococo-local and needs to allow this
-polkadot-cli = { workspace = true, features = ["rococo-native"]}
-
-# Substrate dependencies
-pallet-sudo = { workspace = true, features = ["std"] }
-substrate-test-client = { workspace = true }
-substrate-test-runtime-client = { workspace = true }
 
 [features]
 default = []
-# allow workers to register without remote attestation for dev purposes
 runtime-benchmarks = [
     "try-runtime-cli/try-runtime",
     "polkadot-service/runtime-benchmarks",
@@ -129,7 +125,6 @@ fast-runtime = [
     "polkadot-service/fast-runtime",
     "parachain-runtime/fast-runtime",
 ]
-
 try-runtime = [
     "try-runtime-cli/try-runtime",
     "parachain-runtime/try-runtime",
