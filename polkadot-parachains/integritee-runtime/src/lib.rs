@@ -25,7 +25,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::traits::{
-	ConstBool, EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced,
+	fungible::HoldConsideration, tokens::PayFromAccount, ConstBool, EqualPrivilegeOnly, Imbalance,
+	InstanceFilter, LinearStoragePrice, OnUnbalanced,
 };
 pub use opaque::*;
 use pallet_collective;
@@ -35,18 +36,15 @@ use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, ConstU32, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, ConvertInto},
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
-use sp_runtime::traits::IdentityLookup;
-use frame_support::traits::tokens::PayFromAccount;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
-use frame_support::weights::ConstantMultiplier;
 pub use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
@@ -62,12 +60,13 @@ pub use frame_support::{
 	},
 	PalletId, StorageValue,
 };
+use frame_support::{traits::tokens::ConversionFromAssetBalance, weights::ConstantMultiplier};
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureWithSuccess,
 };
-use sp_runtime::RuntimeDebug;
-use frame_support::traits::tokens::ConversionFromAssetBalance;
+pub use pallet_balances::Call as BalancesCall;
+pub use pallet_timestamp::Call as TimestampCall;
 pub use parachains_common as common;
 pub use parachains_common::{
 	AccountId, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
@@ -76,11 +75,10 @@ use parachains_common::{
 	AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
 	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
-pub use pallet_balances::Call as BalancesCall;
-pub use pallet_timestamp::Call as TimestampCall;
 use scale_info::TypeInfo;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
+use sp_runtime::RuntimeDebug;
 pub use sp_runtime::{Perbill, Permill};
 
 // TEE
@@ -441,6 +439,8 @@ impl pallet_utility::Config for Runtime {
 parameter_types! {
 	pub const PreimageBaseDeposit: Balance = 1 * TEER;
 	pub const PreimageByteDeposit: Balance = deposit(0, 1);
+	pub const PreimageHoldReason: RuntimeHoldReason =
+		RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
 }
 
 impl pallet_preimage::Config for Runtime {
@@ -448,6 +448,12 @@ impl pallet_preimage::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
+	type Consideration = HoldConsideration<
+		AccountId,
+		Balances,
+		PreimageHoldReason,
+		LinearStoragePrice<PreimageBaseDeposit, PreimageByteDeposit, Balance>,
+	>;
 }
 
 parameter_types! {
@@ -591,7 +597,6 @@ impl pallet_treasury::Config for Runtime {
 	type PayoutPeriod = PayoutSpendPeriod;
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkHelper = ();
-
 }
 
 parameter_types! {
