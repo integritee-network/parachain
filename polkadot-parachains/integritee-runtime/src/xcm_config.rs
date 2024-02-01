@@ -24,7 +24,6 @@ use super::{
 	XcmpQueue, TEER,
 };
 use crate::weights;
-use codec::{Decode, Encode, MaxEncodedLen};
 use core::marker::PhantomData;
 use cumulus_primitives_core::GlobalConsensus;
 use frame_support::{
@@ -41,6 +40,7 @@ use orml_traits::{
 };
 use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
+use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use polkadot_parachain::primitives::Sibling;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
