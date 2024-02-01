@@ -9,13 +9,57 @@ repository = "https://github.com/integritee-network/parachain"
 edition = "2021"
 
 [dependencies]
-codec = { workspace = true }
+parity-scale-codec = { workspace = true }
 log = { workspace = true }
 scale-info = { workspace = true }
 
 parachains-common = { path = "../common", default-features = false }
 
 # Substrate dependencies
+
+# pallets
+cumulus-pallet-aura-ext = { workspace = true }
+cumulus-pallet-dmp-queue = { workspace = true }
+cumulus-pallet-parachain-system = { workspace = true }
+cumulus-pallet-xcm = { workspace = true }
+cumulus-pallet-xcmp-queue = { workspace = true }
+cumulus-primitives-core = { workspace = true }
+cumulus-primitives-timestamp = { workspace = true }
+cumulus-primitives-utility = { workspace = true }
+frame-executive = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+frame-system-rpc-runtime-api = { workspace = true }
+frame-try-runtime = { workspace = true, optional = true }
+orml-traits = { workspace = true }
+orml-xcm = { workspace = true }
+orml-xcm-support = { workspace = true }
+orml-xtokens = { workspace = true }
+pallet-aura = { workspace = true }
+pallet-balances = { workspace = true }
+pallet-bounties = { workspace = true }
+pallet-child-bounties = { workspace = true }
+pallet-claims = { workspace = true }
+pallet-collective = { workspace = true }
+pallet-democracy = { workspace = true }
+pallet-enclave-bridge = { workspace = true }
+pallet-multisig = { workspace = true }
+pallet-preimage = { workspace = true }
+pallet-proxy = { workspace = true }
+pallet-scheduler = { workspace = true }
+pallet-sidechain = { workspace = true }
+pallet-teeracle = { workspace = true }
+pallet-teerex = { workspace = true }
+pallet-timestamp = { workspace = true }
+pallet-transaction-payment = { workspace = true }
+pallet-transaction-payment-rpc-runtime-api = { workspace = true }
+pallet-treasury = { workspace = true }
+pallet-utility = { workspace = true }
+pallet-vesting = { workspace = true }
+pallet-xcm = { workspace = true }
+pallet-xcm-transactor = { workspace = true }
+parachain-info = { workspace = true }
+polkadot-parachain = { workspace = true }
 sp-api = { workspace = true }
 sp-block-builder = { workspace = true }
 sp-consensus-aura = { workspace = true }
@@ -28,65 +72,10 @@ sp-session = { workspace = true }
 sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
-
-frame-executive = { workspace = true }
-frame-support = { workspace = true }
-frame-system = { workspace = true }
-frame-system-rpc-runtime-api = { workspace = true }
-frame-try-runtime = { workspace = true, optional = true }
-
-# pallets
-pallet-aura = { workspace = true }
-pallet-balances = { workspace = true }
-pallet-bounties = { workspace = true }
-pallet-child-bounties = { workspace = true }
-pallet-collective = { workspace = true }
-pallet-democracy = { workspace = true }
-pallet-multisig = { workspace = true }
-pallet-preimage = { workspace = true }
-pallet-proxy = { workspace = true }
-pallet-scheduler = { workspace = true }
-pallet-timestamp = { workspace = true }
-pallet-transaction-payment = { workspace = true }
-pallet-transaction-payment-rpc-runtime-api = { workspace = true }
-pallet-treasury = { workspace = true }
-pallet-utility = { workspace = true }
-pallet-vesting = { workspace = true }
-
-# integritee pallets
-pallet-claims = { workspace = true }
-pallet-enclave-bridge = { workspace = true }
-pallet-sidechain = { workspace = true }
-pallet-teeracle = { workspace = true }
-pallet-teerex = { workspace = true }
-pallet-xcm-transactor = { workspace = true }
-
-# other integritee deps
-xcm-transactor-primitives = { workspace = true }
-
-# Cumulus dependencies
-cumulus-pallet-aura-ext = { workspace = true }
-cumulus-pallet-dmp-queue = { workspace = true }
-cumulus-pallet-parachain-system = { workspace = true }
-cumulus-pallet-xcm = { workspace = true }
-cumulus-pallet-xcmp-queue = { workspace = true }
-cumulus-primitives-core = { workspace = true }
-cumulus-primitives-timestamp = { workspace = true }
-cumulus-primitives-utility = { workspace = true }
-parachain-info = { workspace = true }
-
-# Polkadot dependencies
-pallet-xcm = { workspace = true }
-polkadot-parachain = { workspace = true }
 xcm = { workspace = true }
 xcm-builder = { workspace = true }
 xcm-executor = { workspace = true }
-
-# orml
-orml-traits = { workspace = true }
-orml-xcm = { workspace = true }
-orml-xcm-support = { workspace = true }
-orml-xtokens = { workspace = true }
+xcm-transactor-primitives = { workspace = true }
 
 # Benchmarking
 frame-benchmarking = { workspace = true, optional = true }
@@ -94,12 +83,11 @@ frame-system-benchmarking = { workspace = true, optional = true }
 hex-literal = { workspace = true, optional = true }
 
 [dev-dependencies]
-hex-literal = { workspace = true }
-hex = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
+hex = { workspace = true }
+hex-literal = { workspace = true }
 polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-runtime-parachains = { workspace = true, features = ["std"] }
-
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
@@ -107,7 +95,6 @@ substrate-wasm-builder = { workspace = true }
 [features]
 default = ["std"]
 std = [
-    "codec/std",
     "cumulus-pallet-aura-ext/std",
     "cumulus-pallet-dmp-queue/std",
     "cumulus-pallet-parachain-system/std",
@@ -151,6 +138,7 @@ std = [
     "pallet-xcm/std",
     "parachain-info/std",
     "parachains-common/std",
+    "parity-scale-codec/std",
     "polkadot-parachain/std",
     "scale-info/std",
     "sp-api/std",
@@ -171,17 +159,13 @@ std = [
     "xcm/std",
 ]
 runtime-benchmarks = [
-    # support stuff
+    "cumulus-pallet-xcmp-queue/runtime-benchmarks",
     "frame-benchmarking/runtime-benchmarks",
     "frame-support/runtime-benchmarks",
     "frame-system-benchmarking/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
-    "hex-literal",
-    "sp-runtime/runtime-benchmarks",
-    "pallet-xcm/runtime-benchmarks",
-    "xcm-builder/runtime-benchmarks",
-    # actual pallets to be benchmarked
     "frame-system/runtime-benchmarks",
+    "hex-literal",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
     "pallet-child-bounties/runtime-benchmarks",
@@ -190,31 +174,32 @@ runtime-benchmarks = [
     "pallet-democracy/runtime-benchmarks",
     "pallet-enclave-bridge/runtime-benchmarks",
     "pallet-multisig/runtime-benchmarks",
-    "pallet-proxy/runtime-benchmarks",
     "pallet-preimage/runtime-benchmarks",
+    "pallet-proxy/runtime-benchmarks",
     "pallet-scheduler/runtime-benchmarks",
     "pallet-sidechain/runtime-benchmarks",
     "pallet-teeracle/runtime-benchmarks",
     "pallet-teerex/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
     "pallet-treasury/runtime-benchmarks",
-    "pallet-vesting/runtime-benchmarks",
     "pallet-utility/runtime-benchmarks",
-    "cumulus-pallet-xcmp-queue/runtime-benchmarks",
+    "pallet-vesting/runtime-benchmarks",
+    "pallet-xcm/runtime-benchmarks",
+    "sp-runtime/runtime-benchmarks",
+    "xcm-builder/runtime-benchmarks",
 ]
 
 try-runtime = [
-    "frame-try-runtime/try-runtime",
-    "frame-system/try-runtime",
-    "frame-executive/try-runtime",
-    "cumulus-pallet-parachain-system/try-runtime",
     "cumulus-pallet-aura-ext/try-runtime",
-    "cumulus-pallet-xcmp-queue/try-runtime",
-    "cumulus-pallet-xcm/try-runtime",
     "cumulus-pallet-dmp-queue/try-runtime",
-    "orml-xtokens/try-runtime",
+    "cumulus-pallet-parachain-system/try-runtime",
+    "cumulus-pallet-xcm/try-runtime",
+    "cumulus-pallet-xcmp-queue/try-runtime",
+    "frame-executive/try-runtime",
+    "frame-system/try-runtime",
+    "frame-try-runtime/try-runtime",
     "orml-xcm/try-runtime",
-    "parachain-info/try-runtime",
+    "orml-xtokens/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
     "pallet-bounties/try-runtime",
@@ -224,8 +209,8 @@ try-runtime = [
     "pallet-democracy/try-runtime",
     "pallet-enclave-bridge/try-runtime",
     "pallet-multisig/try-runtime",
-    "pallet-proxy/try-runtime",
     "pallet-preimage/try-runtime",
+    "pallet-proxy/try-runtime",
     "pallet-scheduler/try-runtime",
     "pallet-sidechain/try-runtime",
     "pallet-teeracle/try-runtime",
@@ -233,10 +218,11 @@ try-runtime = [
     "pallet-timestamp/try-runtime",
     "pallet-transaction-payment/try-runtime",
     "pallet-treasury/try-runtime",
-    "pallet-vesting/try-runtime",
     "pallet-utility/try-runtime",
-    "pallet-xcm/try-runtime",
+    "pallet-vesting/try-runtime",
     "pallet-xcm-transactor/try-runtime",
+    "pallet-xcm/try-runtime",
+    "parachain-info/try-runtime",
 ]
 # Set timing constants (e.g. session period) to faster versions to speed up testing.
 fast-runtime = []
