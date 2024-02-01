@@ -92,7 +92,7 @@ cumulus-relay-chain-rpc-interface = { workspace = true }
 polkadot-cli = { workspace = true }
 polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-service = { workspace = true }
-xcm = { workspace = true, features = ["std"] }
+staging-xcm = { workspace = true, features = ["std"] }
 
 # Temporary pin only
 # See https://github.com/bluejekyll/trust-dns/issues/1946 for more details.
@@ -106,8 +106,6 @@ assert_cmd = { workspace = true }
 nix = { workspace = true }
 pallet-sudo = { workspace = true, features = ["std"] }
 polkadot-cli = { workspace = true, features = ["rococo-native"] } # purge_chain_works works with rococo-local and needs to allow this
-substrate-test-client = { workspace = true }
-substrate-test-runtime-client = { workspace = true }
 tempfile = { workspace = true }
 tokio = { workspace = true }
 wait-timeout = { workspace = true }
