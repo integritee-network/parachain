@@ -28,7 +28,6 @@ use frame_support::traits::{
 	fungible::HoldConsideration, tokens::PayFromAccount, ConstBool, EqualPrivilegeOnly, Imbalance,
 	InstanceFilter, LinearStoragePrice, OnUnbalanced,
 };
-pub use opaque::*;
 use pallet_collective;
 use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
@@ -67,13 +66,13 @@ use frame_system::{
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
-pub use parachains_common as common;
-pub use parachains_common::{
-	AccountId, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
-};
 use parachains_common::{
+	fee::{SlowAdjustingFeeUpdate, WeightToFee},
 	AuraId, AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
 	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+};
+pub use parachains_common::{
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
 };
 use scale_info::TypeInfo;
 #[cfg(any(feature = "std", test))]
@@ -82,7 +81,6 @@ use sp_runtime::RuntimeDebug;
 pub use sp_runtime::{Perbill, Permill};
 
 // TEE
-use common::fee::{SlowAdjustingFeeUpdate, WeightToFee};
 pub use pallet_claims;
 pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
@@ -101,16 +99,7 @@ pub type SessionHandlers = ();
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
 /// to even the core data structures.
 pub mod opaque {
-	use super::*;
-	use sp_runtime::{generic, traits::BlakeTwo256};
-
-	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
-	/// Opaque block header type.
-	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
-	/// Opaque block type.
-	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-	/// Opaque block identifier type.
-	pub type BlockId = generic::BlockId<Block>;
+	pub use parachains_common::opaque::*;
 }
 
 impl_opaque_keys! {
@@ -199,7 +188,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
-	type Block = generic::Block<Header, UncheckedExtrinsic>;
+	type Block = Block;
 	type AccountId = AccountId;
 	type RuntimeCall = RuntimeCall;
 	type Lookup = AccountIdLookup<AccountId, ()>;
@@ -820,14 +809,6 @@ construct_runtime!(
 	}
 );
 
-/// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
-/// Block type as expected by this runtime.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-/// A Block signed with a Justification
-pub type SignedBlock = generic::SignedBlock<Block>;
-/// BlockId type as expected by this runtime.
-pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
 	frame_system::CheckNonZeroSender<Runtime>,
@@ -844,6 +825,12 @@ pub type UncheckedExtrinsic =
 	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra>;
+/// Block type as expected by this runtime.
+pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+/// A Block signed with a Justification
+pub type SignedBlock = generic::SignedBlock<Block>;
+/// BlockId type as expected by this runtime.
+pub type BlockId = generic::BlockId<Block>;
 
 /// Migrations to apply on runtime upgrade.
 pub type Migrations = ();

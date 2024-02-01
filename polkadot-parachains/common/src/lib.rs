@@ -25,12 +25,14 @@ pub mod fee;
 
 pub mod xcm_config;
 pub use constants::*;
-pub use opaque::*;
 pub use types::*;
 
 /// Common types of parachains.
 mod types {
-	use sp_runtime::traits::{IdentifyAccount, Verify};
+	use sp_runtime::{
+		generic,
+		traits::{BlakeTwo256, IdentifyAccount, Verify},
+	};
 
 	/// An index to a block.
 	pub type BlockNumber = u32;
@@ -63,6 +65,11 @@ mod types {
 
 	// Id used for identifying assets.
 	pub type AssetIdForTrustBackedAssets = u32;
+
+	/// The address format for describing accounts.
+	pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+	/// Block header type as expected by this runtime.
+	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 }
 
 /// Common constants of parachains.
@@ -104,13 +111,17 @@ mod constants {
 /// to even the core data structures.
 pub mod opaque {
 	use super::*;
-	use sp_runtime::{generic, traits::BlakeTwo256};
-
 	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
+	use sp_runtime::{
+		generic,
+		traits::{BlakeTwo256, Hash as HashT},
+	};
 	/// Opaque block header type.
 	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// Opaque block type.
 	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 	/// Opaque block identifier type.
 	pub type BlockId = generic::BlockId<Block>;
+	/// Opaque block hash type.
+	pub type Hash = <BlakeTwo256 as HashT>::Output;
 }

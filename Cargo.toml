@@ -95,9 +95,10 @@ staging-xcm-executor = { version = "4.0.2", default-features = false }
 
 # std stuff
 cumulus-client-cli = "0.4.0"
+cumulus-client-collator = "0.4.0"
 cumulus-client-consensus-aura = "0.4.0"
 cumulus-client-consensus-common = "0.4.0"
-cumulus-client-consensus-relay-chain = "0.4.0"
+cumulus-client-consensus-proposer = "0.4.0"
 cumulus-client-network = "0.4.0"
 cumulus-client-service = "0.4.0"
 cumulus-primitives-parachain-inherent = "0.4.0"
@@ -106,7 +107,7 @@ cumulus-relay-chain-interface = "0.4.0"
 cumulus-relay-chain-minimal-node = "0.4.0"
 cumulus-relay-chain-rpc-interface = "0.4.0"
 frame-benchmarking-cli = "29.0.0"
-frame-rpc-system = { version = "26.0.0", package = "substrate-frame-rpc-system" }
+substrate-frame-rpc-system = "25.0.0"
 jsonrpsee = { version = "0.16.2", features = ["server"] }
 pallet-transaction-payment-rpc = "27.0.0"
 polkadot-cli = "4.0.0"
