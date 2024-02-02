@@ -17,7 +17,7 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
-use parachain_runtime::{
+use integritee_runtime::{
 	CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig, TEER,
 };
 use parachains_common::{AccountId, AuraId};
@@ -30,7 +30,7 @@ use std::str::FromStr;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type IntegriteeChainSpec =
-	sc_service::GenericChainSpec<parachain_runtime::RuntimeGenesisConfig, Extensions>;
+	sc_service::GenericChainSpec<integritee_runtime::RuntimeGenesisConfig, Extensions>;
 
 /// Specialized `ChainSpec` for the shell parachain runtime.
 pub type ShellChainSpec =
@@ -217,15 +217,15 @@ fn integritee_genesis_config(
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<AuraId>,
 	id: ParaId,
-) -> parachain_runtime::RuntimeGenesisConfig {
-	parachain_runtime::RuntimeGenesisConfig {
-		system: parachain_runtime::SystemConfig {
-			code: parachain_runtime::WASM_BINARY
+) -> integritee_runtime::RuntimeGenesisConfig {
+	integritee_runtime::RuntimeGenesisConfig {
+		system: integritee_runtime::SystemConfig {
+			code: integritee_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			_config: Default::default(),
 		},
-		balances: parachain_runtime::BalancesConfig {
+		balances: integritee_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect(),
 		},
 		democracy: DemocracyConfig::default(),
@@ -235,11 +235,11 @@ fn integritee_genesis_config(
 			members: vec![root_key],
 		},
 		vesting: Default::default(),
-		parachain_info: parachain_runtime::ParachainInfoConfig {
+		parachain_info: integritee_runtime::ParachainInfoConfig {
 			parachain_id: id,
 			_config: Default::default(),
 		},
-		aura: parachain_runtime::AuraConfig { authorities: initial_authorities },
+		aura: integritee_runtime::AuraConfig { authorities: initial_authorities },
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
 		polkadot_xcm: Default::default(),

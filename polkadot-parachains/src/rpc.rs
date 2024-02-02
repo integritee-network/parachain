@@ -2,12 +2,15 @@
 //! Substrate provides the `sc-rpc` crate, which defines the core RPC layer
 //! used by Substrate nodes. This file extends those RPC definitions with
 //! capabilities that are specific to this project's runtime configuration.
+//!
+//! this file has no customizations for integritee runtimes. Upon upgrades of polkadot-sdk,
+//! just overwrite from parachain_template and replace name of runtime crate
 
 #![warn(missing_docs)]
 
 use std::sync::Arc;
 
-use parachain_runtime::{opaque::Block, AccountId, Balance, Nonce};
+use parachains_common::{opaque::Block, AccountId, Balance, Nonce};
 
 use sc_client_api::AuxStore;
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};

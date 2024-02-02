@@ -24,9 +24,9 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 
 # Parachain runtimes
-parachain-runtime = { package = "integritee-runtime", path = "integritee-runtime" }
+integritee-runtime = { path = "integritee-runtime" }
 parachains-common = { path = "common" }
-shell-runtime = { package = "shell-runtime", path = "shell-runtime" }
+shell-runtime = { path = "shell-runtime" }
 
 # Substrate dependencies
 frame-benchmarking = { workspace = true, features = ["std"] }
@@ -116,16 +116,16 @@ default = []
 runtime-benchmarks = [
     "try-runtime-cli/try-runtime",
     "polkadot-service/runtime-benchmarks",
-    "parachain-runtime/runtime-benchmarks",
+    "integritee-runtime/runtime-benchmarks",
     "shell-runtime/runtime-benchmarks",
     "polkadot-cli/runtime-benchmarks",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",
-    "parachain-runtime/fast-runtime",
+    "integritee-runtime/fast-runtime",
 ]
 try-runtime = [
     "try-runtime-cli/try-runtime",
-    "parachain-runtime/try-runtime",
+    "integritee-runtime/try-runtime",
     "shell-runtime/try-runtime",
 ]

@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
 
+//!
+//! this file DOES HAVE CUSTOMIZATIONS for integritee runtimes. Upon upgrades of polkadot-sdk,
+//! look for blocks with `is_shell()` branching
+
 use crate::{
 	chain_spec,
 	chain_spec::{
@@ -23,18 +27,17 @@ use crate::{
 		shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain, ShellChainSpec,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::new_partial,
 };
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use log::{info, warn};
-use parachain_runtime::Block;
+use integritee_runtime::Block;
+use log::info;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
-use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+use sp_runtime::traits::AccountIdConversion;
 use std::net::SocketAddr;
 
 const LOCAL_PARA_ID: u32 = 2015;
@@ -197,11 +200,23 @@ impl SubstrateCli for RelayChainCli {
 macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
-		runner.async_run(|$config| {
-			let $components = new_partial(&$config)?;
+		if runner.config().chain_spec.is_shell() {
+			runner.async_run(|$config| {
+				let $components = crate::service_shell::new_partial(
+					&$config,
+				)?;
+				let task_manager = $components.task_manager;
+				{ $( $code )* }.map(|v| (v, task_manager))
+			})
+		} else {
+			runner.async_run(|$config| {
+			let $components = crate::service::new_partial(
+				&$config,
+			)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
 		})
+		}
 	}}
 }
 
@@ -260,11 +275,18 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|config| {
-				let partials = new_partial(&config)?;
+			if runner.config().chain_spec.is_shell() {
+				runner.sync_run(|config| {
+					let partials = crate::service_shell::new_partial(&config)?;
+					cmd.run(&*config.chain_spec, &*partials.client)
+				})
 
-				cmd.run(&*config.chain_spec, &*partials.client)
-			})
+			} else {
+				runner.sync_run(|config| {
+					let partials = crate::service::new_partial(&config)?;
+					cmd.run(&*config.chain_spec, &*partials.client)
+				})
+			}
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -286,7 +308,8 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
+					// there's no point in benchmarking the shell runitme
+					let partials = crate::service::new_partial(&config)?;
 					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
@@ -349,16 +372,29 @@ pub fn run() -> Result<()> {
 				info!("Parachain Account: {parachain_account}");
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				crate::service::start_parachain_node(
-					config,
-					polkadot_config,
-					collator_options,
-					id,
-					hwbench,
-				)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
+				if config.chain_spec.is_shell() {
+					crate::service_shell::start_parachain_node(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+					)
+						.await
+						.map(|r| r.0)
+						.map_err(Into::into)
+				} else {
+					crate::service::start_parachain_node(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+					)
+						.await
+						.map(|r| r.0)
+						.map_err(Into::into)
+				}
 			})
 		},
 	}
