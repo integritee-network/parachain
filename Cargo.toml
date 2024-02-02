@@ -157,19 +157,19 @@ substrate-build-script-utils = "9.0.0"
 substrate-wasm-builder = "14.0.0"
 
 [patch."https://github.com/integritee-network/pallets.git"]
+claims-primitives = { path = '../pallets/primitives/claims' }
+common-primitives = { path = '../pallets/primitives/common' }
+enclave-bridge-primitives = { path = '../pallets/primitives/enclave-bridge' }
 pallet-claims = { path = '../pallets/claims' }
 pallet-enclave-bridge = { path = '../pallets/enclave-bridge' }
-pallet-teerex = { path = '../pallets/teerex' }
 pallet-sidechain = { path = '../pallets/sidechain' }
-sgx-verify = { path = '../pallets/teerex/sgx-verify' }
 pallet-teeracle = { path = '../pallets/teeracle' }
-claims-primitives = { path = '../pallets/primitives/claims' }
-enclave-bridge-primitives = { path = '../pallets/primitives/enclave-bridge' }
-teerex-primitives = { path = '../pallets/primitives/teerex' }
-teeracle-primitives = { path = '../pallets/primitives/teeracle' }
-common-primitives = { path = '../pallets/primitives/common' }
-xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
+pallet-teerex = { path = '../pallets/teerex' }
 pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
+sgx-verify = { path = '../pallets/teerex/sgx-verify' }
+teeracle-primitives = { path = '../pallets/primitives/teeracle' }
+teerex-primitives = { path = '../pallets/primitives/teerex' }
+xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
 
 [patch.crates-io]
 ring = { git = "https://github.com/betrusted-io/ring-xous", branch = "0.16.20-cleanup" }

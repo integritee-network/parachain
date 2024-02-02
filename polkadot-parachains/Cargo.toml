@@ -67,10 +67,10 @@ substrate-prometheus-endpoint = { workspace = true }
 try-runtime-cli = { workspace = true }
 
 # RPC related dependencies
-substrate-frame-rpc-system = { workspace = true }
 jsonrpsee = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-transaction-pool-api = { workspace = true }
+substrate-frame-rpc-system = { workspace = true }
 substrate-state-trie-migration-rpc = { workspace = true }
 
 # Cumulus dependencies
