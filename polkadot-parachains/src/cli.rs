@@ -1,5 +1,5 @@
 //! this file has no customizations for integritee runtimes. Upon upgrades of polkadot-sdk,
-//! just overwrite from parachain_template and replace name of runtime crate
+//! just overwrite from parachain_template
 
 use std::path::PathBuf;
 

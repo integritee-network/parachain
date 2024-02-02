@@ -10,6 +10,7 @@
 
 use std::sync::Arc;
 
+// Integritee: keep this. only customization here
 use parachains_common::{opaque::Block, AccountId, Balance, Nonce};
 
 use sc_client_api::AuxStore;
