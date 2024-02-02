@@ -6125,23 +6125,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-assets"
-version = "26.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09b91035c82dc9e64eaf52f3f6a39f4674bcb56333553882d6ff5d12500a9182"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-aura"
 version = "24.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7348,7 +7331,6 @@ dependencies = [
  "frame-executive",
  "frame-support",
  "frame-system",
- "pallet-assets",
  "pallet-authorship",
  "pallet-balances",
  "parity-scale-codec",

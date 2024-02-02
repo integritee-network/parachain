@@ -52,7 +52,6 @@ orml-traits = { version = "0.6.7", default-features = false }
 orml-xcm = { version = "0.6.7", default-features = false }
 orml-xcm-support = { version = "0.6.7", default-features = false }
 orml-xtokens = { version = "0.6.7", default-features = false }
-pallet-assets = { version = "26.0.0", default-features = false }
 pallet-aura = { version = "24.0.0", default-features = false }
 pallet-authorship = { version = "25.0.0", default-features = false }
 pallet-balances = { version = "25.0.0", default-features = false }
