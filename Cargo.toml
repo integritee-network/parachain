@@ -24,13 +24,13 @@ serde_json = "1.0.102"
 smallvec = "1.9.0"
 
 # integritee pallets
-pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
-pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
-pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
-pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
-pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
-pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
-xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.0.0" }
+pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
+pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
+pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
+pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
+pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
+pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
+xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
 
 # Polkadot-sdk and ecosystem crates [no_std]
 cumulus-pallet-aura-ext = { version = "0.4.0", default-features = false }
@@ -156,20 +156,20 @@ polkadot-runtime-parachains = "4.0.0"
 substrate-build-script-utils = "9.0.0"
 substrate-wasm-builder = "14.0.0"
 
-[patch."https://github.com/integritee-network/pallets.git"]
-claims-primitives = { path = '../pallets/primitives/claims' }
-common-primitives = { path = '../pallets/primitives/common' }
-enclave-bridge-primitives = { path = '../pallets/primitives/enclave-bridge' }
-pallet-claims = { path = '../pallets/claims' }
-pallet-enclave-bridge = { path = '../pallets/enclave-bridge' }
-pallet-sidechain = { path = '../pallets/sidechain' }
-pallet-teeracle = { path = '../pallets/teeracle' }
-pallet-teerex = { path = '../pallets/teerex' }
-pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
-sgx-verify = { path = '../pallets/teerex/sgx-verify' }
-teeracle-primitives = { path = '../pallets/primitives/teeracle' }
-teerex-primitives = { path = '../pallets/primitives/teerex' }
-xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
+#[patch."https://github.com/integritee-network/pallets.git"]
+#claims-primitives = { path = '../pallets/primitives/claims' }
+#common-primitives = { path = '../pallets/primitives/common' }
+#enclave-bridge-primitives = { path = '../pallets/primitives/enclave-bridge' }
+#pallet-claims = { path = '../pallets/claims' }
+#pallet-enclave-bridge = { path = '../pallets/enclave-bridge' }
+#pallet-sidechain = { path = '../pallets/sidechain' }
+#pallet-teeracle = { path = '../pallets/teeracle' }
+#pallet-teerex = { path = '../pallets/teerex' }
+#pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
+#sgx-verify = { path = '../pallets/teerex/sgx-verify' }
+#teeracle-primitives = { path = '../pallets/primitives/teeracle' }
+#teerex-primitives = { path = '../pallets/primitives/teerex' }
+#xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
 
 [patch.crates-io]
 ring = { git = "https://github.com/betrusted-io/ring-xous", branch = "0.16.20-cleanup" }
