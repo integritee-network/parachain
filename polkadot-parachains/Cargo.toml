@@ -114,11 +114,11 @@ wait-timeout = { workspace = true }
 [features]
 default = []
 runtime-benchmarks = [
-    "try-runtime-cli/try-runtime",
-    "polkadot-service/runtime-benchmarks",
     "integritee-runtime/runtime-benchmarks",
-    "shell-runtime/runtime-benchmarks",
     "polkadot-cli/runtime-benchmarks",
+    "polkadot-service/runtime-benchmarks",
+    "shell-runtime/runtime-benchmarks",
+    "try-runtime-cli/try-runtime",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",

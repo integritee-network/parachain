@@ -84,6 +84,7 @@ std = [
     "frame-support/std",
     "frame-system-rpc-runtime-api/std",
     "frame-system/std",
+    "getrandom/std",
     "log/std",
     "orml-traits/std",
     "orml-xcm-support/std",
