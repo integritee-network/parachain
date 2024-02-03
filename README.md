@@ -76,7 +76,7 @@ The benchmarks are run with the following script:
 
 ```
 cargo build --release --features try-runtime
-try-runtime --runtime ./target/release/wbuild/integritee-runtime/integritee_runtime.compact.compressed.wasm on-runtime-upgrade --checks=pre-and-post --disable-spec-version-check --disable-idempotency-checks live --uri wss://kusama.api.integritee.network:443
+try-runtime --runtime ./target/release/wbuild/integritee-runtime/integritee_runtime.compact.compressed.wasm on-runtime-upgrade --checks=pre-and-post live --uri wss://kusama.api.integritee.network:443
 ```
 
 ## testing with chopsticks
