@@ -9,7 +9,6 @@ repository = "https://github.com/integritee-network/parachain"
 edition = "2021"
 
 [dependencies]
-getrandom = { workspace = true }
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
@@ -84,7 +83,6 @@ std = [
     "frame-support/std",
     "frame-system-rpc-runtime-api/std",
     "frame-system/std",
-    "getrandom/std",
     "log/std",
     "orml-traits/std",
     "orml-xcm-support/std",
