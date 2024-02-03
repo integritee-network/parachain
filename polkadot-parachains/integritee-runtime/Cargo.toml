@@ -161,8 +161,8 @@ std = [
     "staging-xcm/std",
 ]
 runtime-benchmarks = [
-    "cumulus-pallet-xcmp-queue/runtime-benchmarks",
     "cumulus-pallet-parachain-system/runtime-benchmarks",
+    "cumulus-pallet-xcmp-queue/runtime-benchmarks",
     "frame-benchmarking/runtime-benchmarks",
     "frame-support/runtime-benchmarks",
     "frame-system-benchmarking/runtime-benchmarks",
