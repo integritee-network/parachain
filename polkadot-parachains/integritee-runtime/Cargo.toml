@@ -137,7 +137,6 @@ std = [
     "pallet-vesting/std",
     "pallet-xcm-transactor/std",
     "pallet-xcm/std",
-    "staging-parachain-info/std",
     "parachains-common/std",
     "parity-scale-codec/std",
     "polkadot-parachain-primitives/std",
@@ -155,10 +154,11 @@ std = [
     "sp-std/std",
     "sp-transaction-pool/std",
     "sp-version/std",
+    "staging-parachain-info/std",
     "staging-xcm-builder/std",
     "staging-xcm-executor/std",
-    "xcm-transactor-primitives/std",
     "staging-xcm/std",
+    "xcm-transactor-primitives/std",
 ]
 runtime-benchmarks = [
     "cumulus-pallet-parachain-system/runtime-benchmarks",
@@ -187,9 +187,11 @@ runtime-benchmarks = [
     "pallet-utility/runtime-benchmarks",
     "pallet-vesting/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
+    "polkadot-parachain-primitives/runtime-benchmarks",
     "polkadot-runtime-common/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
     "staging-xcm-builder/runtime-benchmarks",
+    "staging-xcm-executor/runtime-benchmarks",
 ]
 
 try-runtime = [
