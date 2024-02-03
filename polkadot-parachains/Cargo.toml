@@ -119,11 +119,9 @@ runtime-benchmarks = [
     "integritee-runtime/runtime-benchmarks",
     "polkadot-cli/runtime-benchmarks",
     "polkadot-primitives/runtime-benchmarks",
-    "polkadot-service/runtime-benchmarks",
     "sc-service/runtime-benchmarks",
-    "shell-runtime/runtime-benchmarks",
+    #"shell-runtime/runtime-benchmarks", we don't need benchmarking for shell
     "sp-runtime/runtime-benchmarks",
-    "try-runtime-cli/try-runtime",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",
