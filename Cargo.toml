@@ -136,8 +136,6 @@ sp-keyring = "28.0.0"
 sp-keystore = "0.31.0"
 sp-timestamp = "23.0.0"
 substrate-prometheus-endpoint = "0.16.0"
-substrate-state-trie-migration-rpc = "24.0.0"
-try-runtime-cli = "0.35.0"
 
 # Temporary pin only
 # See https://github.com/bluejekyll/trust-dns/issues/1946 for more details.

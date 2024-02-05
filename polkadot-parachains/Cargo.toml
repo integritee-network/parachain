@@ -64,14 +64,12 @@ sp-session = { workspace = true, features = ["std"] }
 sp-timestamp = { workspace = true, features = ["std"] }
 sp-transaction-pool = { workspace = true, features = ["std"] }
 substrate-prometheus-endpoint = { workspace = true }
-try-runtime-cli = { workspace = true }
 
 # RPC related dependencies
 jsonrpsee = { workspace = true }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-transaction-pool-api = { workspace = true }
 substrate-frame-rpc-system = { workspace = true }
-substrate-state-trie-migration-rpc = { workspace = true }
 
 # Cumulus dependencies
 color-print = { workspace = true }
@@ -129,7 +127,8 @@ fast-runtime = [
     "integritee-runtime/fast-runtime",
 ]
 try-runtime = [
-    "try-runtime-cli/try-runtime",
+    "polkadot-cli/try-runtime",
+    "sp-runtime/try-runtime",
     "integritee-runtime/try-runtime",
     "shell-runtime/try-runtime",
 ]
