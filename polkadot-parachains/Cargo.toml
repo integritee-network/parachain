@@ -118,7 +118,7 @@ runtime-benchmarks = [
     "polkadot-cli/runtime-benchmarks",
     "polkadot-primitives/runtime-benchmarks",
     "sc-service/runtime-benchmarks",
-    #"shell-runtime/runtime-benchmarks", we don't need benchmarking for shell
+    "shell-runtime/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
 
 ]
