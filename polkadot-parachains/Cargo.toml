@@ -122,6 +122,7 @@ runtime-benchmarks = [
     "sc-service/runtime-benchmarks",
     #"shell-runtime/runtime-benchmarks", we don't need benchmarking for shell
     "sp-runtime/runtime-benchmarks",
+
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",

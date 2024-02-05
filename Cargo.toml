@@ -16,12 +16,12 @@ clap = { version = "4.0.29", features = ["derive"] }
 parity-scale-codec = { version = "3.6.4", default-features = false, features = ["derive"] }
 color-print = "0.3.4"
 futures = "0.3.25"
-hex-literal = "0.3.4"
-log = { version = "0.4.17", default-features = false }
+hex-literal = "0.4.1"
+log = { version = "0.4.20", default-features = false }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0.171", features = ["derive"] }
-serde_json = "1.0.102"
-smallvec = "1.9.0"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0"
+smallvec = "1.11.0"
 
 # integritee pallets
 pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.3.0" }
