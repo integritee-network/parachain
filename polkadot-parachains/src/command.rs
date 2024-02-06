@@ -197,6 +197,19 @@ impl SubstrateCli for RelayChainCli {
 	}
 }
 
+/// Creates partial components for the runtimes that are supported by the benchmarks.
+macro_rules! construct_partials {
+	($config:expr, |$partials:ident| $code:expr) => {
+		if $config.chain_spec.is_shell() {
+			let $partials = crate::service_shell::new_partial(&$config)?;
+			$code
+		} else {
+			let $partials = crate::service::new_partial(&$config)?;
+			$code
+		}
+	};
+}
+
 macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
@@ -275,18 +288,9 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			if runner.config().chain_spec.is_shell() {
-				runner.sync_run(|config| {
-					let partials = crate::service_shell::new_partial(&config)?;
-					cmd.run(&*config.chain_spec, &*partials.client)
-				})
-
-			} else {
-				runner.sync_run(|config| {
-					let partials = crate::service::new_partial(&config)?;
-					cmd.run(&*config.chain_spec, &*partials.client)
-				})
-			}
+			runner.sync_run(|config| {
+				construct_partials!(config, |partials| cmd.run(&*config.chain_spec, &*partials.client))
+			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -308,9 +312,7 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					// there's no point in benchmarking the shell runitme
-					let partials = crate::service::new_partial(&config)?;
-					cmd.run(partials.client)
+					construct_partials!(config, |partials| cmd.run(partials.client))
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
 				BenchmarkCmd::Storage(_) =>
@@ -322,10 +324,12 @@ pub fn run() -> Result<()> {
 						.into()),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = crate::service::new_partial(&config)?;
-					let db = partials.backend.expose_db();
-					let storage = partials.backend.expose_storage();
-					cmd.run(config, partials.client.clone(), db, storage)
+					construct_partials!(config, |partials| {
+						let db = partials.backend.expose_db();
+						let storage = partials.backend.expose_storage();
+
+						cmd.run(config, partials.client.clone(), db, storage)
+					})
 				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
