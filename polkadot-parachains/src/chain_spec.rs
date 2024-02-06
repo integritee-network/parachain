@@ -280,6 +280,7 @@ fn shell_genesis_config(
 		aura: shell_runtime::AuraConfig { authorities: initial_authorities },
 		aura_ext: Default::default(),
 		polkadot_xcm: Default::default(),
+		transaction_payment: Default::default(),
 	}
 }
 

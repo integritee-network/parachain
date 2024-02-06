@@ -24,6 +24,7 @@ cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
+frame-benchmarking = { workspace = true, optional = true }
 frame-executive = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
@@ -127,6 +128,7 @@ std = [
 runtime-benchmarks = [
     "cumulus-pallet-parachain-system/runtime-benchmarks",
     "cumulus-pallet-xcmp-queue/runtime-benchmarks",
+    "frame-benchmarking/runtime-benchmarks",
     "frame-support/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
