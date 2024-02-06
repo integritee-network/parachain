@@ -29,7 +29,6 @@ use frame_support::traits::{
 	InstanceFilter, LinearStoragePrice, OnUnbalanced,
 };
 use pallet_collective;
-use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, ConstU32, OpaqueMetadata};
@@ -59,7 +58,11 @@ pub use frame_support::{
 	},
 	PalletId, StorageValue,
 };
-use frame_support::{traits::tokens::ConversionFromAssetBalance, weights::ConstantMultiplier};
+use frame_support::{
+	genesis_builder_helper::{build_config, create_default_config},
+	traits::tokens::ConversionFromAssetBalance,
+	weights::ConstantMultiplier,
+};
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureWithSuccess,
@@ -481,6 +484,8 @@ impl pallet_aura::Config for Runtime {
 	type DisabledValidators = ();
 	type MaxAuthorities = MaxAuthorities;
 	type AllowMultipleBlocksPerSlot = ConstBool<false>;
+	#[cfg(feature = "experimental")]
+	type SlotDuration = pallet_aura::MinimumPeriodTimesTwo<Self>;
 }
 
 // Integritee pallet
@@ -760,52 +765,50 @@ construct_runtime!(
 	pub enum Runtime
 	{
 		// Basic.
-		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>} = 0,
-		ParachainSystem: cumulus_pallet_parachain_system::{
-			Pallet, Call, Config<T>, Storage, Inherent, Event<T>, ValidateUnsigned,
-		} = 1,
-		// RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 2,
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
-		ParachainInfo: staging_parachain_info::{Pallet, Storage, Config<T>} = 4,
+		System: frame_system = 0,
+		ParachainSystem: cumulus_pallet_parachain_system = 1,
+		// RandomnessCollectiveFlip: pallet_randomness_collective_flip = 2,
+		Timestamp: pallet_timestamp = 3,
+		ParachainInfo: staging_parachain_info = 4,
 		Preimage: pallet_preimage = 5,
-		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 6,
-		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 7,
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 8,
-		Utility: pallet_utility::{Pallet, Call, Event} = 9,
+		Multisig: pallet_multisig = 6,
+		Proxy: pallet_proxy = 7,
+		Scheduler: pallet_scheduler = 8,
+		Utility: pallet_utility = 9,
 
 		// Funds and fees.
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
-		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
-		Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
+		Balances: pallet_balances = 10,
+		TransactionPayment: pallet_transaction_payment = 11,
+		Vesting: pallet_vesting = 12,
 
 		// Governance.
-		Treasury: pallet_treasury::{Pallet, Call, Storage, Config<T>, Event<T>} = 13,
-		Democracy: pallet_democracy::{Pallet, Storage, Config<T>, Event<T>, Call} = 14,
-		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 15,
+		Treasury: pallet_treasury = 13,
+		Democracy: pallet_democracy = 14,
+		Council: pallet_collective::<Instance1> = 15,
 		TechnicalCommittee:
-			pallet_collective::<Instance2>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 16,
-		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 18,
+			pallet_collective::<Instance2> = 16,
+		Bounties: pallet_bounties = 18,
 		ChildBounties: pallet_child_bounties = 19,
 
 		// Consensus.
-		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config<T>} = 24,
+		Aura: pallet_aura = 23,
+		AuraExt: cumulus_pallet_aura_ext = 24,
 
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Storage, Config<T>} = 31,
-		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 32,
-		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
-		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 34,
+		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
+		PolkadotXcm: pallet_xcm = 31,
+		CumulusXcm: cumulus_pallet_xcm = 32,
+		DmpQueue: cumulus_pallet_dmp_queue = 33,
+		XTokens: orml_xtokens = 34,
 		OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
 
 		// Integritee pallets.
-		Teerex: pallet_teerex::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
-		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
-		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
-		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
-		EnclaveBridge: pallet_enclave_bridge::{Pallet, Call, Storage, Event<T>} = 54,
+		Teerex: pallet_teerex = 50,
+		Claims: pallet_claims = 51,
+		Teeracle: pallet_teeracle = 52,
+		Sidechain: pallet_sidechain= 53,
+		EnclaveBridge: pallet_enclave_bridge = 54,
 	}
 );
 
@@ -875,6 +878,7 @@ mod benches {
 		[pallet_treasury, Treasury]
 		[pallet_vesting, Vesting]
 		[pallet_xcm, PolkadotXcm]
+		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_utility, Utility]
 	);
 }
@@ -974,10 +978,16 @@ impl_runtime_apis! {
 	}
 
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
-		fn query_info(uxt: <Block as BlockT>::Extrinsic, len: u32) -> RuntimeDispatchInfo<Balance> {
+		fn query_info(
+			uxt: <Block as BlockT>::Extrinsic,
+			len: u32,
+		) -> pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo<Balance> {
 			TransactionPayment::query_info(uxt, len)
 		}
-		fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
+		fn query_fee_details(
+			uxt: <Block as BlockT>::Extrinsic,
+			len: u32,
+		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
 		}
 		fn query_weight_to_fee(weight: Weight) -> Balance {
@@ -991,10 +1001,16 @@ impl_runtime_apis! {
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi<Block, Balance, RuntimeCall>
 		for Runtime
 	{
-		fn query_call_info(call: RuntimeCall, len: u32) -> RuntimeDispatchInfo<Balance> {
+		fn query_call_info(
+			call: RuntimeCall,
+			len: u32,
+		) -> pallet_transaction_payment::RuntimeDispatchInfo<Balance> {
 			TransactionPayment::query_call_info(call, len)
 		}
-		fn query_call_fee_details(call: RuntimeCall, len: u32) -> FeeDetails<Balance> {
+		fn query_call_fee_details(
+			call: RuntimeCall,
+			len: u32,
+		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_call_fee_details(call, len)
 		}
 		fn query_weight_to_fee(weight: Weight) -> Balance {
@@ -1044,15 +1060,25 @@ impl_runtime_apis! {
 			list_benchmarks!(list, extra);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
-			return (list, storage_info)
+			(list, storage_info)
 		}
 
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			use frame_benchmarking::{Benchmarking, BenchmarkBatch};
+			use frame_benchmarking::{BenchmarkError, Benchmarking, BenchmarkBatch};
+
 			use frame_system_benchmarking::Pallet as SystemBench;
-			impl frame_system_benchmarking::Config for Runtime {}
+			impl frame_system_benchmarking::Config for Runtime {
+				fn setup_set_code_requirements(code: &sp_std::vec::Vec<u8>) -> Result<(), BenchmarkError> {
+					ParachainSystem::initialize_for_set_code_benchmark(code.len() as u32);
+					Ok(())
+				}
+
+				fn verify_set_code() {
+					System::assert_last_event(cumulus_pallet_parachain_system::Event::<Runtime>::ValidationFunctionStored.into());
+				}
+			}
 
 			use frame_support::traits::WhitelistedStorageKeys;
 			let whitelist = AllPalletsWithSystem::whitelisted_storage_keys();
@@ -1063,6 +1089,16 @@ impl_runtime_apis! {
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
+		}
+	}
+
+	impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
+		fn create_default_config() -> Vec<u8> {
+			create_default_config::<RuntimeGenesisConfig>()
+		}
+
+		fn build_config(config: Vec<u8>) -> sp_genesis_builder::Result {
+			build_config::<RuntimeGenesisConfig>(config)
 		}
 	}
 }

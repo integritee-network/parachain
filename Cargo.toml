@@ -81,6 +81,7 @@ sp-api = { version = "23.0.0", default-features = false }
 sp-block-builder = { version = "23.0.0", default-features = false }
 sp-consensus-aura = { version = "0.29.0", default-features = false }
 sp-core = { version = "25.0.0", default-features = false }
+sp-genesis-builder = { version = "0.4.0", default-features = false }
 sp-inherents = { version = "23.0.0", default-features = false }
 sp-io = { version = "27.0.0", default-features = false }
 sp-offchain = { version = "23.0.0", default-features = false }
