@@ -2,7 +2,7 @@
 name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # patch revision must match runtime spec_version
-version = "1.7.44"
+version = "1.8.45"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -58,23 +58,26 @@ pallet-utility = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-xcm = { workspace = true }
 pallet-xcm-transactor = { workspace = true }
-parachain-info = { workspace = true }
-polkadot-parachain = { workspace = true }
+polkadot-parachain-primitives = { workspace = true }
+polkadot-runtime-common = { workspace = true }
 sp-api = { workspace = true }
 sp-block-builder = { workspace = true }
 sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true }
+sp-genesis-builder = { workspace = true }
 sp-inherents = { workspace = true }
 sp-io = { workspace = true }
 sp-offchain = { workspace = true }
 sp-runtime = { workspace = true }
 sp-session = { workspace = true }
 sp-std = { workspace = true }
+sp-storage = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
-xcm = { workspace = true }
-xcm-builder = { workspace = true }
-xcm-executor = { workspace = true }
+staging-parachain-info = { workspace = true }
+staging-xcm = { workspace = true }
+staging-xcm-builder = { workspace = true }
+staging-xcm-executor = { workspace = true }
 xcm-transactor-primitives = { workspace = true }
 
 # Benchmarking
@@ -90,7 +93,7 @@ polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-runtime-parachains = { workspace = true, features = ["std"] }
 
 [build-dependencies]
-substrate-wasm-builder = { workspace = true }
+substrate-wasm-builder = { workspace = true, optional = true }
 
 [features]
 default = ["std"]
@@ -103,11 +106,13 @@ std = [
     "cumulus-primitives-core/std",
     "cumulus-primitives-timestamp/std",
     "cumulus-primitives-utility/std",
+    "frame-benchmarking?/std",
     "frame-executive/std",
     "frame-support/std",
+    "frame-system-benchmarking?/std",
     "frame-system-rpc-runtime-api/std",
     "frame-system/std",
-    "frame-try-runtime/std",
+    "frame-try-runtime?/std",
     "log/std",
     "orml-traits/std",
     "orml-xcm-support/std",
@@ -136,36 +141,42 @@ std = [
     "pallet-vesting/std",
     "pallet-xcm-transactor/std",
     "pallet-xcm/std",
-    "parachain-info/std",
     "parachains-common/std",
     "parity-scale-codec/std",
-    "polkadot-parachain/std",
+    "polkadot-parachain-primitives/std",
+    "polkadot-runtime-common/std",
     "scale-info/std",
     "sp-api/std",
     "sp-block-builder/std",
     "sp-consensus-aura/std",
     "sp-core/std",
+    "sp-genesis-builder/std",
     "sp-inherents/std",
     "sp-io/std",
     "sp-offchain/std",
     "sp-runtime/std",
     "sp-session/std",
     "sp-std/std",
+    "sp-storage/std",
     "sp-transaction-pool/std",
     "sp-version/std",
-    "xcm-builder/std",
-    "xcm-executor/std",
+    "staging-parachain-info/std",
+    "staging-xcm-builder/std",
+    "staging-xcm-executor/std",
+    "staging-xcm/std",
+    "substrate-wasm-builder",
     "xcm-transactor-primitives/std",
-    "xcm/std",
 ]
 runtime-benchmarks = [
+    "cumulus-pallet-parachain-system/runtime-benchmarks",
     "cumulus-pallet-xcmp-queue/runtime-benchmarks",
+    "cumulus-primitives-utility/runtime-benchmarks",
     "frame-benchmarking/runtime-benchmarks",
     "frame-support/runtime-benchmarks",
     "frame-system-benchmarking/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
-    "frame-system/runtime-benchmarks",
     "hex-literal",
+    "orml-xtokens/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
     "pallet-child-bounties/runtime-benchmarks",
@@ -185,8 +196,12 @@ runtime-benchmarks = [
     "pallet-utility/runtime-benchmarks",
     "pallet-vesting/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
+    "pallet-xcm-transactor/runtime-benchmarks",
+    "polkadot-parachain-primitives/runtime-benchmarks",
+    "polkadot-runtime-common/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
-    "xcm-builder/runtime-benchmarks",
+    "staging-xcm-builder/runtime-benchmarks",
+    "staging-xcm-executor/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -222,7 +237,8 @@ try-runtime = [
     "pallet-vesting/try-runtime",
     "pallet-xcm-transactor/try-runtime",
     "pallet-xcm/try-runtime",
-    "parachain-info/try-runtime",
+    "polkadot-runtime-common/try-runtime",
+    "staging-parachain-info/try-runtime",
 ]
 # Set timing constants (e.g. session period) to faster versions to speed up testing.
 fast-runtime = []

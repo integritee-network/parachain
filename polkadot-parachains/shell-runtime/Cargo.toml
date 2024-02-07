@@ -2,7 +2,7 @@
 name = "shell-runtime"
 description = "The Integritee shell parachain runtime"
 # major.minor revision must match collator node. patch should match spec_version
-version = "1.7.13"
+version = "1.8.14"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -24,6 +24,7 @@ cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
+frame-benchmarking = { workspace = true, optional = true }
 frame-executive = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
@@ -41,8 +42,8 @@ pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-xcm = { workspace = true }
 pallet-xcm-transactor = { workspace = true }
-parachain-info = { workspace = true }
-polkadot-parachain = { workspace = true }
+polkadot-parachain-primitives = { workspace = true }
+polkadot-runtime-common = { workspace = true }
 sp-api = { workspace = true }
 sp-block-builder = { workspace = true }
 sp-consensus-aura = { workspace = true }
@@ -55,9 +56,10 @@ sp-session = { workspace = true }
 sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
-xcm = { workspace = true }
-xcm-builder = { workspace = true }
-xcm-executor = { workspace = true }
+staging-parachain-info = { workspace = true }
+staging-xcm = { workspace = true }
+staging-xcm-builder = { workspace = true }
+staging-xcm-executor = { workspace = true }
 xcm-transactor-primitives = { workspace = true }
 
 [dev-dependencies]
@@ -95,10 +97,11 @@ std = [
     "pallet-vesting/std",
     "pallet-xcm-transactor/std",
     "pallet-xcm/std",
-    "parachain-info/std",
+    "staging-parachain-info/std",
     "parachains-common/std",
     "parity-scale-codec/std",
-    "polkadot-parachain/std",
+    "polkadot-parachain-primitives/std",
+    "polkadot-runtime-common/std",
     "scale-info/std",
     "sp-api/std",
     "sp-block-builder/std",
@@ -112,10 +115,10 @@ std = [
     "sp-std/std",
     "sp-transaction-pool/std",
     "sp-version/std",
-    "xcm-builder/std",
-    "xcm-executor/std",
+    "staging-xcm-builder/std",
+    "staging-xcm-executor/std",
     "xcm-transactor-primitives/std",
-    "xcm/std",
+    "staging-xcm/std",
 ]
 # Weird cargo behaviour: We have to feature gate the `runtime-benchmarks` behind
 # a feature here. Otherwise the feature is automatically activated in dependencies
@@ -123,8 +126,19 @@ std = [
 # leads to compiler erros in the `shell-runtime` because the benchmarks are not
 # implemented.
 runtime-benchmarks = [
+    "cumulus-pallet-parachain-system/runtime-benchmarks",
+    "cumulus-pallet-xcmp-queue/runtime-benchmarks",
+    "frame-benchmarking/runtime-benchmarks",
+    "frame-support/runtime-benchmarks",
+    "frame-system/runtime-benchmarks",
+    "pallet-balances/runtime-benchmarks",
+    "pallet-sudo/runtime-benchmarks",
+    "pallet-timestamp/runtime-benchmarks",
+    "pallet-vesting/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
-    "xcm-builder/runtime-benchmarks",
+    "polkadot-runtime-common/runtime-benchmarks",
+    "sp-runtime/runtime-benchmarks",
+    "staging-xcm-builder/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -144,5 +158,5 @@ try-runtime = [
     "pallet-vesting/try-runtime",
     "pallet-xcm-transactor/try-runtime",
     "pallet-xcm/try-runtime",
-    "parachain-info/try-runtime",
+    "staging-parachain-info/try-runtime",
 ]
