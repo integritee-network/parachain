@@ -1203,6 +1203,7 @@ dependencies = [
 [[package]]
 name = "claims-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "parity-scale-codec",
  "rustc-hex",
@@ -1333,6 +1334,7 @@ checksum = "2382f75942f4b3be3690fe4f86365e9c853c1587d6ee58212cebf6e2a9ccd101"
 [[package]]
 name = "common-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "derive_more",
  "parity-scale-codec",
@@ -1995,21 +1997,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.39",
-]
-
-[[package]]
-name = "cumulus-pallet-session-benchmarking"
-version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf9aaa60ed60ee9cbfc55535a6e2a01353c8308135e24d6c50ba989e518f17d"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-session",
- "parity-scale-codec",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -2762,6 +2749,7 @@ dependencies = [
 [[package]]
 name = "enclave-bridge-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "common-primitives",
  "log",
@@ -4272,7 +4260,6 @@ dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
- "cumulus-pallet-session-benchmarking",
  "cumulus-pallet-xcm",
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-core",
@@ -4334,6 +4321,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-std",
+ "sp-storage",
  "sp-transaction-pool",
  "sp-version",
  "staging-parachain-info",
@@ -6333,6 +6321,7 @@ dependencies = [
 [[package]]
 name = "pallet-claims"
 version = "0.9.12"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "claims-primitives",
  "frame-benchmarking",
@@ -6466,6 +6455,7 @@ dependencies = [
 [[package]]
 name = "pallet-enclave-bridge"
 version = "0.12.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "enclave-bridge-primitives",
  "frame-benchmarking",
@@ -6926,6 +6916,7 @@ dependencies = [
 [[package]]
 name = "pallet-sidechain"
 version = "0.11.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "enclave-bridge-primitives",
  "frame-benchmarking",
@@ -7062,6 +7053,7 @@ dependencies = [
 [[package]]
 name = "pallet-teeracle"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7085,6 +7077,7 @@ dependencies = [
 [[package]]
 name = "pallet-teerex"
 version = "0.10.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7309,6 +7302,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-transactor"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -11248,6 +11242,7 @@ dependencies = [
 [[package]]
 name = "sgx-verify"
 version = "0.1.4"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "base64 0.13.1",
  "chrono",
@@ -11404,6 +11399,7 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 [[package]]
 name = "sidechain-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -12889,6 +12885,7 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 [[package]]
 name = "teeracle-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "common-primitives",
  "sp-std",
@@ -12898,6 +12895,7 @@ dependencies = [
 [[package]]
 name = "teerex-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "common-primitives",
  "derive_more",
@@ -12941,6 +12939,7 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 [[package]]
 name = "test-utils"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "log",
  "sgx-verify",
@@ -14689,6 +14688,7 @@ dependencies = [
 [[package]]
 name = "xcm-transactor-primitives"
 version = "0.1.0"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-v1.3.0#a6a00e74170eea8bc22c636befbcd2207228eaf3"
 dependencies = [
  "common-primitives",
  "cumulus-primitives-core",

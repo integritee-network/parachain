@@ -120,7 +120,7 @@ runtime-benchmarks = [
     "sc-service/runtime-benchmarks",
     "shell-runtime/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
-
+    "polkadot-service/runtime-benchmarks",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",
