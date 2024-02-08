@@ -43,6 +43,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
+use core::marker::PhantomData;
 pub use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
@@ -67,6 +68,7 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureWithSuccess,
 };
+use orml_traits::{currency::MutationHooks, parameter_type_with_key};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use parachains_common::{
@@ -75,7 +77,8 @@ use parachains_common::{
 	NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
 pub use parachains_common::{
-	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
+	AccountId, Address, Amount, Balance, BlockNumber, Hash, Header, Nonce, Signature,
+	MILLISECS_PER_BLOCK,
 };
 use scale_info::TypeInfo;
 #[cfg(any(feature = "std", test))]
@@ -94,6 +97,7 @@ mod helpers;
 mod weights;
 
 pub mod xcm_config;
+use xcm_config::CurrencyId;
 
 pub type SessionHandlers = ();
 
@@ -116,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 45,
+	spec_version: 46,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 6,
@@ -134,6 +138,8 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 
 /// A timestamp: milliseconds since the unix epoch.
 pub type Moment = u64;
+
+pub type ReserveIdentifier = [u8; 8];
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -249,7 +255,7 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = [u8; 8];
+	type ReserveIdentifier = ReserveIdentifier;
 	type RuntimeHoldReason = RuntimeHoldReason;
 	type RuntimeFreezeReason = ();
 	type FreezeIdentifier = ();
@@ -761,6 +767,46 @@ impl orml_xcm::Config for Runtime {
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
+parameter_type_with_key! {
+	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			CurrencyId::TEER => MILLITEER,
+			CurrencyId::KSM => 3_333_333u128.into() // keep this with asset hub ED
+		}
+	};
+}
+
+pub struct CurrencyHooks<T, DustAccount>(PhantomData<T>, DustAccount);
+impl<T, DustAccount> MutationHooks<T::AccountId, T::CurrencyId, T::Balance>
+	for CurrencyHooks<T, DustAccount>
+where
+	T: orml_tokens::Config,
+	DustAccount: Get<<T as frame_system::Config>::AccountId>,
+{
+	type OnDust = orml_tokens::TransferDust<T, DustAccount>;
+	type OnSlash = ();
+	type PreDeposit = ();
+	type PostDeposit = ();
+	type PreTransfer = ();
+	type PostTransfer = ();
+	type OnNewTokenAccount = ();
+	type OnKilledTokenAccount = ();
+}
+
+impl orml_tokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = weights::orml_tokens::WeightInfo<Runtime>;
+	type ExistentialDeposits = ExistentialDeposits;
+	type CurrencyHooks = CurrencyHooks<Runtime, TreasuryAccount>;
+	type MaxLocks = MaxLocks;
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
+	type DustRemovalWhitelist = Nothing;
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -802,6 +848,7 @@ construct_runtime!(
 		XTokens: orml_xtokens = 34,
 		OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
+		Tokens: orml_tokens = 41,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex = 50,
@@ -880,6 +927,7 @@ mod benches {
 		[pallet_xcm, PolkadotXcm]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_utility, Utility]
+		[orml_tokens, Tokens]
 	);
 }
 

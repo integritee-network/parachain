@@ -2,7 +2,7 @@
 name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # patch revision must match runtime spec_version
-version = "1.8.45"
+version = "1.8.46"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -12,6 +12,7 @@ edition = "2021"
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
+serde = { workspace = true }
 
 parachains-common = { path = "../common", default-features = false }
 
@@ -32,6 +33,7 @@ frame-system = { workspace = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
 orml-traits = { workspace = true }
+orml-tokens = { workspace = true }
 orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 orml-xtokens = { workspace = true }
@@ -115,6 +117,7 @@ std = [
     "frame-try-runtime?/std",
     "log/std",
     "orml-traits/std",
+    "orml-tokens/std",
     "orml-xcm-support/std",
     "orml-xcm/std",
     "orml-xtokens/std",
@@ -176,6 +179,7 @@ runtime-benchmarks = [
     "frame-system-benchmarking/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
     "hex-literal",
+    "orml-tokens/runtime-benchmarks",
     "orml-xtokens/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
@@ -213,6 +217,7 @@ try-runtime = [
     "frame-executive/try-runtime",
     "frame-system/try-runtime",
     "frame-try-runtime/try-runtime",
+    "orml-tokens/try-runtime",
     "orml-xcm/try-runtime",
     "orml-xtokens/try-runtime",
     "pallet-aura/try-runtime",

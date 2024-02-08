@@ -43,6 +43,7 @@ use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 use sp_core::ConstU32;
 use sp_runtime::RuntimeDebug;
 use sp_std::{
@@ -97,9 +98,12 @@ parameter_types! {
 	Ord,
 	TypeInfo,
 	MaxEncodedLen,
+	Serialize,
+	Deserialize,
 )]
 pub enum CurrencyId {
 	TEER,
+	KSM,
 }
 
 /// Converts a CurrencyId into a Multilocation, used by xtoken for XCMP.
@@ -111,6 +115,7 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 				1,
 				X2(Parachain(ParachainInfo::parachain_id().into()), TEER_GENERAL_KEY),
 			)),
+			CurrencyId::KSM => Some(MultiLocation::new(1, Here)),
 		}
 	}
 }

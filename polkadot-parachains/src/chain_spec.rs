@@ -251,6 +251,7 @@ fn integritee_genesis_config(
 		claims: Default::default(),
 		treasury: Default::default(),
 		transaction_payment: Default::default(),
+		tokens: Default::default(),
 	}
 }
 

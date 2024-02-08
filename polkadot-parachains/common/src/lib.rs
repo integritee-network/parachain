@@ -51,6 +51,9 @@ mod types {
 	/// Balance of an account.
 	pub type Balance = u128;
 
+	/// Amount is signed version of Balance
+	pub type Amount = i128;
+
 	/// Nonce of a transaction in the chain.
 	pub type Nonce = u32;
 
