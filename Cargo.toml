@@ -48,6 +48,7 @@ frame-system = { version = "25.0.0", default-features = false }
 frame-system-benchmarking = { version = "25.0.0", default-features = false }
 frame-system-rpc-runtime-api = { version = "23.0.0", default-features = false }
 frame-try-runtime = { version = "0.31.0", default-features = false }
+orml-currencies = { version = "0.6.7", default-features = false }
 orml-traits = { version = "0.6.7", default-features = false }
 orml-tokens = { version = "0.6.7", default-features = false }
 orml-xcm = { version = "0.6.7", default-features = false }

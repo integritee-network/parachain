@@ -18,7 +18,7 @@
 
 use cumulus_primitives_core::ParaId;
 use integritee_runtime::{
-	CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig, TEER,
+	CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig, TokensConfig, TEER,
 };
 use parachains_common::{AccountId, AuraId};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
@@ -251,7 +251,7 @@ fn integritee_genesis_config(
 		claims: Default::default(),
 		treasury: Default::default(),
 		transaction_payment: Default::default(),
-		tokens: Default::default(),
+		tokens: TokensConfig { balances: vec![] },
 	}
 }
 

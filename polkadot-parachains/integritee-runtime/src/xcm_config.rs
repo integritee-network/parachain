@@ -19,9 +19,9 @@
 //!
 
 use super::{
-	AccountId, Balance, Balances, Convert, EnsureRootOrMoreThanHalfCouncil, MaxInstructions,
-	ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
-	XcmpQueue, TEER,
+	AccountId, Balance, Balances, Convert, Currencies, EnsureRootOrMoreThanHalfCouncil,
+	MaxInstructions, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall,
+	RuntimeEvent, RuntimeOrigin, TreasuryAccount, XcmpQueue, TEER,
 };
 use crate::weights;
 use core::marker::PhantomData;
@@ -37,7 +37,9 @@ use orml_traits::{
 	location::{RelativeReserveProvider, Reserve},
 	parameter_type_with_key,
 };
-use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
+use orml_xcm_support::{
+	DepositToAlternative, IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset,
+};
 use pallet_xcm::XcmPassthrough;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
@@ -103,7 +105,7 @@ parameter_types! {
 )]
 pub enum CurrencyId {
 	TEER,
-	KSM,
+	RelayNative,
 }
 
 /// Converts a CurrencyId into a Multilocation, used by xtoken for XCMP.
@@ -115,7 +117,7 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 				1,
 				X2(Parachain(ParachainInfo::parachain_id().into()), TEER_GENERAL_KEY),
 			)),
-			CurrencyId::KSM => Some(MultiLocation::new(1, Here)),
+			CurrencyId::RelayNative => Some(MultiLocation::new(1, Here)),
 		}
 	}
 }
@@ -131,10 +133,12 @@ impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 				X2(Parachain(para_id), junction)
 					if junction == TEER_GENERAL_KEY && para_id == self_para_id =>
 					Some(CurrencyId::TEER),
+				Here => Some(CurrencyId::RelayNative),
 				_ => None,
 			},
 			MultiLocation { parents, interior } if parents == 0 => match interior {
 				X1(junction) if junction == TEER_GENERAL_KEY => Some(CurrencyId::TEER),
+				Here => Some(CurrencyId::TEER),
 				_ => None,
 			},
 			_ => None,
@@ -175,17 +179,15 @@ pub type LocationToAccountId = (
 );
 
 /// Means for transacting assets on this chain.
-pub type LocalAssetTransactor = CurrencyAdapter<
-	// Use this currency:
-	Balances,
-	// Matcher: matches concrete fungible assets whose `id` could be converted into `CurrencyId`.
-	IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
-	LocationToAccountId,
-	// Our chain's account ID type (we can't get away without mentioning it explicitly):
-	AccountId,
-	// We don't track any teleports.
+pub type LocalAssetTransactor = MultiCurrencyAdapter<
+	Currencies,
 	(),
+	IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
+	AccountId,
+	LocationToAccountId,
+	CurrencyId,
+	CurrencyIdConvert,
+	DepositToAlternative<TreasuryAccount, Currencies, CurrencyId, AccountId, Balance>,
 >;
 
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,

@@ -771,7 +771,7 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::TEER => MILLITEER,
-			CurrencyId::KSM => 3_333_333u128.into() // keep this with asset hub ED
+			CurrencyId::RelayNative => 3_333_333u128.into() // keep this with asset hub ED
 		}
 	};
 }
@@ -805,6 +805,18 @@ impl orml_tokens::Config for Runtime {
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = ReserveIdentifier;
 	type DustRemovalWhitelist = Nothing;
+}
+
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::TEER;
+}
+
+impl orml_currencies::Config for Runtime {
+	type MultiCurrency = Tokens;
+	type NativeCurrency =
+		orml_currencies::BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type WeightInfo = ();
 }
 
 construct_runtime!(
@@ -848,7 +860,8 @@ construct_runtime!(
 		XTokens: orml_xtokens = 34,
 		OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
-		Tokens: orml_tokens = 41,
+		Tokens: orml_tokens exclude_parts { Call } = 41,
+		Currencies: orml_currencies = 42,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex = 50,

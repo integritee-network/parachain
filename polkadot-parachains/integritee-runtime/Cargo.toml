@@ -32,6 +32,7 @@ frame-support = { workspace = true }
 frame-system = { workspace = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
+orml-currencies = { workspace = true }
 orml-traits = { workspace = true }
 orml-tokens = { workspace = true }
 orml-xcm = { workspace = true }
