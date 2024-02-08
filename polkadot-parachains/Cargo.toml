@@ -20,7 +20,7 @@ futures = { workspace = true, features = ["std"] }
 hex-literal = { workspace = true }
 log = { workspace = true, features = ["std"] }
 parity-scale-codec = { workspace = true, features = ["std"] }
-serde = { workspace = true }
+serde = { workspace = true, features = ["std"]  }
 serde_json = { workspace = true }
 
 # Parachain runtimes

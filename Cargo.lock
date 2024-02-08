@@ -6027,6 +6027,7 @@ dependencies = [
  "orml-utilities",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-io",
  "sp-runtime",
  "sp-std",
