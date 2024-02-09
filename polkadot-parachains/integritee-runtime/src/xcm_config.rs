@@ -263,31 +263,26 @@ match_types! {
 		MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
 	};
 }
-pub type Barrier = TrailingSetTopicAsId<
-	DenyThenTry<
-		DenyReserveTransferToRelayChain,
+pub type Barrier = TrailingSetTopicAsId<(
+	TakeWeightCredit,
+	// Expected responses are OK.
+	AllowKnownQueryResponses<PolkadotXcm>,
+	// Allow XCMs with some computed origins to pass through.
+	WithComputedOrigin<
 		(
-			TakeWeightCredit,
-			// Expected responses are OK.
-			AllowKnownQueryResponses<PolkadotXcm>,
-			// Allow XCMs with some computed origins to pass through.
-			WithComputedOrigin<
-				(
-					// If the message is one that immediately attemps to pay for execution, then
-					// allow it.
-					AllowTopLevelPaidExecutionFrom<Everything>,
-					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
-					// get free execution.
-					AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
-					// Subscriptions for version tracking are OK.
-					AllowSubscriptionsFrom<ParentOrSiblings>,
-				),
-				UniversalLocation,
-				ConstU32<8>,
-			>,
+			// If the message is one that immediately attemps to pay for execution, then
+			// allow it.
+			AllowTopLevelPaidExecutionFrom<Everything>,
+			// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
+			// get free execution.
+			AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
+			// Subscriptions for version tracking are OK.
+			AllowSubscriptionsFrom<ParentOrSiblings>,
 		),
+		UniversalLocation,
+		ConstU32<8>,
 	>,
->;
+)>;
 
 pub struct SafeCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {

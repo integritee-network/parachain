@@ -31,13 +31,13 @@ chain = "integritee-rococo-local-dev"
 name = "integritee-collator01"
 #command = "~/bin/integritee-collator-v1.6.4"
 command = "./target/release/integritee-collator"
-args = ["-lxcm=trace"]
+args = ["-lxcm=trace,runtime=debug"]
 ws_port = 9944
 
 [[parachains.collators]]
 name = "integritee-collator02"
 #command = "~/bin/integritee-collator-v1.6.4"
 command = "./target/release/integritee-collator"
-args = ["-lxcm=trace"]
+args = ["-lxcm=trace,runtime=debug"]
 ws_port = 9945
 
