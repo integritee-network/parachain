@@ -20,7 +20,7 @@ diener update --polkadot --branch release-v0.9.xx
 2. Copy it to `~/.local/bin/`
 3. Launch it in your terminal
 ```
-zombienet-linux-x64 spawn --provider native zombienet/rococo-local-with-integritee-and-shell.toml
+zombienet-linux-x64 spawn --provider native zombienet/rococo-local-with-integritee.toml
 ```
 
 **Note:** You can also set a chain-spec path to the zombienet config, but the config param is named `chain_spec_path`.

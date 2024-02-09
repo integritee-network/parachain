@@ -66,38 +66,15 @@ ensure_binaries
 # Check for polkadot-js-api cli
 ensure_polkadot_js_api
 
-# HRMP: Trappist - Stout
+# HRMP: Integritee - Asset Hub
 open_hrmp_channels \
-    "ws://127.0.0.1:9900" \
+    "ws://127.0.0.1:9999" \
     "//Alice" \
-    1836 3000 4 524288
+    2015 1000 4 524288
 
-# HRMP: Stout - Trappist
+# HRMP: Asset Hub - Integritee
 open_hrmp_channels \
-    "ws://127.0.0.1:9900" \
+    "ws://127.0.0.1:9999" \
     "//Alice" \
-    3000 1836 4 524288
+    1000 2015 4 524288
 
-# HRMP: Trappist - Asset Hub
-open_hrmp_channels \
-    "ws://127.0.0.1:9900" \
-    "//Alice" \
-    1836 1000 4 524288
-
-# HRMP: Asset Hub - Trappist
-open_hrmp_channels \
-    "ws://127.0.0.1:9900" \
-    "//Alice" \
-    1000 1836 4 524288
-
-# HRMP: Stout - Asset Hub
-open_hrmp_channels \
-    "ws://127.0.0.1:9900" \
-    "//Alice" \
-    3000 1000 4 524288
-
-# HRMP: Asset Hub - Stout
-open_hrmp_channels \
-    "ws://127.0.0.1:9900" \
-    "//Alice" \
-    1000 3000 4 524288

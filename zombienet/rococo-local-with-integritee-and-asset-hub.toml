@@ -2,7 +2,7 @@
 timeout = 10000
 
 [relaychain]
-default_command = "~/bin/polkadot-v0.9.42"
+default_command = "~/bin/polkadot"
 default_args = [ "-lparachain=debug" ]
 chain = "rococo-local"
 
@@ -46,23 +46,25 @@ chain = "statemine-local"
     [[parachains.collators]]
     name = "asset-hub-collator-1"
     validator = true
-    command = "~/bin/polkadot-parachain-v0.9.42"
+    command = "~/bin/polkadot-parachain"
     ws_port = 9954
 
     [[parachains.collators]]
     name = "asset-hub-collator-2"
     validator = true
-    command = "~/bin/polkadot-parachain-v0.9.42"
+    command = "~/bin/polkadot-parachain"
     ws_port = 9955
 
-[[hrmp_channels]]
-sender = 2015
-recipient = 1000
-max_capacity = 8
-max_message_size = 512
-
-[[hrmp_channels]]
-sender = 1000
-recipient = 2015
-max_capacity = 8
-max_message_size = 512
+# this will halt parachain blockproduction with zombienet
+# use helper script to open channels
+#[[hrmp_channels]]
+#sender = 2015
+#recipient = 1000
+#max_capacity = 8
+#max_message_size = 512
+#
+#[[hrmp_channels]]
+#sender = 1000
+#recipient = 2015
+#max_capacity = 8
+#max_message_size = 512
