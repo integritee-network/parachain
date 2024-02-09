@@ -97,6 +97,7 @@ mod helpers;
 mod weights;
 
 pub mod xcm_config;
+
 use xcm_config::CurrencyId;
 
 pub type SessionHandlers = ();
@@ -936,7 +937,8 @@ mod benches {
 		[pallet_xcm, PolkadotXcm]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_utility, Utility]
-		[orml_tokens, Tokens]
+		// fixme https://github.com/integritee-network/parachain/issues/261
+		//[orml_tokens, benchmarking::tokens]
 	);
 }
 
