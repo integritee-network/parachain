@@ -3,7 +3,7 @@ timeout = 10000
 
 [relaychain]
 default_command = "~/bin/polkadot"
-default_args = [ "-lparachain=debug" ]
+default_args = [ "-lparachain=debug,xcm=trace" ]
 chain = "rococo-local"
 
     [[relaychain.nodes]]
@@ -30,11 +30,13 @@ chain = "integritee-rococo-local-dev"
     [[parachains.collators]]
     name = "integritee-collator-1"
     command = "./target/release/integritee-collator"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9944
 
     [[parachains.collators]]
     name = "integritee-collator-2"
     command = "./target/release/integritee-collator"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9945
 
 [[parachains]]
@@ -47,12 +49,14 @@ chain = "statemine-local"
     name = "asset-hub-collator-1"
     validator = true
     command = "~/bin/polkadot-parachain"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9954
 
     [[parachains.collators]]
     name = "asset-hub-collator-2"
     validator = true
     command = "~/bin/polkadot-parachain"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9955
 
 # this will halt parachain blockproduction with zombienet
