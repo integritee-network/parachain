@@ -30,7 +30,7 @@ use frame_support::{
 	match_types,
 	pallet_prelude::{Get, Weight},
 	parameter_types,
-	traits::{Everything, Nothing},
+	traits::{Contains, Everything, Nothing},
 	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
@@ -293,6 +293,8 @@ impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 }
 
 parameter_types! {
+	pub AssetHubLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(1000)));
+
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub RelayNativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(1,Here).into(), TEER * 70, 0u128);
 }
@@ -302,6 +304,14 @@ pub type Traders = (
 	// Everything else
 	UsingComponents<IdentityFee<Balance>, SelfReserve, AccountId, Balances, ()>,
 );
+
+parameter_types! {
+	pub const IntegriteeNative: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(MultiLocation::here()) });
+	pub AssetHubTrustedTeleporter: (MultiAssetFilter, MultiLocation) = (IntegriteeNative::get(), AssetHubLocation::get());
+}
+
+pub type TrustedTeleporters =
+	(staging_xcm_builder::Case<crate::xcm_config::AssetHubTrustedTeleporter>,);
 pub struct XcmExecutorConfig;
 impl staging_xcm_executor::Config for XcmExecutorConfig {
 	type RuntimeCall = RuntimeCall;
@@ -310,7 +320,7 @@ impl staging_xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = MultiNativeAsset<AbsoluteAndRelativeReserve<SelfLocationAbsolute>>;
-	type IsTeleporter = (); // No teleport for now. Better be safe than sorry.
+	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -340,6 +350,28 @@ parameter_types! {
 // Converts a Signed Local Origin into a MultiLocation
 pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
 
+pub struct OnlyTeleportNative;
+impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
+	fn contains(t: &(MultiLocation, Vec<MultiAsset>)) -> bool {
+		t.1.iter().any(|asset| {
+			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+
+			if let MultiAsset {
+				id: staging_xcm::latest::AssetId::Concrete(asset_loc),
+				fun: Fungible(_a),
+			} = asset
+			{
+				match asset_loc {
+					MultiLocation { parents: 0, interior: Here } => true,
+					_ => false,
+				}
+			} else {
+				false
+			}
+		})
+	}
+}
+
 // FIXME: We should probably update the configuration here.
 // See acala and moonbeam example : https://github.com/integritee-network/parachain/issues/103
 impl pallet_xcm::Config for Runtime {
@@ -349,7 +381,7 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>; // Allow any local origin in XCM execution.
 	type XcmExecuteFilter = Nothing; // Disable generic XCM execution. This does not affect Teleport or Reserve Transfer.
 	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
-	type XcmTeleportFilter = Nothing; // Do not allow teleports
+	type XcmTeleportFilter = OnlyTeleportNative;
 	type XcmReserveTransferFilter = Everything; // Transfer are allowed
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
