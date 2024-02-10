@@ -283,15 +283,6 @@ pub type Barrier = TrailingSetTopicAsId<(
 	>,
 )>;
 
-pub struct SafeCallFilter;
-impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
-	fn contains(_call: &RuntimeCall) -> bool {
-		// This is safe, as we prevent arbitrary xcm-transact executions.
-		// For rationale, see:https://github.com/paritytech/polkadot/blob/19fdd197aff085f7f66e54942999fd536e7df475/runtime/kusama/src/xcm_config.rs#L171
-		true
-	}
-}
-
 parameter_types! {
 	pub AssetHubLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(1000)));
 
@@ -337,7 +328,7 @@ impl staging_xcm_executor::Config for XcmExecutorConfig {
 	type FeeManager = ();
 	type MessageExporter = ();
 	type UniversalAliases = Nothing;
-	type SafeCallFilter = SafeCallFilter;
+	type SafeCallFilter = Everything;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = FrameTransactionalProcessor;
 }
@@ -375,14 +366,16 @@ impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
 // FIXME: We should probably update the configuration here.
 // See acala and moonbeam example : https://github.com/integritee-network/parachain/issues/103
 impl pallet_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
+	// who should be able to use generic xcm.send()
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, ()>; // Prohibit sending arbitrary XCMs from users of this chain
-	type XcmRouter = XcmRouter;
+														 // who should be able to use generic xcm.execute()
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>; // Allow any local origin in XCM execution.
 	type XcmExecuteFilter = Nothing; // Disable generic XCM execution. This does not affect Teleport or Reserve Transfer.
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
 	type XcmTeleportFilter = OnlyTeleportNative;
 	type XcmReserveTransferFilter = Everything; // Transfer are allowed
+	type RuntimeEvent = RuntimeEvent;
+	type XcmRouter = XcmRouter;
+	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;
