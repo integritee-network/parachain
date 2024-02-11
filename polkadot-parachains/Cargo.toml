@@ -25,7 +25,7 @@ serde_json = { workspace = true }
 
 # Parachain runtimes
 integritee-runtime = { path = "integritee-runtime" }
-parachains-common = { path = "common" }
+integritee-parachains-common = { path = "common" }
 shell-runtime = { path = "shell-runtime" }
 
 # Substrate dependencies

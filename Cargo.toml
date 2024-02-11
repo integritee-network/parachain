@@ -59,6 +59,7 @@ pallet-bounties = { version = "27.0.0", default-features = false }
 pallet-child-bounties = { version = "27.0.0", default-features = false }
 pallet-collective = { version = "28.0.0", default-features = false }
 pallet-democracy = { version = "28.0.0", default-features = false }
+pallet-message-queue = { version = "31.0.0", default-features = false }
 pallet-multisig = { version = "28.0.0", default-features = false }
 pallet-preimage = { version = "28.0.0", default-features = false }
 pallet-proxy = { version = "28.0.0", default-features = false }
@@ -71,6 +72,7 @@ pallet-treasury = { version = "27.0.0", default-features = false }
 pallet-utility = { version = "28.0.0", default-features = false }
 pallet-vesting = { version = "28.0.0", default-features = false }
 pallet-xcm = { version = "7.0.0", default-features = false }
+parachains-common = { version = "7.0.0", default-features = false }
 staging-parachain-info = { version = "0.7.0", default-features = false }
 polkadot-core-primitives = { version = "7.0.0", default-features = false }
 polkadot-parachain-primitives = { version = "6.0.0", default-features = false }

@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 // Integritee: keep this. only customization here
-use parachains_common::{opaque::Block, AccountId, Balance, Nonce};
+use integritee_parachains_common::{opaque::Block, AccountId, Balance, Nonce};
 
 pub use sc_rpc::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;

@@ -7,8 +7,8 @@ use std::{sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
+use integritee_parachains_common::opaque::{Block, Hash};
 use integritee_runtime::RuntimeApi;
-use parachains_common::opaque::{Block, Hash};
 
 // Cumulus Imports
 use cumulus_client_collator::service::CollatorService;

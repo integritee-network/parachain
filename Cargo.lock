@@ -4222,13 +4222,13 @@ dependencies = [
  "frame-benchmarking-cli",
  "futures",
  "hex-literal",
+ "integritee-parachains-common",
  "integritee-runtime",
  "jsonrpsee",
  "log",
  "nix 0.25.1",
  "pallet-sudo",
  "pallet-transaction-payment-rpc",
- "parachains-common",
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
@@ -4279,6 +4279,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "integritee-parachains-common"
+version = "1.8.0"
+dependencies = [
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "pallet-authorship",
+ "pallet-balances",
+ "parity-scale-codec",
+ "polkadot-core-primitives",
+ "polkadot-primitives",
+ "polkadot-runtime-common",
+ "scale-info",
+ "smallvec",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "staging-xcm",
+ "staging-xcm-executor",
+ "substrate-wasm-builder",
+]
+
+[[package]]
 name = "integritee-runtime"
 version = "1.8.46"
 dependencies = [
@@ -4300,6 +4325,7 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
+ "integritee-parachains-common",
  "log",
  "orml-traits",
  "orml-xcm",
@@ -4313,6 +4339,7 @@ dependencies = [
  "pallet-collective",
  "pallet-democracy",
  "pallet-enclave-bridge",
+ "pallet-message-queue",
  "pallet-multisig",
  "pallet-preimage",
  "pallet-proxy",
@@ -6211,6 +6238,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-asset-tx-payment"
+version = "28.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e967664d86219ca9f7d33504e8d914225cdb92e9e793d35edaab1fd2574f162f"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-transaction-payment",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-assets"
+version = "29.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aca79db2bc70c269170893604d8a56d0f32d52c75a23a3d887b6b4df132366b7"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-aura"
 version = "27.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6445,6 +6508,26 @@ dependencies = [
  "serde_derive",
  "sp-io",
  "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-collator-selection"
+version = "9.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4199122c135e161d2e2f4cbc9339c54a11ac4b11e0beb67e53b49a3c90d566b"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "pallet-session",
+ "parity-scale-codec",
+ "rand 0.8.5",
+ "scale-info",
+ "sp-runtime",
+ "sp-staking",
  "sp-std",
 ]
 
@@ -7452,17 +7535,27 @@ dependencies = [
 
 [[package]]
 name = "parachains-common"
-version = "1.8.0"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ceadd4f51620023871ece5eeda64734acd17d84d49b45473d335e900a012fdde"
 dependencies = [
- "frame-executive",
+ "cumulus-primitives-core",
+ "cumulus-primitives-utility",
  "frame-support",
  "frame-system",
+ "log",
+ "num-traits",
+ "pallet-asset-tx-payment",
+ "pallet-assets",
  "pallet-authorship",
  "pallet-balances",
+ "pallet-collator-selection",
+ "pallet-message-queue",
+ "pallet-xcm",
  "parity-scale-codec",
  "polkadot-core-primitives",
  "polkadot-primitives",
- "polkadot-runtime-common",
+ "rococo-runtime-constants",
  "scale-info",
  "smallvec",
  "sp-consensus-aura",
@@ -7470,9 +7563,12 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+ "staging-parachain-info",
  "staging-xcm",
+ "staging-xcm-builder",
  "staging-xcm-executor",
  "substrate-wasm-builder",
+ "westend-runtime-constants",
 ]
 
 [[package]]
@@ -11580,12 +11676,14 @@ dependencies = [
  "frame-try-runtime",
  "hex",
  "hex-literal",
+ "integritee-parachains-common",
  "log",
  "orml-traits",
  "orml-xcm",
  "orml-xcm-support",
  "pallet-aura",
  "pallet-balances",
+ "pallet-message-queue",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
