@@ -86,6 +86,7 @@ xcm-transactor-primitives = { workspace = true }
 frame-benchmarking = { workspace = true, optional = true }
 frame-system-benchmarking = { workspace = true, optional = true }
 hex-literal = { workspace = true, optional = true }
+pallet-xcm-benchmarks = { workspace = true, optional = true }
 
 [dev-dependencies]
 cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
@@ -145,6 +146,7 @@ std = [
     "pallet-vesting/std",
     "pallet-xcm-transactor/std",
     "pallet-xcm/std",
+    "pallet-xcm-benchmarks?/std",
     "parachains-common/std",
     "parity-scale-codec/std",
     "polkadot-parachain-primitives/std",
@@ -202,6 +204,7 @@ runtime-benchmarks = [
     "pallet-vesting/runtime-benchmarks",
     "pallet-xcm-transactor/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
+    "pallet-xcm-benchmarks/runtime-benchmarks",
     "parachains-common/runtime-benchmarks",
     "polkadot-parachain-primitives/runtime-benchmarks",
     "polkadot-runtime-common/runtime-benchmarks",
