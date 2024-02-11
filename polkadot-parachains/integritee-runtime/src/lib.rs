@@ -893,10 +893,6 @@ mod benches {
 		[pallet_child_bounties, ChildBounties]
 		[pallet_claims, Claims]
 		[pallet_collective, Council]
-		// Fixme #177: For some reason the benchmarks write both to the same pallet_collective weight
-		// file. No reason to run both before we fix that, as the pallet_collective benchmark
-		// takes the longest.
-		// [pallet_collective, TechnicalCommittee]
 		[pallet_democracy, Democracy]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
@@ -909,7 +905,6 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_treasury, Treasury]
 		[pallet_vesting, Vesting]
-		[pallet_xcm, PolkadotXcm]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_utility, Utility]
 	);
