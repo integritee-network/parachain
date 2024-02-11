@@ -2,7 +2,7 @@
 name = "shell-runtime"
 description = "The Integritee shell parachain runtime"
 # major.minor revision must match collator node. patch should match spec_version
-version = "1.8.14"
+version = "1.9.15"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -13,12 +13,12 @@ log = { workspace = true }
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
 
-parachains-common = { path = "../common", default-features = false }
+integritee-parachains-common = { path = "../common", default-features = false }
 
 # Substrate dependencies
 cumulus-pallet-aura-ext = { workspace = true }
 cumulus-pallet-dmp-queue = { workspace = true }
-cumulus-pallet-parachain-system = { workspace = true }
+cumulus-pallet-parachain-system = { workspace = true, features = ["parameterized-consensus-hook"]  }
 cumulus-pallet-xcm = { workspace = true }
 cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
@@ -35,6 +35,7 @@ orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 pallet-aura = { workspace = true }
 pallet-balances = { workspace = true }
+pallet-message-queue = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
@@ -42,6 +43,7 @@ pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-xcm = { workspace = true }
 pallet-xcm-transactor = { workspace = true }
+parachains-common = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
 sp-api = { workspace = true }
@@ -84,12 +86,14 @@ std = [
     "frame-support/std",
     "frame-system-rpc-runtime-api/std",
     "frame-system/std",
+    "integritee-parachains-common/std",
     "log/std",
     "orml-traits/std",
     "orml-xcm-support/std",
     "orml-xcm/std",
     "pallet-aura/std",
     "pallet-balances/std",
+    "pallet-message-queue/std",
     "pallet-sudo/std",
     "pallet-timestamp/std",
     "pallet-transaction-payment-rpc-runtime-api/std",
@@ -97,7 +101,6 @@ std = [
     "pallet-vesting/std",
     "pallet-xcm-transactor/std",
     "pallet-xcm/std",
-    "staging-parachain-info/std",
     "parachains-common/std",
     "parity-scale-codec/std",
     "polkadot-parachain-primitives/std",
@@ -115,10 +118,11 @@ std = [
     "sp-std/std",
     "sp-transaction-pool/std",
     "sp-version/std",
+    "staging-parachain-info/std",
     "staging-xcm-builder/std",
     "staging-xcm-executor/std",
-    "xcm-transactor-primitives/std",
     "staging-xcm/std",
+    "xcm-transactor-primitives/std",
 ]
 # Weird cargo behaviour: We have to feature gate the `runtime-benchmarks` behind
 # a feature here. Otherwise the feature is automatically activated in dependencies
@@ -132,10 +136,12 @@ runtime-benchmarks = [
     "frame-support/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
+    "pallet-message-queue/runtime-benchmarks",
     "pallet-sudo/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
     "pallet-vesting/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
+    "parachains-common/runtime-benchmarks",
     "polkadot-runtime-common/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
     "staging-xcm-builder/runtime-benchmarks",
@@ -153,6 +159,7 @@ try-runtime = [
     "orml-xcm/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
+    "pallet-message-queue/try-runtime",
     "pallet-timestamp/try-runtime",
     "pallet-transaction-payment/try-runtime",
     "pallet-vesting/try-runtime",

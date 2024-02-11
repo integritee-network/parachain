@@ -17,24 +17,20 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
-use integritee_runtime::{
-	CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig, TEER,
-};
-use parachains_common::{AccountId, AuraId};
+use integritee_parachains_common::{AccountId, AuraId};
+use integritee_runtime::TEER;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
-use sc_service::{ChainType, GenericChainSpec};
+use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Ss58Codec, sr25519, Public};
 use sp_keyring::AccountKeyring::{Alice, Bob, Dave, Eve};
 use std::str::FromStr;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type IntegriteeChainSpec =
-	sc_service::GenericChainSpec<integritee_runtime::RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<(), Extensions>;
 
-/// Specialized `ChainSpec` for the shell parachain runtime.
-pub type ShellChainSpec =
-	sc_service::GenericChainSpec<shell_runtime::RuntimeGenesisConfig, Extensions>;
+/// The default XCM version to set in genesis config.
+const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
 
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
@@ -126,10 +122,15 @@ impl IntegriteeDevKeys {
 }
 
 pub fn shell_chain_spec(
-	id: ParaId,
+	para_id: ParaId,
 	genesis_keys: GenesisKeys,
 	relay_chain: RelayChain,
-) -> ShellChainSpec {
+) -> ChainSpec {
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "TEER".into());
+	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("ss58Format".into(), 13.into());
+
 	let (root, endowed, authorities) = match genesis_keys {
 		GenesisKeys::Integritee =>
 			(IntegriteeKeys::root(), vec![IntegriteeKeys::root()], IntegriteeKeys::authorities()),
@@ -142,21 +143,35 @@ pub fn shell_chain_spec(
 			(WellKnownKeys::root(), WellKnownKeys::endowed(), WellKnownKeys::authorities()),
 	};
 
-	let chain_name = "Integritee Shell".to_string();
-
-	chain_spec(
-		&chain_name,
-		move || shell_genesis_config(root.clone(), endowed.clone(), authorities.clone(), id),
-		id,
-		relay_chain,
+	#[allow(deprecated)]
+	ChainSpec::builder(
+		integritee_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
 	)
+	.with_name("Integritee Shell")
+	.with_id(&format!("shell-{}", relay_chain.to_string()))
+	.with_protocol_id(relay_chain.protocol_id())
+	.with_chain_type(relay_chain.chain_type())
+	.with_properties(properties)
+	.with_genesis_config_patch(shell_genesis_config(
+		root.clone(),
+		endowed.clone(),
+		authorities.clone(),
+		para_id,
+	))
+	.build()
 }
 
 pub fn integritee_chain_spec(
-	id: ParaId,
+	para_id: ParaId,
 	genesis_keys: GenesisKeys,
 	relay_chain: RelayChain,
-) -> IntegriteeChainSpec {
+) -> ChainSpec {
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "TEER".into());
+	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("ss58Format".into(), 13.into());
+
 	let (root, endowed, authorities) = match genesis_keys {
 		GenesisKeys::Integritee =>
 			(IntegriteeKeys::root(), vec![IntegriteeKeys::root()], IntegriteeKeys::authorities()),
@@ -169,89 +184,55 @@ pub fn integritee_chain_spec(
 		),
 	};
 
-	let chain_name = "Integritee Network".to_string();
-
-	chain_spec(
-		&chain_name,
-		move || integritee_genesis_config(root.clone(), endowed.clone(), authorities.clone(), id),
-		id,
-		relay_chain,
-	)
-}
-
-fn chain_spec<F: Fn() -> GenesisConfig + 'static + Send + Sync, GenesisConfig>(
-	chain_name: &str,
-	testnet_constructor: F,
-	para_id: ParaId,
-	relay_chain: RelayChain,
-) -> GenericChainSpec<GenesisConfig, Extensions> {
-	GenericChainSpec::<GenesisConfig, Extensions>::from_genesis(
-		chain_name,
-		&format!("integritee-{}", relay_chain.to_string()),
-		relay_chain.chain_type(),
-		testnet_constructor,
-		Vec::new(),
-		// telemetry endpoints
-		None,
-		// protocol id
-		Some(relay_chain.protocol_id()),
-		// fork id
-		None,
-		// properties
-		Some(
-			serde_json::from_str(
-				r#"{
-				"ss58Format": 13,
-				"tokenDecimals": 12,
-				"tokenSymbol": "TEER"
-				}"#,
-			)
-			.unwrap(),
-		),
+	#[allow(deprecated)]
+	ChainSpec::builder(
+		integritee_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
 	)
+	.with_name("Integritee Network")
+	.with_id(&format!("integritee-{}", relay_chain.to_string()))
+	.with_protocol_id(relay_chain.protocol_id())
+	.with_chain_type(relay_chain.chain_type())
+	.with_properties(properties)
+	.with_genesis_config_patch(integritee_genesis_config(
+		root.clone(),
+		endowed.clone(),
+		authorities.clone(),
+		para_id,
+	))
+	.build()
 }
 
 fn integritee_genesis_config(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<AuraId>,
-	id: ParaId,
-) -> integritee_runtime::RuntimeGenesisConfig {
-	integritee_runtime::RuntimeGenesisConfig {
-		system: integritee_runtime::SystemConfig {
-			code: integritee_runtime::WASM_BINARY
-				.expect("WASM binary was not build, please build it!")
-				.to_vec(),
-			_config: Default::default(),
+	parachain_id: ParaId,
+) -> serde_json::Value {
+	serde_json::json!({
+		"aura": {
+			"authorities": initial_authorities
 		},
-		balances: integritee_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect(),
+		"balances": {
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect::<Vec<_>>(),
 		},
-		democracy: DemocracyConfig::default(),
-		council: CouncilConfig { phantom: Default::default(), members: vec![root_key.clone()] },
-		technical_committee: TechnicalCommitteeConfig {
-			phantom: Default::default(),
-			members: vec![root_key],
+		"parachainInfo": {
+			"parachainId": parachain_id,
 		},
-		vesting: Default::default(),
-		parachain_info: integritee_runtime::ParachainInfoConfig {
-			parachain_id: id,
-			_config: Default::default(),
+		"polkadotXcm": {
+			"safeXcmVersion": Some(SAFE_XCM_VERSION),
 		},
-		aura: integritee_runtime::AuraConfig { authorities: initial_authorities },
-		aura_ext: Default::default(),
-		parachain_system: Default::default(),
-		polkadot_xcm: Default::default(),
-		teerex: TeerexConfig {
-			allow_sgx_debug_mode: true,
-			allow_skipping_attestation: true,
-			_config: Default::default(),
+		"teerex": {
+			"allowSgxDebugMode": true,
+			"allowSkippingAttestation": true,
 		},
-		claims: Default::default(),
-		treasury: Default::default(),
-		transaction_payment: Default::default(),
-	}
+		"council": {
+			"members": vec![root_key.clone()]
+		},
+		"technicalcommittee": {
+			"members": vec![root_key.clone()]
+		},
+	})
 }
 
 fn shell_genesis_config(
@@ -259,29 +240,22 @@ fn shell_genesis_config(
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<AuraId>,
 	parachain_id: ParaId,
-) -> shell_runtime::RuntimeGenesisConfig {
-	shell_runtime::RuntimeGenesisConfig {
-		system: shell_runtime::SystemConfig {
-			code: shell_runtime::WASM_BINARY
-				.expect("WASM binary was not build, please build it!")
-				.to_vec(),
-			_config: Default::default(),
+) -> serde_json::Value {
+	serde_json::json!({
+		"aura": {
+			"authorities": initial_authorities
 		},
-		balances: shell_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 10 * TEER)).collect(),
+		"balances": {
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, 100 * TEER)).collect::<Vec<_>>(),
 		},
-		sudo: shell_runtime::SudoConfig { key: Some(root_key) },
-		vesting: Default::default(),
-		parachain_info: shell_runtime::ParachainInfoConfig {
-			parachain_id,
-			_config: Default::default(),
+		"parachainInfo": {
+			"parachainId": parachain_id,
 		},
-		parachain_system: Default::default(),
-		aura: shell_runtime::AuraConfig { authorities: initial_authorities },
-		aura_ext: Default::default(),
-		polkadot_xcm: Default::default(),
-		transaction_payment: Default::default(),
-	}
+		"polkadotXcm": {
+			"safeXcmVersion": Some(SAFE_XCM_VERSION),
+		},
+		"sudo": { "key": Some(root_key) }
+	})
 }
 
 pub enum RelayChain {
@@ -296,34 +270,32 @@ pub enum RelayChain {
 	Moonbase,
 }
 
-pub fn shell_rococo_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-rococo.json")[..])
+pub fn shell_rococo_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-rococo.json")[..])
 }
 
-pub fn shell_westend_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-westend.json")[..])
+pub fn shell_westend_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-westend.json")[..])
 }
 
-pub fn shell_kusama_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-kusama.json")[..])
+pub fn shell_kusama_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-kusama.json")[..])
 }
 
-pub fn shell_kusama_lease2_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/shell-kusama-lease2.json")[..])
+pub fn shell_kusama_lease2_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/shell-kusama-lease2.json")[..])
 }
 
-pub fn shell_kusama_lease3_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/shell-kusama-lease3.json")[..])
+pub fn shell_kusama_lease3_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/shell-kusama-lease3.json")[..])
 }
 
-pub fn shell_polkadot_config() -> Result<ShellChainSpec, String> {
-	ShellChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-polkadot.json")[..])
+pub fn shell_polkadot_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-polkadot.json")[..])
 }
 
-pub fn integritee_moonbase_config() -> Result<IntegriteeChainSpec, String> {
-	IntegriteeChainSpec::from_json_bytes(
-		&include_bytes!("../chain-specs/integritee-moonbase.json")[..],
-	)
+pub fn integritee_moonbase_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-moonbase.json")[..])
 }
 
 impl ToString for RelayChain {

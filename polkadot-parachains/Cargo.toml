@@ -2,7 +2,7 @@
 name = "integritee-collator"
 description = "The Integritee parachain collator binary"
 # align major.minor revision with the runtimes. bump patch revision ad lib. make this the github release tag
-version = "1.8.1"
+version = "1.9.0"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -25,7 +25,7 @@ serde_json = { workspace = true }
 
 # Parachain runtimes
 integritee-runtime = { path = "integritee-runtime" }
-parachains-common = { path = "common" }
+integritee-parachains-common = { path = "common" }
 shell-runtime = { path = "shell-runtime" }
 
 # Substrate dependencies
