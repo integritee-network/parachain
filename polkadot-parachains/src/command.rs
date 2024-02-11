@@ -24,7 +24,7 @@ use crate::{
 	chain_spec::{
 		integritee_chain_spec, integritee_moonbase_config, shell_chain_spec, shell_kusama_config,
 		shell_kusama_lease2_config, shell_kusama_lease3_config, shell_polkadot_config,
-		shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain, ShellChainSpec,
+		shell_rococo_config, shell_westend_config, ChainSpec, GenesisKeys, RelayChain,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
 };
@@ -33,8 +33,8 @@ use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use integritee_runtime::Block;
 use log::info;
 use sc_cli::{
-	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, SharedParams, SubstrateCli,
+	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
+	Result, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_runtime::traits::AccountIdConversion;
@@ -115,12 +115,8 @@ fn load_spec(
 
 		"" => panic!("Please supply chain_spec to be loaded."),
 		path => {
-			let chain_spec = chain_spec::IntegriteeChainSpec::from_json_file(path.into())?;
-			if chain_spec.is_shell() {
-				Box::new(ShellChainSpec::from_json_file(path.into())?)
-			} else {
-				Box::new(chain_spec)
-			}
+			let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
+			Box::new(chain_spec)
 		}
 	})
 }
@@ -192,7 +188,7 @@ impl SubstrateCli for RelayChainCli {
 		2019
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
 }
@@ -289,9 +285,7 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				let partials = new_partial(&config)?;
-
-				cmd.run(partials.client)
+				construct_partials!(config, |partials| cmd.run(partials.client))
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -451,7 +445,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 	fn prometheus_config(
 		&self,
 		default_listen_port: u16,
-		chain_spec: &Box<dyn ChainSpec>,
+		chain_spec: &Box<dyn sc_service::ChainSpec>,
 	) -> Result<Option<PrometheusConfig>> {
 		self.base.base.prometheus_config(default_listen_port, chain_spec)
 	}
@@ -521,7 +515,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 
 	fn telemetry_endpoints(
 		&self,
-		chain_spec: &Box<dyn ChainSpec>,
+		chain_spec: &Box<dyn sc_service::ChainSpec>,
 	) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
 		self.base.base.telemetry_endpoints(chain_spec)
 	}

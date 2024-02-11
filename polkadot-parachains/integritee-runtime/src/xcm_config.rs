@@ -29,7 +29,7 @@ use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
 use frame_support::{
 	pallet_prelude::{Get, Weight},
 	parameter_types,
-	traits::{Everything, Nothing},
+	traits::{Everything, Nothing, TransformOrigin},
 	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
@@ -354,10 +354,6 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = cumulus_pallet_xcmp_queue::weights::SubstrateWeight<Runtime>;
 	type PriceForSiblingDelivery = NoPriceForMessageDelivery<ParaId>;
-}
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
 }
 
 parameter_types! {
