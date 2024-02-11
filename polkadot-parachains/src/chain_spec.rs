@@ -18,11 +18,9 @@
 
 use cumulus_primitives_core::ParaId;
 use integritee_parachains_common::{AccountId, AuraId};
-use integritee_runtime::{
-	CouncilConfig, DemocracyConfig, TechnicalCommitteeConfig, TeerexConfig, TEER,
-};
+use integritee_runtime::TEER;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
-use sc_service::{ChainType, GenericChainSpec};
+use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Ss58Codec, sr25519, Public};
 use sp_keyring::AccountKeyring::{Alice, Bob, Dave, Eve};
