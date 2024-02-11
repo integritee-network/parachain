@@ -154,6 +154,7 @@ impl frame_system::Config for Runtime {
 	type Block = generic::Block<Header, UncheckedExtrinsic>;
 	type AccountId = AccountId;
 	type RuntimeCall = RuntimeCall;
+	type RuntimeTask = RuntimeTask;
 	type Lookup = AccountIdLookup<AccountId, ()>;
 	type Nonce = Nonce;
 	type Hash = Hash;
