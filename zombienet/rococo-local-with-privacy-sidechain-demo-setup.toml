@@ -2,7 +2,7 @@
 timeout = 10000
 
 [relaychain]
-default_command = "~/bin/polkadot-v0.9.42"
+default_command = "~/bin/polkadot"
 default_args = [ "-lparachain=debug --state-pruning=archive --blocks-pruning=archive" ]
 chain = "rococo-local"
 
