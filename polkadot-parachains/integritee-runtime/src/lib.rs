@@ -823,8 +823,8 @@ impl pallet_assets::Config for Runtime {
 	type AssetId = AssetIdForTrustBackedAssets;
 	type AssetIdParameter = parity_scale_codec::Compact<AssetIdForTrustBackedAssets>;
 	type Currency = Balances;
-	type CreateOrigin = NoAssetCreators;
-	type ForceOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type CreateOrigin = NoAssetCreators; //assets can only be created by root
+	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = ConstU128<{ TEER }>;
 	type AssetAccountDeposit = ConstU128<{ TEER }>;
 	type MetadataDepositBase = ConstU128<{ TEER }>;
