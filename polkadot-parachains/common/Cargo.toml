@@ -1,5 +1,5 @@
 [package]
-name = "parachains-common"
+name = "integritee-parachains-common"
 # major.minor revision must match collator node. patch bump ad lib
 version = "1.8.0"
 authors = ["Parity Technologies <admin@parity.io>"]

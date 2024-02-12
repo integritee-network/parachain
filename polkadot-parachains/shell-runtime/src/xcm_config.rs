@@ -19,15 +19,15 @@
 //!
 
 use super::{
-	AccountId, Balance, Balances, Convert, MaxInstructions, ParachainInfo, ParachainSystem,
+	AccountId, Balance, Balances, MaxInstructions, MessageQueue, ParachainInfo, ParachainSystem,
 	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, XcmpQueue, TEER,
 };
 use core::marker::PhantomData;
-use cumulus_primitives_core::GlobalConsensus;
+use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
 use frame_support::{
 	pallet_prelude::{Get, Weight},
 	parameter_types,
-	traits::{Everything, Nothing},
+	traits::{Everything, Nothing, TransformOrigin},
 	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
@@ -37,24 +37,26 @@ use orml_traits::{
 };
 use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
+use parachains_common::message_queue::ParaIdToSibling;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{traits::Convert, RuntimeDebug};
 use sp_std::{
 	convert::{From, Into},
 	prelude::*,
 };
 use staging_xcm::latest::prelude::*;
+#[allow(deprecated)]
+use staging_xcm_builder::CurrencyAdapter;
 use staging_xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
-	AllowTopLevelPaidExecutionFrom, CurrencyAdapter, DenyReserveTransferToRelayChain, DenyThenTry,
-	EnsureXcmOrigin, FixedWeightBounds, FrameTransactionalProcessor, ParentAsSuperuser,
-	ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	UsingComponents,
+	AllowTopLevelPaidExecutionFrom, DenyReserveTransferToRelayChain, DenyThenTry, EnsureXcmOrigin,
+	FixedWeightBounds, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
 use staging_xcm_executor::XcmExecutor;
 use xcm_transactor_primitives::*;
@@ -166,6 +168,7 @@ pub type LocationToAccountId = (
 );
 
 /// Means for transacting assets on this chain.
+#[allow(deprecated)]
 pub type LocalAssetTransactor = CurrencyAdapter<
 	// Use this currency:
 	Balances,
@@ -257,8 +260,8 @@ parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 }
 
-pub struct XcmExecutorConfig;
-impl staging_xcm_executor::Config for XcmExecutorConfig {
+pub struct XcmConfig;
+impl staging_xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	// How to withdraw and deposit an asset.
@@ -284,12 +287,6 @@ impl staging_xcm_executor::Config for XcmExecutorConfig {
 	type UniversalAliases = Nothing;
 	type SafeCallFilter = SafeCallFilter;
 	type Aliasers = Nothing;
-	type TransactionalProcessor = FrameTransactionalProcessor;
-}
-
-#[cfg(feature = "runtime-benchmarks")]
-parameter_types! {
-	pub ReachableDest: Option<MultiLocation> = Some(Parent.into());
 }
 
 // Converts a Signed Local Origin into a MultiLocation
@@ -303,7 +300,7 @@ impl pallet_xcm::Config for Runtime {
 	type XcmRouter = XcmRouter;
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>; // Allow any local origin in XCM execution.
 	type XcmExecuteFilter = Nothing; // Disable generic XCM execution. This does not affect Teleport or Reserve Transfer.
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Nothing; // Do not allow teleports
 	type XcmReserveTransferFilter = Everything; // Transfer are allowed
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -319,8 +316,6 @@ impl pallet_xcm::Config for Runtime {
 	type MaxLockers = ConstU32<8>;
 	// TODO pallet-xcm weights
 	type WeightInfo = pallet_xcm::TestWeightInfo;
-	#[cfg(feature = "runtime-benchmarks")]
-	type ReachableDest = ReachableDest;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();
@@ -343,26 +338,21 @@ impl pallet_xcm_transactor::Config for Runtime {
 
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
 // FIXME: Update to PolkadotXcm.
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	// Enqueue XCMP messages from siblings for later processing.
+	type XcmpQueue = TransformOrigin<MessageQueue, AggregateMessageOrigin, ParaId, ParaIdToSibling>;
+	type MaxInboundSuspended = sp_core::ConstU32<1_000>;
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = cumulus_pallet_xcmp_queue::weights::SubstrateWeight<Runtime>;
 	type PriceForSiblingDelivery = NoPriceForMessageDelivery<ParaId>;
-}
-
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmExecutorConfig>;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 }
 
 parameter_types! {

@@ -11,6 +11,7 @@ pub mod pallet_claims;
 pub mod pallet_collective;
 pub mod pallet_democracy;
 pub mod pallet_enclave_bridge;
+pub mod pallet_message_queue;
 pub mod pallet_multisig;
 pub mod pallet_preimage;
 pub mod pallet_proxy;
@@ -23,3 +24,5 @@ pub mod pallet_treasury;
 pub mod pallet_utility;
 pub mod pallet_vesting;
 pub mod pallet_xcm;
+
+pub mod cumulus_pallet_parachain_system;
