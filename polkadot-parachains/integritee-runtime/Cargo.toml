@@ -35,6 +35,8 @@ orml-traits = { workspace = true }
 orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 orml-xtokens = { workspace = true }
+pallet-assets = { workspace = true }
+pallet-asset-registry = { workspace = true }
 pallet-aura = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-bounties = { workspace = true }
@@ -121,6 +123,8 @@ std = [
     "orml-xcm-support/std",
     "orml-xcm/std",
     "orml-xtokens/std",
+    "pallet-assets/std",
+    "pallet-asset-registry/std",
     "pallet-aura/std",
     "pallet-balances/std",
     "pallet-bounties/std",
@@ -181,6 +185,8 @@ runtime-benchmarks = [
     "frame-system/runtime-benchmarks",
     "hex-literal",
     "orml-xtokens/runtime-benchmarks",
+    "pallet-assets/runtime-benchmarks",
+    "pallet-asset-registry/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
     "pallet-child-bounties/runtime-benchmarks",
@@ -221,6 +227,8 @@ try-runtime = [
     "frame-try-runtime/try-runtime",
     "orml-xcm/try-runtime",
     "orml-xtokens/try-runtime",
+    "pallet-assets/try-runtime",
+    "pallet-asset-registry/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
     "pallet-bounties/try-runtime",
