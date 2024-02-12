@@ -229,7 +229,7 @@ fn integritee_genesis_config(
 		"council": {
 			"members": vec![root_key.clone()]
 		},
-		"technicalcommittee": {
+		"technicalCommittee": {
 			"members": vec![root_key.clone()]
 		},
 	})
