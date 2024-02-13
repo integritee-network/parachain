@@ -91,7 +91,6 @@ pub use sp_runtime::{Perbill, Permill};
 
 // TEE
 pub use pallet_claims;
-use pallet_collective::EnsureProportionAtLeast;
 pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
