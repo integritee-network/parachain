@@ -25,9 +25,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::traits::{
-	fungible::HoldConsideration, tokens::PayFromAccount, AsEnsureOriginWithArg, ConstBool,
-	EnsureOriginWithArg, EqualPrivilegeOnly, Imbalance, InstanceFilter, LinearStoragePrice,
-	OnUnbalanced,
+	fungible::HoldConsideration, tokens::PayFromAccount, ConstBool, EnsureOriginWithArg,
+	EqualPrivilegeOnly, Imbalance, InstanceFilter, LinearStoragePrice, OnUnbalanced,
 };
 use pallet_collective;
 use parachains_common::AssetIdForTrustBackedAssets;
@@ -69,7 +68,7 @@ use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureRootWithSuccess, EnsureSigned, EnsureWithSuccess,
+	EnsureRoot, EnsureWithSuccess,
 };
 use integritee_parachains_common::{
 	fee::{SlowAdjustingFeeUpdate, WeightToFee},
@@ -811,8 +810,8 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
-	fn successful_origin(a: &MultiLocation) -> RuntimeOrigin {
-		pallet_xcm::Origin::Xcm(a.clone()).into()
+	fn try_successful_origin(_a: &AssetIdForTrustBackedAssets) -> Result<RuntimeOrigin, ()> {
+		Err(())
 	}
 }
 

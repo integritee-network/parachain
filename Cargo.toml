@@ -175,9 +175,9 @@ pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
 sgx-verify = { path = '../pallets/teerex/sgx-verify' }
 teeracle-primitives = { path = '../pallets/primitives/teeracle' }
 teerex-primitives = { path = '../pallets/primitives/teerex' }
+test-utils = { path = '../pallets/test-utils' }
 xcm-primitives = { path = '../pallets/primitives/xcm' }
 xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
-test-utils = { path = '../pallets/test-utils' }
 
 [patch.crates-io]
 ring = { git = "https://github.com/betrusted-io/ring-xous", branch = "0.16.20-cleanup" }

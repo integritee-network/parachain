@@ -30,7 +30,7 @@ use frame_support::{
 	match_types,
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
-	traits::{tokens::AssetId, Contains, ContainsPair, Everything, Nothing, TransformOrigin},
+	traits::{Contains, ContainsPair, Everything, Nothing, TransformOrigin},
 	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
@@ -38,12 +38,12 @@ use orml_traits::{
 	location::{RelativeReserveProvider, Reserve},
 	parameter_type_with_key,
 };
-use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
+use orml_xcm_support::IsNativeConcrete;
 use pallet_xcm::XcmPassthrough;
 use parachains_common::{message_queue::ParaIdToSibling, AssetIdForTrustBackedAssets};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
-use polkadot_runtime_common::{xcm_sender::NoPriceForMessageDelivery, ToAuthor};
+use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
 use sp_runtime::{traits::Convert, RuntimeDebug};
@@ -65,7 +65,7 @@ use staging_xcm_builder::{
 	WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::JustTry, XcmExecutor};
-use xcm_primitives::{AsAssetMultiLocation, ConvertedRegisteredAssetId, IntegriteeDropAssets};
+use xcm_primitives::{AsAssetMultiLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
 const fn teer_general_key() -> Junction {

@@ -36,8 +36,8 @@ orml-traits = { workspace = true }
 orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 orml-xtokens = { workspace = true }
-pallet-assets = { workspace = true }
 pallet-asset-registry = { workspace = true }
+pallet-assets = { workspace = true }
 pallet-aura = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-bounties = { workspace = true }
