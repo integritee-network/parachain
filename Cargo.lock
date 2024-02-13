@@ -445,6 +445,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
+name = "assets-common"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7d2d5b75d36daec8ffad11f121f581cc3aec2b7b117d8ab68f6e3ac914a5569"
+dependencies = [
+ "cumulus-primitives-core",
+ "frame-support",
+ "impl-trait-for-tuples",
+ "log",
+ "pallet-asset-conversion",
+ "pallet-asset-tx-payment",
+ "pallet-xcm",
+ "parachains-common",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "staging-xcm",
+ "staging-xcm-builder",
+ "staging-xcm-executor",
+ "substrate-wasm-builder",
+]
+
+[[package]]
 name = "async-channel"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4304,6 +4329,7 @@ dependencies = [
 name = "integritee-runtime"
 version = "1.9.47"
 dependencies = [
+ "assets-common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -4380,6 +4406,7 @@ dependencies = [
  "staging-xcm-builder",
  "staging-xcm-executor",
  "substrate-wasm-builder",
+ "xcm-primitives",
  "xcm-transactor-primitives",
 ]
 
@@ -6218,6 +6245,25 @@ dependencies = [
  "sp-std",
  "staging-xcm",
  "staging-xcm-executor",
+]
+
+[[package]]
+name = "pallet-asset-conversion"
+version = "10.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa2139677a59351fbd8513ddd92be4a7443d7d92f8f6897b2bbc78f55d1c6b8a"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

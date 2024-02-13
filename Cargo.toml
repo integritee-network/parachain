@@ -35,6 +35,7 @@ xcm-primitives = { default-features = false, git = "https://github.com/integrite
 xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
 
 # Polkadot-sdk and ecosystem crates [no_std]
+assets-common = { version = "0.7.0", default-features = false }
 cumulus-pallet-aura-ext = { version = "0.7.0", default-features = false }
 cumulus-pallet-dmp-queue = { version = "0.7.0", default-features = false }
 cumulus-pallet-parachain-system = { version = "0.7.0", default-features = false }

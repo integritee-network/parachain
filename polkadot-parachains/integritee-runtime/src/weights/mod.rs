@@ -27,3 +27,20 @@ pub mod pallet_treasury;
 pub mod pallet_utility;
 pub mod pallet_vesting;
 pub mod pallet_xcm;
+
+// pub mod integritee_runtime_benchmarks;
+//
+// pub struct IntegriteeDropAssetsWeigher();
+// impl DropAssetsWeigher for IntegriteeDropAssetsWeigher {
+// 	fn fungible() -> Weight {
+// 		integritee_runtime_benchmarks::WeightInfo::<Runtime>::drop_assets_fungible()
+// 	}
+//
+// 	fn native() -> Weight {
+// 		integritee_runtime_benchmarks::WeightInfo::<Runtime>::drop_assets_native()
+// 	}
+//
+// 	fn default() -> Weight {
+// 		integritee_runtime_benchmarks::WeightInfo::<Runtime>::drop_assets_default()
+// 	}
+// }
