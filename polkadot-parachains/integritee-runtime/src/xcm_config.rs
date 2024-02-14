@@ -142,10 +142,12 @@ impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 				X2(Parachain(para_id), junction)
 					if junction == TEER_GENERAL_KEY && para_id == self_para_id =>
 					Some(CurrencyId::TEER),
+				X1(Parachain(para_id)) if para_id == self_para_id => Some(CurrencyId::TEER),
 				_ => None,
 			},
 			MultiLocation { parents, interior } if parents == 0 => match interior {
 				X1(junction) if junction == TEER_GENERAL_KEY => Some(CurrencyId::TEER),
+				Here => Some(CurrencyId::TEER),
 				_ => None,
 			},
 			_ => None,
@@ -372,6 +374,7 @@ impl<T: Get<MultiLocation>> ContainsPair<MultiAsset, MultiLocation> for ReserveA
 pub struct OnlyTeleportNative;
 impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
 	fn contains(t: &(MultiLocation, Vec<MultiAsset>)) -> bool {
+		let self_para_id: u32 = ParachainInfo::parachain_id().into();
 		t.1.iter().any(|asset| {
 			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
 
@@ -382,6 +385,9 @@ impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
 			{
 				match asset_loc {
 					MultiLocation { parents: 0, interior: Here } => true,
+					MultiLocation { parents: 1, interior: X1(Parachain(para_id)) }
+						if *para_id == self_para_id =>
+						true,
 					_ => false,
 				}
 			} else {
