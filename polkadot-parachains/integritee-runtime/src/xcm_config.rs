@@ -398,8 +398,11 @@ impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
 }
 
 pub type Traders = (
+	// for TEER
+	FixedRateOfFungible<NativePerSecond, ()>,
+	// for KSM aka RelayNative
 	FixedRateOfFungible<RelayNativePerSecond, ()>,
-	// Everything else
+	// Everything else: TEER as referred to by Karura, Moonriver, Bifrost
 	UsingComponents<IdentityFee<Balance>, SelfReserve, AccountId, Balances, ()>,
 );
 
@@ -409,6 +412,7 @@ pub type TrustedTeleporters = (staging_xcm_builder::Case<AssetHubTrustedTeleport
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
+	pub NativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(0,Here).into(), TEER * 70, 0u128);
 	pub RelayNativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(1,Here).into(), TEER * 70, 0u128);
 }
 
