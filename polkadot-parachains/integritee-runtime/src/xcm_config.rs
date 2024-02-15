@@ -21,17 +21,17 @@
 use super::{
 	AccountId, AssetRegistry, Assets, Balance, Balances, EnsureRootOrMoreThanHalfCouncil,
 	MaxInstructions, MessageQueue, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
-	RuntimeCall, RuntimeEvent, RuntimeOrigin, XcmpQueue, TEER,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, TreasuryAccount, XcmpQueue, TEER,
 };
 use crate::weights;
 use core::marker::PhantomData;
 use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
+use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
 	match_types,
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
 	traits::{Contains, ContainsPair, Everything, Nothing, TransformOrigin},
-	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
 use orml_traits::{
@@ -61,14 +61,13 @@ use staging_xcm_builder::{
 	FixedWeightBounds, FungiblesAdapter, HashedDescription, NativeAsset, NoChecking,
 	ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
 	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
-	WithComputedOrigin,
+	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetMultiLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
-// Supported Currencies.
+// Supported Currencies. Keep this to TEER, even if we support other assets
 #[derive(
 	Encode,
 	Decode,
@@ -154,7 +153,7 @@ pub type LocationToAccountId = (
 
 /// Means for transacting assets on this chain.
 #[allow(deprecated)]
-pub type LocalAssetTransactor = CurrencyAdapter<
+pub type LocalNativeTransactor = CurrencyAdapter<
 	// Use this currency:
 	Balances,
 	// Matcher: matches concrete fungible assets whose `id` could be converted into `CurrencyId`.
@@ -312,16 +311,26 @@ impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
 
 pub type Traders = (
 	// for TEER
-	FixedRateOfFungible<NativePerSecond, ()>,
+	FixedRateOfFungible<
+		NativePerSecond,
+		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
+	>,
+	// for XCM from Karura, Bifrost, Moonriver
+	FixedRateOfFungible<
+		NativeAliasPerSecond,
+		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
+	>,
 	// for KSM aka RelayNative
-	FixedRateOfFungible<RelayNativePerSecond, ()>,
-	// Everything else: TEER as referred to by Karura, Moonriver, Bifrost
-	UsingComponents<IdentityFee<Balance>, SelfReserveAlias, AccountId, Balances, ()>,
+	FixedRateOfFungible<
+		RelayNativePerSecond,
+		XcmFeesTo32ByteAccount<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
+	>,
 );
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub NativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(0,Here).into(), TEER * 70, 0u128);
+	pub NativeAliasPerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(0,X1(TEER_GENERAL_KEY)).into(), TEER * 70, 0u128);
 	pub RelayNativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(1,Here).into(), TEER * 70, 0u128);
 	// Weight for one XCM operation.
 	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
@@ -344,7 +353,7 @@ pub type XcmRouter = (
 
 /// Means for transacting assets on this chain.
 pub type AssetTransactors =
-	(LocalAssetTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
+	(LocalNativeTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
 
 pub struct SafeCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
