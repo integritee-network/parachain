@@ -23,12 +23,10 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use assets_common::local_and_foreign_assets::TargetFromLeft;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::{
 	ord_parameter_types,
 	traits::{
-		fungible,
 		fungible::HoldConsideration,
 		tokens::{imbalance::ResolveAssetTo, PayFromAccount},
 		AsEnsureOriginWithArg, ConstBool, EnsureOriginWithArg, EqualPrivilegeOnly, Imbalance,
@@ -108,7 +106,6 @@ use sp_core::ConstU128;
 pub use sp_runtime::BuildStorage;
 use sp_runtime::RuntimeDebug;
 pub use sp_runtime::{Perbill, Permill};
-use staging_xcm::latest::MultiLocation;
 
 mod helpers;
 mod weights;
