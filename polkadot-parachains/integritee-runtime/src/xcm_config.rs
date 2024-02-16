@@ -67,7 +67,8 @@ use staging_xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetMultiLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
-// Supported Currencies. Keep this to TEER, even if we support other assets
+/// Supported local Currencies. Keep this to TEER,
+/// other assets will be handled through AssetRegistry pallet
 #[derive(
 	Encode,
 	Decode,
@@ -87,6 +88,7 @@ pub enum CurrencyId {
 
 /// Converts a Mulitloaction into a CurrencyId. Used by XCMP LocalAssetTransactor for asset filtering:
 /// we only accept Assets that are convertable to a "CurrencyId".
+/// other assets will be handled through AssetRegistry pallet
 impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(location: MultiLocation) -> Option<CurrencyId> {
 		let self_para_id: u32 = ParachainInfo::parachain_id().into();
@@ -151,7 +153,7 @@ pub type LocationToAccountId = (
 	HashedDescription<AccountId, DescribeFamily<DescribeAllTerminal>>,
 );
 
-/// Means for transacting assets on this chain.
+/// Means for transacting TEER only.
 #[allow(deprecated)]
 pub type LocalNativeTransactor = CurrencyAdapter<
 	// Use this currency:
@@ -171,6 +173,8 @@ pub type TrustBackedAssetsConvertedConcreteId =
 	assets_common::TrustBackedAssetsConvertedConcreteId<AssetsPalletLocation, Balance>;
 
 /// Means for transacting assets besides the native currency on this chain.
+/// Even if we currently don't plan to use this for arbitrary assets on our chain,
+/// there is no harm in allowing asset transactions via xcm
 pub type LocalFungiblesTransactor = FungiblesAdapter<
 	// Use this fungibles implementation:
 	Assets,
@@ -189,6 +193,7 @@ pub type LocalFungiblesTransactor = FungiblesAdapter<
 
 /// Means for transacting reserved fungible assets.
 /// AsAssetMultiLocation uses pallet_asset_registry to convert between AssetId and MultiLocation.
+/// This will be used for ROC/KSM/DOT derivatives through pallet AssetRegistry
 pub type ReservedFungiblesTransactor = FungiblesAdapter<
 	// Use this fungibles implementation:
 	Assets,
@@ -288,7 +293,7 @@ impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
 	fn contains(t: &(MultiLocation, Vec<MultiAsset>)) -> bool {
 		let self_para_id: u32 = ParachainInfo::parachain_id().into();
 		t.1.iter().any(|asset| {
-			log::trace!(target: "xcm::OnlyTeleportNative", "Asset to be teleported: {:?}", asset);
+			log::trace!(target: "xcm::OnlyTeleportNative", "Asset requested to be teleported: {:?}", asset);
 
 			if let MultiAsset {
 				id: staging_xcm::latest::AssetId::Concrete(asset_loc),
@@ -315,7 +320,7 @@ pub type Traders = (
 		NativePerSecond,
 		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
 	>,
-	// for XCM from Karura, Bifrost, Moonriver
+	// for TEER for XCM from Karura, Bifrost, Moonriver
 	FixedRateOfFungible<
 		NativeAliasPerSecond,
 		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
