@@ -161,7 +161,7 @@ std = [
     "polkadot-runtime-common/std",
     "scale-info/std",
     "sp-api/std",
-   # "sp-arithmetic/std",
+    # "sp-arithmetic/std",
     "sp-block-builder/std",
     "sp-consensus-aura/std",
     "sp-core/std",
