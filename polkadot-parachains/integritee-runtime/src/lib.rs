@@ -23,10 +23,17 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use assets_common::local_and_foreign_assets::TargetFromLeft;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use frame_support::traits::{
-	fungible::HoldConsideration, tokens::PayFromAccount, ConstBool, EnsureOriginWithArg,
-	EqualPrivilegeOnly, Imbalance, InstanceFilter, LinearStoragePrice, OnUnbalanced,
+use frame_support::{
+	ord_parameter_types,
+	traits::{
+		fungible,
+		fungible::HoldConsideration,
+		tokens::{imbalance::ResolveAssetTo, PayFromAccount},
+		AsEnsureOriginWithArg, ConstBool, EnsureOriginWithArg, EqualPrivilegeOnly, Imbalance,
+		InstanceFilter, LinearStoragePrice, OnUnbalanced,
+	},
 };
 use pallet_collective;
 use parachains_common::AssetIdForTrustBackedAssets;
@@ -35,7 +42,10 @@ use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, ConstU32, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
+	traits::{
+		AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup,
+		IntegerSquareRoot,
+	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult,
 };
@@ -63,12 +73,15 @@ pub use frame_support::{
 use frame_support::{
 	derive_impl,
 	genesis_builder_helper::{build_config, create_default_config},
-	traits::tokens::ConversionFromAssetBalance,
+	traits::{
+		fungible::{NativeFromLeft, NativeOrWithId, UnionOf},
+		tokens::ConversionFromAssetBalance,
+	},
 	weights::ConstantMultiplier,
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureWithSuccess,
+	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
 };
 use integritee_parachains_common::{
 	fee::{SlowAdjustingFeeUpdate, WeightToFee},
@@ -79,22 +92,23 @@ use integritee_parachains_common::{
 pub use integritee_parachains_common::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
 };
+use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
-pub use pallet_timestamp::Call as TimestampCall;
-use parachains_common::message_queue::NarrowOriginToSibling;
-use scale_info::TypeInfo;
-use sp_core::ConstU128;
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
-use sp_runtime::RuntimeDebug;
-pub use sp_runtime::{Perbill, Permill};
-
-// TEE
 pub use pallet_claims;
 pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
+pub use pallet_timestamp::Call as TimestampCall;
+use parachains_common::message_queue::NarrowOriginToSibling;
+use scale_info::TypeInfo;
+//use sp_arithmetic::traits::{BaseArithmetic, Unsigned};
+use sp_core::ConstU128;
+#[cfg(any(feature = "std", test))]
+pub use sp_runtime::BuildStorage;
+use sp_runtime::RuntimeDebug;
+pub use sp_runtime::{Perbill, Permill};
+use staging_xcm::latest::MultiLocation;
 
 mod helpers;
 mod weights;
@@ -814,7 +828,8 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 	}
 }
 
-impl pallet_assets::Config for Runtime {
+pub type MainAssetsInstance = pallet_assets::Instance1;
+impl pallet_assets::Config<MainAssetsInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = AssetBalance;
 	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
@@ -865,6 +880,80 @@ impl pallet_asset_registry::Config for Runtime {
 	type BenchmarkHelper = AssetRegistryBenchmarkHelper;
 }
 
+pub type NativeAndAssets = UnionOf<
+	Balances,
+	Assets,
+	NativeFromLeft,
+	NativeOrWithId<AssetIdForTrustBackedAssets>,
+	AccountId,
+>;
+pub type AscendingLocator = Ascending<AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>>;
+pub type WithFirstAssetLocator =
+	WithFirstAsset<Native, AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>>;
+
+impl pallet_asset_conversion::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type HigherPrecisionBalance = sp_core::U256;
+	type AssetKind = NativeOrWithId<AssetIdForTrustBackedAssets>;
+	type Assets = NativeAndAssets;
+	type PoolId = (Self::AssetKind, Self::AssetKind);
+	type PoolLocator = Chain<WithFirstAssetLocator, AscendingLocator>;
+	type PoolAssetId = u32;
+	type PoolAssets = PoolAssets;
+	type PoolSetupFee = ConstU128<0>; // Asset class deposit fees are sufficient to prevent spam
+	type PoolSetupFeeAsset = Native;
+	type PoolSetupFeeTarget = ResolveAssetTo<AssetConversionOrigin, Self::Assets>;
+	type LiquidityWithdrawalFee = LiquidityWithdrawalFee;
+	type LPFee = ConstU32<3>;
+	type PalletId = AssetConversionPalletId;
+	type MaxSwapPathLength = ConstU32<3>;
+	type MintMinLiquidity = ConstU128<100>;
+	type WeightInfo = weights::pallet_asset_conversion::WeightInfo<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = assets_common::benchmarks::AssetPairFactory<
+		Native,
+		parachain_info::Pallet<Runtime>,
+		xcm_config::AssetsPalletIndex,
+	>;
+}
+
+parameter_types! {
+	pub const AssetConversionPalletId: PalletId = PalletId(*b"py/ascon");
+	pub const Native: NativeOrWithId<u32> = NativeOrWithId::Native;
+	pub const LiquidityWithdrawalFee: Permill = Permill::from_percent(0);
+}
+
+ord_parameter_types! {
+	pub const AssetConversionOrigin: sp_runtime::AccountId32 =
+		AccountIdConversion::<sp_runtime::AccountId32>::into_account_truncating(&AssetConversionPalletId::get());
+}
+pub type PoolAssetsInstance = pallet_assets::Instance2;
+impl pallet_assets::Config<PoolAssetsInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type RemoveItemsLimit = ConstU32<1000>;
+	type AssetId = u32;
+	type AssetIdParameter = u32;
+	type Currency = Balances;
+	type CreateOrigin =
+		AsEnsureOriginWithArg<EnsureSignedBy<AssetConversionOrigin, sp_runtime::AccountId32>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	// Deposits are zero because creation/admin is limited to Asset Conversion pallet.
+	type AssetDeposit = ConstU128<0>;
+	type AssetAccountDeposit = ConstU128<0>;
+	type MetadataDepositBase = ConstU128<0>;
+	type MetadataDepositPerByte = ConstU128<0>;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = ConstU32<50>;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = weights::pallet_assets::WeightInfo<Runtime>;
+	type CallbackHandle = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -906,8 +995,12 @@ construct_runtime!(
 		XTokens: orml_xtokens = 34,
 		OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
-		Assets: pallet_assets = 41,
+
+		// fungibles
+		Assets: pallet_assets::<Instance1> = 41,
 		AssetRegistry: pallet_asset_registry = 42,
+		AssetConversion: pallet_asset_conversion = 43,
+		PoolAssets: pallet_assets::<Instance2> = 44,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex = 50,
@@ -962,6 +1055,7 @@ extern crate frame_benchmarking;
 mod benches {
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
+		[pallet_asset_conversion, AssetConversion]
 		[pallet_asset_registry, AssetRegistry]
 		[pallet_assets, Assets]
 		[pallet_balances, Balances]

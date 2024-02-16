@@ -36,6 +36,7 @@ orml-traits = { workspace = true }
 orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 orml-xtokens = { workspace = true }
+pallet-asset-conversion = { workspace = true }
 pallet-asset-registry = { workspace = true }
 pallet-assets = { workspace = true }
 pallet-aura = { workspace = true }
@@ -66,6 +67,7 @@ parachains-common = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
 sp-api = { workspace = true }
+#sp-arithmetic = { workspace = true }
 sp-block-builder = { workspace = true }
 sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true }
@@ -127,6 +129,7 @@ std = [
     "orml-xcm/std",
     "orml-xtokens/std",
     "pallet-assets/std",
+    "pallet-asset-conversion/std",
     "pallet-asset-registry/std",
     "pallet-aura/std",
     "pallet-balances/std",
@@ -158,6 +161,7 @@ std = [
     "polkadot-runtime-common/std",
     "scale-info/std",
     "sp-api/std",
+   # "sp-arithmetic/std",
     "sp-block-builder/std",
     "sp-consensus-aura/std",
     "sp-core/std",
@@ -190,6 +194,7 @@ runtime-benchmarks = [
     "hex-literal",
     "orml-xtokens/runtime-benchmarks",
     "pallet-assets/runtime-benchmarks",
+    "pallet-asset-conversion/runtime-benchmarks",
     "pallet-asset-registry/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
@@ -232,6 +237,7 @@ try-runtime = [
     "orml-xcm/try-runtime",
     "orml-xtokens/try-runtime",
     "pallet-assets/try-runtime",
+    "pallet-asset-conversion/try-runtime",
     "pallet-asset-registry/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
