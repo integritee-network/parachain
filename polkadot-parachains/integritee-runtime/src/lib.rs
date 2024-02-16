@@ -24,34 +24,6 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use frame_support::{
-	ord_parameter_types,
-	traits::{
-		fungible::HoldConsideration,
-		tokens::{imbalance::ResolveAssetTo, PayFromAccount},
-		AsEnsureOriginWithArg, ConstBool, EnsureOriginWithArg, EqualPrivilegeOnly, Imbalance,
-		InstanceFilter, LinearStoragePrice, OnUnbalanced,
-	},
-};
-use pallet_collective;
-use parachains_common::AssetIdForTrustBackedAssets;
-use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
-use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, ConstU32, OpaqueMetadata};
-use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup,
-		IntegerSquareRoot,
-	},
-	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult,
-};
-use sp_std::prelude::*;
-#[cfg(feature = "std")]
-use sp_version::NativeVersion;
-use sp_version::RuntimeVersion;
-// A few exports that help ease life for downstream crates.
 use cumulus_primitives_core::AggregateMessageOrigin;
 pub use frame_support::{
 	construct_runtime,
@@ -71,9 +43,12 @@ pub use frame_support::{
 use frame_support::{
 	derive_impl,
 	genesis_builder_helper::{build_config, create_default_config},
+	ord_parameter_types,
 	traits::{
-		fungible::{NativeFromLeft, NativeOrWithId, UnionOf},
-		tokens::ConversionFromAssetBalance,
+		fungible::{HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
+		tokens::{imbalance::ResolveAssetTo, ConversionFromAssetBalance, PayFromAccount},
+		AsEnsureOriginWithArg, ConstBool, EnsureOriginWithArg, EqualPrivilegeOnly, Imbalance,
+		InstanceFilter, LinearStoragePrice, OnUnbalanced,
 	},
 	weights::ConstantMultiplier,
 };
@@ -93,19 +68,30 @@ pub use integritee_parachains_common::{
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_claims;
+use pallet_collective;
 pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
 pub use pallet_timestamp::Call as TimestampCall;
-use parachains_common::message_queue::NarrowOriginToSibling;
+use parachains_common::{message_queue::NarrowOriginToSibling, AssetIdForTrustBackedAssets};
+use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
-//use sp_arithmetic::traits::{BaseArithmetic, Unsigned};
-use sp_core::ConstU128;
+use sp_api::impl_runtime_apis;
+use sp_core::{crypto::KeyTypeId, ConstU128, ConstU32, OpaqueMetadata};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{
+	create_runtime_str, generic, impl_opaque_keys,
+	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
+	transaction_validity::{TransactionSource, TransactionValidity},
+	ApplyExtrinsicResult, RuntimeDebug,
+};
 pub use sp_runtime::{Perbill, Permill};
+use sp_std::prelude::*;
+#[cfg(feature = "std")]
+use sp_version::NativeVersion;
+use sp_version::RuntimeVersion;
 
 mod helpers;
 mod weights;
@@ -902,23 +888,21 @@ impl pallet_asset_conversion::Config for Runtime {
 	type PoolSetupFeeAsset = Native;
 	type PoolSetupFeeTarget = ResolveAssetTo<AssetConversionOrigin, Self::Assets>;
 	type LiquidityWithdrawalFee = LiquidityWithdrawalFee;
-	type LPFee = ConstU32<3>;
+	type LPFee = ConstU32<3>; // 0.3% swap fee
 	type PalletId = AssetConversionPalletId;
 	type MaxSwapPathLength = ConstU32<3>;
 	type MintMinLiquidity = ConstU128<100>;
 	type WeightInfo = weights::pallet_asset_conversion::WeightInfo<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = assets_common::benchmarks::AssetPairFactory<
-		Native,
-		parachain_info::Pallet<Runtime>,
-		xcm_config::AssetsPalletIndex,
-	>;
+	type BenchmarkHelper = ();
 }
 
 parameter_types! {
+	pub AssetsPalletIndex: u32 = <Assets as PalletInfoAccess>::index() as u32;
 	pub const AssetConversionPalletId: PalletId = PalletId(*b"py/ascon");
 	pub const Native: NativeOrWithId<u32> = NativeOrWithId::Native;
-	pub const LiquidityWithdrawalFee: Permill = Permill::from_percent(0);
+	// we charge no fee for liquidity withdrawal
+	pub const LiquidityWithdrawalFee: Permill = Permill::from_perthousand(0);
 }
 
 ord_parameter_types! {
