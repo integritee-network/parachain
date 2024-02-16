@@ -9,11 +9,11 @@ repository = "https://github.com/integritee-network/parachain"
 edition = "2021"
 
 [dependencies]
+integritee-parachains-common = { path = "../common", default-features = false }
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
-scale-info = { workspace = true }
 primitive-types = { workspace = true }
-integritee-parachains-common = { path = "../common", default-features = false }
+scale-info = { workspace = true }
 
 # Substrate dependencies
 
