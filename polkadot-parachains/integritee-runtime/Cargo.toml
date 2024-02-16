@@ -2,7 +2,7 @@
 name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # patch revision must match runtime spec_version
-version = "1.9.47"
+version = "1.9.48"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -18,6 +18,7 @@ integritee-parachains-common = { path = "../common", default-features = false }
 # Substrate dependencies
 
 # pallets
+assets-common = { workspace = true }
 cumulus-pallet-aura-ext = { workspace = true }
 cumulus-pallet-dmp-queue = { workspace = true }
 cumulus-pallet-parachain-system = { workspace = true, features = ["parameterized-consensus-hook"] }
@@ -35,6 +36,8 @@ orml-traits = { workspace = true }
 orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 orml-xtokens = { workspace = true }
+pallet-asset-registry = { workspace = true }
+pallet-assets = { workspace = true }
 pallet-aura = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-bounties = { workspace = true }
@@ -80,6 +83,7 @@ staging-parachain-info = { workspace = true }
 staging-xcm = { workspace = true }
 staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
+xcm-primitives = { workspace = true }
 xcm-transactor-primitives = { workspace = true }
 
 # Benchmarking
@@ -100,6 +104,7 @@ substrate-wasm-builder = { workspace = true, optional = true }
 [features]
 default = ["std"]
 std = [
+    "assets-common/std",
     "cumulus-pallet-aura-ext/std",
     "cumulus-pallet-dmp-queue/std",
     "cumulus-pallet-parachain-system/std",
@@ -121,6 +126,8 @@ std = [
     "orml-xcm-support/std",
     "orml-xcm/std",
     "orml-xtokens/std",
+    "pallet-assets/std",
+    "pallet-asset-registry/std",
     "pallet-aura/std",
     "pallet-balances/std",
     "pallet-bounties/std",
@@ -172,6 +179,7 @@ std = [
     "xcm-transactor-primitives/std",
 ]
 runtime-benchmarks = [
+    "assets-common/runtime-benchmarks",
     "cumulus-pallet-parachain-system/runtime-benchmarks",
     "cumulus-pallet-xcmp-queue/runtime-benchmarks",
     "cumulus-primitives-utility/runtime-benchmarks",
@@ -181,6 +189,8 @@ runtime-benchmarks = [
     "frame-system/runtime-benchmarks",
     "hex-literal",
     "orml-xtokens/runtime-benchmarks",
+    "pallet-assets/runtime-benchmarks",
+    "pallet-asset-registry/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
     "pallet-child-bounties/runtime-benchmarks",
@@ -221,6 +231,8 @@ try-runtime = [
     "frame-try-runtime/try-runtime",
     "orml-xcm/try-runtime",
     "orml-xtokens/try-runtime",
+    "pallet-assets/try-runtime",
+    "pallet-asset-registry/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
     "pallet-bounties/try-runtime",

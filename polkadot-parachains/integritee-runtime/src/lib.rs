@@ -25,10 +25,11 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use frame_support::traits::{
-	fungible::HoldConsideration, tokens::PayFromAccount, ConstBool, EqualPrivilegeOnly, Imbalance,
-	InstanceFilter, LinearStoragePrice, OnUnbalanced,
+	fungible::HoldConsideration, tokens::PayFromAccount, ConstBool, EnsureOriginWithArg,
+	EqualPrivilegeOnly, Imbalance, InstanceFilter, LinearStoragePrice, OnUnbalanced,
 };
 use pallet_collective;
+use parachains_common::AssetIdForTrustBackedAssets;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, ConstU32, OpaqueMetadata};
@@ -82,6 +83,7 @@ pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use parachains_common::message_queue::NarrowOriginToSibling;
 use scale_info::TypeInfo;
+use sp_core::ConstU128;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::RuntimeDebug;
@@ -120,7 +122,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 47,
+	spec_version: 48,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 6,
@@ -793,6 +795,76 @@ impl orml_xcm::Config for Runtime {
 	type SovereignOrigin = EnsureRoot<AccountId>;
 }
 
+pub type AssetBalance = Balance;
+/// always denies creation of assets
+pub struct NoAssetCreators;
+impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAssetCreators {
+	type Success = AccountId;
+
+	fn try_origin(
+		o: RuntimeOrigin,
+		_a: &AssetIdForTrustBackedAssets,
+	) -> sp_std::result::Result<Self::Success, RuntimeOrigin> {
+		return Err(o)
+	}
+
+	#[cfg(feature = "runtime-benchmarks")]
+	fn try_successful_origin(_a: &AssetIdForTrustBackedAssets) -> Result<RuntimeOrigin, ()> {
+		Err(())
+	}
+}
+
+impl pallet_assets::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = AssetBalance;
+	type RemoveItemsLimit = frame_support::traits::ConstU32<1000>;
+	type AssetId = AssetIdForTrustBackedAssets;
+	type AssetIdParameter = parity_scale_codec::Compact<AssetIdForTrustBackedAssets>;
+	type Currency = Balances;
+	type CreateOrigin = NoAssetCreators; //assets can only be created by root
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = ConstU128<{ TEER }>;
+	type AssetAccountDeposit = ConstU128<{ TEER }>;
+	type MetadataDepositBase = ConstU128<{ TEER }>;
+	type MetadataDepositPerByte = ConstU128<{ 10 * MILLITEER }>;
+	type ApprovalDeposit = ConstU128<{ 10 * MILLITEER }>;
+	type StringLimit = ConstU32<50>;
+	type Freezer = ();
+	type Extra = ();
+	type CallbackHandle = ();
+	type WeightInfo = weights::pallet_assets::WeightInfo<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+pub struct AssetRegistryBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_asset_registry::BenchmarkHelper<AssetIdForTrustBackedAssets>
+	for AssetRegistryBenchmarkHelper
+{
+	fn get_registered_asset() -> AssetIdForTrustBackedAssets {
+		use sp_runtime::traits::StaticLookup;
+
+		let root = frame_system::RawOrigin::Root.into();
+		let asset_id = 1;
+		let caller = frame_benchmarking::whitelisted_caller();
+		let caller_lookup = <Runtime as frame_system::Config>::Lookup::unlookup(caller);
+		Assets::force_create(root, asset_id.into(), caller_lookup, true, 1)
+			.expect("Should have been able to force create asset");
+		asset_id
+	}
+}
+
+impl pallet_asset_registry::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ReserveAssetModifierOrigin = EnsureRoot<Self::AccountId>;
+	type Assets = Assets;
+	type WeightInfo = weights::pallet_asset_registry::WeightInfo<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = AssetRegistryBenchmarkHelper;
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -834,6 +906,8 @@ construct_runtime!(
 		XTokens: orml_xtokens = 34,
 		OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
+		Assets: pallet_assets = 41,
+		AssetRegistry: pallet_asset_registry = 42,
 
 		// Integritee pallets.
 		Teerex: pallet_teerex = 50,
@@ -888,6 +962,8 @@ extern crate frame_benchmarking;
 mod benches {
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
+		[pallet_asset_registry, AssetRegistry]
+		[pallet_assets, Assets]
 		[pallet_balances, Balances]
 		[pallet_bounties, Bounties]
 		[pallet_child_bounties, ChildBounties]

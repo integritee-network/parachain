@@ -3,7 +3,7 @@ timeout = 10000
 
 [relaychain]
 default_command = "~/bin/polkadot"
-default_args = [ "-lparachain=debug" ]
+default_args = [ "-lparachain=debug,xcm=trace" ]
 chain = "rococo-local"
 
     [[relaychain.nodes]]
@@ -30,39 +30,33 @@ chain = "integritee-rococo-local-dev"
     [[parachains.collators]]
     name = "integritee-collator-1"
     command = "./target/release/integritee-collator"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9944
 
     [[parachains.collators]]
     name = "integritee-collator-2"
     command = "./target/release/integritee-collator"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9945
 
 [[parachains]]
 id = 1000
 addToGenesis = true
 cumulus_based = true
-chain = "statemine-local"
+chain = "asset-hub-rococo-local"
 
     [[parachains.collators]]
     name = "asset-hub-collator-1"
     validator = true
-    command = "~/bin/polkadot-parachain-v0.9.42"
+    command = "~/bin/polkadot-parachain"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9954
 
     [[parachains.collators]]
     name = "asset-hub-collator-2"
     validator = true
-    command = "~/bin/polkadot-parachain-v0.9.42"
+    command = "~/bin/polkadot-parachain"
+    args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9955
 
-[[hrmp_channels]]
-sender = 2015
-recipient = 1000
-max_capacity = 8
-max_message_size = 512
-
-[[hrmp_channels]]
-sender = 1000
-recipient = 2015
-max_capacity = 8
-max_message_size = 512
+# don't open HRMP channels here, will stop block production of parachains. use ./scripts/hrmp_helper.sh
