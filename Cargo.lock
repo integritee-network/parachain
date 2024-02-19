@@ -4110,6 +4110,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "impl-num-traits"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "951641f13f873bff03d4bf19ae8bec531935ac0ac2cc775f84d7edfdcfed3f17"
+dependencies = [
+ "integer-sqrt",
+ "num-traits",
+ "uint",
+]
+
+[[package]]
 name = "impl-serde"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4223,7 +4234,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.9.1"
+version = "1.9.2"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -4330,7 +4341,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-runtime"
-version = "1.9.48"
+version = "1.9.49"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -4357,6 +4368,7 @@ dependencies = [
  "orml-xcm",
  "orml-xcm-support",
  "orml-xtokens",
+ "pallet-asset-conversion",
  "pallet-asset-registry",
  "pallet-assets",
  "pallet-aura",
@@ -4389,6 +4401,7 @@ dependencies = [
  "polkadot-primitives",
  "polkadot-runtime-common",
  "polkadot-runtime-parachains",
+ "primitive-types",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -9171,6 +9184,7 @@ checksum = "9f3486ccba82358b11a77516035647c34ba167dfa53312630de83b12bd4f3d66"
 dependencies = [
  "fixed-hash",
  "impl-codec",
+ "impl-num-traits",
  "impl-serde",
  "scale-info",
  "uint",

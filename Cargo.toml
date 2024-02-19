@@ -22,6 +22,8 @@ scale-info = { version = "2.10.0", default-features = false, features = ["derive
 serde = { version = "1.0.195", features = ["derive"] }
 serde_json = "1.0"
 smallvec = "1.11.0"
+# num-traits feature needed for dex integer sq root:
+primitive-types = { version = "0.12.1", default-features = false, features = ["codec", "num-traits", "scale-info"] }
 
 # integritee pallets
 pallet-asset-registry = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
@@ -55,6 +57,7 @@ orml-traits = { version = "0.7", default-features = false }
 orml-xcm = { version = "0.7", default-features = false }
 orml-xcm-support = { version = "0.7", default-features = false }
 orml-xtokens = { version = "0.7", default-features = false }
+pallet-asset-conversion = { version = "10.0.0", default-features = false }
 pallet-assets = { version = "29.0.0", default-features = false }
 pallet-aura = { version = "27.0.0", default-features = false }
 pallet-authorship = { version = "28.0.0", default-features = false }

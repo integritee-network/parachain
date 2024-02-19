@@ -2,18 +2,18 @@
 name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # patch revision must match runtime spec_version
-version = "1.9.48"
+version = "1.9.49"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
 edition = "2021"
 
 [dependencies]
+integritee-parachains-common = { path = "../common", default-features = false }
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
+primitive-types = { workspace = true }
 scale-info = { workspace = true }
-
-integritee-parachains-common = { path = "../common", default-features = false }
 
 # Substrate dependencies
 
@@ -36,6 +36,7 @@ orml-traits = { workspace = true }
 orml-xcm = { workspace = true }
 orml-xcm-support = { workspace = true }
 orml-xtokens = { workspace = true }
+pallet-asset-conversion = { workspace = true }
 pallet-asset-registry = { workspace = true }
 pallet-assets = { workspace = true }
 pallet-aura = { workspace = true }
@@ -127,6 +128,7 @@ std = [
     "orml-xcm/std",
     "orml-xtokens/std",
     "pallet-assets/std",
+    "pallet-asset-conversion/std",
     "pallet-asset-registry/std",
     "pallet-aura/std",
     "pallet-balances/std",
@@ -156,6 +158,7 @@ std = [
     "parity-scale-codec/std",
     "polkadot-parachain-primitives/std",
     "polkadot-runtime-common/std",
+    "primitive-types/std",
     "scale-info/std",
     "sp-api/std",
     "sp-block-builder/std",
@@ -190,6 +193,7 @@ runtime-benchmarks = [
     "hex-literal",
     "orml-xtokens/runtime-benchmarks",
     "pallet-assets/runtime-benchmarks",
+    "pallet-asset-conversion/runtime-benchmarks",
     "pallet-asset-registry/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
@@ -232,6 +236,7 @@ try-runtime = [
     "orml-xcm/try-runtime",
     "orml-xtokens/try-runtime",
     "pallet-assets/try-runtime",
+    "pallet-asset-conversion/try-runtime",
     "pallet-asset-registry/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
