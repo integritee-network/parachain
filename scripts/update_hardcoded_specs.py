@@ -26,6 +26,7 @@ SPECS = [
     "integritee-kusama",
     "integritee-polkadot",
     "integritee-moonbase",
+    "integritee-paseo",
     "shell-kusama", # enable if you want to change the data for registration.
 ]
 COLLATOR = "target/release/integritee-collator"

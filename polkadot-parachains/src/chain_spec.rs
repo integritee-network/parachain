@@ -268,6 +268,7 @@ pub enum RelayChain {
 	Kusama,
 	Polkadot,
 	Moonbase,
+	Paseo,
 }
 
 pub fn shell_rococo_config() -> Result<ChainSpec, String> {
@@ -298,6 +299,10 @@ pub fn integritee_moonbase_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-moonbase.json")[..])
 }
 
+pub fn integritee_paseo_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../chain-specs/integritee-paseo.json")[..])
+}
+
 impl ToString for RelayChain {
 	fn to_string(&self) -> String {
 		match self {
@@ -310,6 +315,7 @@ impl ToString for RelayChain {
 			RelayChain::Kusama => "kusama".into(),
 			RelayChain::Polkadot => "polkadot".into(),
 			RelayChain::Moonbase => "westend_moonbase_relay_testnet".into(),
+			RelayChain::Paseo => "paseo".into(),
 		}
 	}
 }
@@ -326,6 +332,7 @@ impl RelayChain {
 			RelayChain::Kusama => ChainType::Live,
 			RelayChain::Polkadot => ChainType::Live,
 			RelayChain::Moonbase => ChainType::Live,
+			RelayChain::Paseo => ChainType::Live,
 		}
 	}
 	fn protocol_id(&self) -> &str {
@@ -339,6 +346,7 @@ impl RelayChain {
 			RelayChain::Kusama => "teer-k",
 			RelayChain::Polkadot => "teer-p",
 			RelayChain::Moonbase => "teer-m",
+			RelayChain::Paseo => "teer-o",
 		}
 	}
 }

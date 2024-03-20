@@ -22,9 +22,10 @@
 use crate::{
 	chain_spec,
 	chain_spec::{
-		integritee_chain_spec, integritee_moonbase_config, shell_chain_spec, shell_kusama_config,
-		shell_kusama_lease2_config, shell_kusama_lease3_config, shell_polkadot_config,
-		shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain,
+		integritee_chain_spec, integritee_moonbase_config, integritee_paseo_config,
+		shell_chain_spec, shell_kusama_config, shell_kusama_lease2_config,
+		shell_kusama_lease3_config, shell_polkadot_config, shell_rococo_config,
+		shell_westend_config, GenesisKeys, RelayChain,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
 };
@@ -47,6 +48,7 @@ const KUSAMA_PARA_ID: u32 = 2015;
 const KUSAMA_SWAP_PARA_ID: u32 = 2267;
 const POLKADOT_PARA_ID: u32 = 2039;
 const MOONBASE_PARA_ID: u32 = 2015;
+const PASEO_PARA_ID: u32 = 4002;
 
 trait IdentifyChain {
 	fn is_shell(&self) -> bool;
@@ -76,6 +78,7 @@ fn load_spec(
 		"integritee-kusama" => Box::new(shell_kusama_config()?),
 		"integritee-polkadot" => Box::new(shell_polkadot_config()?),
 		"integritee-moonbase" => Box::new(integritee_moonbase_config()?),
+		"integritee-paseo" => Box::new(integritee_paseo_config()?),
 		// chain-spec that has been registered for the next kusama slot lease
 		"shell-kusama-lease2" => Box::new(shell_kusama_lease2_config()?),
 		"shell-kusama-lease3" => Box::new(shell_kusama_lease3_config()?),
@@ -86,6 +89,7 @@ fn load_spec(
 		"integritee-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
 		"integritee-polkadot-fresh" => Box::new(shell_chain_spec(POLKADOT_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Polkadot)),
 		"integritee-moonbase-fresh" => Box::new(integritee_chain_spec(MOONBASE_PARA_ID.into(), GenesisKeys::IntegriteeDev, RelayChain::Moonbase)),
+		"integritee-paseo-fresh" => Box::new(integritee_chain_spec(PASEO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Paseo)),
 		"shell-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
 
 		// on-the-spot specs
