@@ -321,7 +321,7 @@ jobs:
       fail-fast: false
       matrix:
         chain: [integritee]
-        config: [rococo, westend, kusama, polkadot, moonbase]
+        config: [rococo, westend, kusama, polkadot, moonbase, paseo]
         include:
           - chain: shell
             config: kusama-lease2
