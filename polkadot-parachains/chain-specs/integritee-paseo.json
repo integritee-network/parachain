@@ -8,7 +8,7 @@
     "raw": {
       "childrenDefault": {},
       "top": {
-        "0x0d715f2646c8f85767b5d2764bb2782604a74d81251e398fd8a0a4d55023bb3f": "0xa20f0000",
+        "0x0d715f2646c8f85767b5d2764bb2782604a74d81251e398fd8a0a4d55023bb3f": "0xdf070000",
         "0x0d715f2646c8f85767b5d2764bb278264e7b9012096b41c4eb3aaf947f6ea429": "0x0000",
         "0x1809d78346727a0ef58c0fa03bafa3234e7b9012096b41c4eb3aaf947f6ea429": "0x0000",
         "0x1b15508200b2e5ed48f9fc4146686f3f4e7b9012096b41c4eb3aaf947f6ea429": "0x0000",
@@ -74,8 +74,8 @@
     }
   },
   "id": "integritee-paseo",
-  "name": "Integritee Network (Paseo)",
-  "para_id": 4002,
+  "name": "Integritee Network",
+  "para_id": 2015,
   "properties": {
     "ss58Format": 13,
     "tokenDecimals": 12,
