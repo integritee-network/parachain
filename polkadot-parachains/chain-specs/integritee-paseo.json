@@ -75,7 +75,7 @@
     }
   },
   "id": "integritee-paseo",
-  "name": "Integritee Network (Paseo)",
+  "name": "Integritee Testnet on Paseo",
   "para_id": 2015,
   "properties": {
     "ss58Format": 13,
