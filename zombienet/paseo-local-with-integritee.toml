@@ -25,7 +25,7 @@ ws_port = 9977
 id = 2015
 addToGenesis = true
 cumulus_based = true
-chain = "integritee-rococo-local-dev"
+chain = "integritee-paseo-local-dev"
 
 [[parachains.collators]]
 name = "integritee-collator01"
