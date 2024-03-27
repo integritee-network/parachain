@@ -1,5 +1,5 @@
 [settings]
-timeout = 10000
+timeout = 1000
 
 [relaychain]
 chain_spec_path = "./paseo.local.raw.json"
@@ -10,26 +10,28 @@ default_args = [ "-lparachain=debug,xcm=trace" ]
 name = "alice"
 validator = true
 ws_port = 9999
+extra_args = [ "-lparachain=debug" ]
 
 [[relaychain.nodes]]
 name = "bob"
 validator = true
-ws_port = 9988
+extra_args = [ "-lparachain=debug" ]
 
 [[relaychain.nodes]]
 name = "charlie"
 validator = true
-ws_port = 9977
+extra_args = [ "-lparachain=debug" ]
 
 [[relaychain.nodes]]
 name = "dave"
 validator = true
-ws_port = 9966
+extra_args = [ "-lparachain=debug" ]
 
 [[parachains]]
 id = 2015
-addToGenesis = true
+add_to_genesis = false
 cumulus_based = true
+onboard_as_parachain = true
 chain = "integritee-paseo-local-dev"
 
 [[parachains.collators]]
