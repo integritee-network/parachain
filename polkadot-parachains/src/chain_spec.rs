@@ -269,6 +269,7 @@ pub enum RelayChain {
 	Polkadot,
 	Moonbase,
 	Paseo,
+	PaseoLocal,
 }
 
 pub fn shell_rococo_config() -> Result<ChainSpec, String> {
@@ -316,6 +317,7 @@ impl ToString for RelayChain {
 			RelayChain::Polkadot => "polkadot".into(),
 			RelayChain::Moonbase => "westend_moonbase_relay_testnet".into(),
 			RelayChain::Paseo => "paseo".into(),
+			RelayChain::PaseoLocal => "paseo-local".into(),
 		}
 	}
 }
@@ -327,6 +329,7 @@ impl RelayChain {
 			RelayChain::WestendLocal => ChainType::Local,
 			RelayChain::KusamaLocal => ChainType::Local,
 			RelayChain::PolkadotLocal => ChainType::Local,
+			RelayChain::PaseoLocal => ChainType::Local,
 			RelayChain::Rococo => ChainType::Live,
 			RelayChain::Westend => ChainType::Live,
 			RelayChain::Kusama => ChainType::Live,
@@ -341,6 +344,7 @@ impl RelayChain {
 			RelayChain::WestendLocal => "teer-wl",
 			RelayChain::KusamaLocal => "teer-kl",
 			RelayChain::PolkadotLocal => "teer-pl",
+			RelayChain::PaseoLocal => "teer-ol",
 			RelayChain::Rococo => "teer-r",
 			RelayChain::Westend => "teer-w",
 			RelayChain::Kusama => "teer-k",

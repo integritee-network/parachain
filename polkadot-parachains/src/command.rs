@@ -96,6 +96,9 @@ fn load_spec(
 		"integritee-rococo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
 		"integritee-rococo-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
 
+		"integritee-paseo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PaseoLocal)),
+		"integritee-paseo-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PaseoLocal)),
+
 		"integritee-westend-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
 		"integritee-westend-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
 
