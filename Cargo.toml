@@ -26,15 +26,15 @@ smallvec = "1.11.0"
 primitive-types = { version = "0.12.1", default-features = false, features = ["codec", "num-traits", "scale-info"] }
 
 # integritee pallets
-pallet-asset-registry = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-xcm-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
-xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.6.0" }
+pallet-asset-registry = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+xcm-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
+xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-v1.9.0" }
 
 # Polkadot-sdk and ecosystem crates [no_std]
 assets-common = { version = "0.10.0", default-features = false }
