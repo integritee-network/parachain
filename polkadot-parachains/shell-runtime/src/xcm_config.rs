@@ -124,7 +124,7 @@ impl Convert<Location, Option<CurrencyId>> for CurrencyIdConvert {
 
 		match location.unpack() {
 			(1, interior) => match interior {
-				[Parachain(self_para_id), TEER_GENERAL_KEY] => Some(CurrencyId::TEER),
+				[Parachain(id), TEER_GENERAL_KEY] if *id == self_para_id => Some(CurrencyId::TEER),
 				_ => None,
 			},
 			(0, interior) => match interior {

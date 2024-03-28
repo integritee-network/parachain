@@ -91,9 +91,9 @@ impl Convert<Location, Option<CurrencyId>> for CurrencyIdConvert {
 
 		match location.unpack() {
 			// that's how xTokens with Karura, Bifrost, Moonriver refers to TEER
-			(1, [Parachain(self_para_id), TEER_GENERAL_KEY]) => Some(CurrencyId::TEER),
+			(1, [Parachain(id), TEER_GENERAL_KEY]) if *id == self_para_id => Some(CurrencyId::TEER),
 			// that's how the Asset Hub refers to TEER
-			(1, [Parachain(self_para_id)]) => Some(CurrencyId::TEER),
+			(1, [Parachain(id)]) if *id == self_para_id => Some(CurrencyId::TEER),
 			// same for local location spec. we don't care if parents is 0 or 1
 			(0, [TEER_GENERAL_KEY]) => Some(CurrencyId::TEER),
 			(0, []) => Some(CurrencyId::TEER),
@@ -286,7 +286,7 @@ impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
 			if let Asset { id: AssetId(asset_loc), fun: Fungible(_a) } = asset {
 				match asset_loc.unpack() {
 					(0, []) => true,
-					(1, [Parachain(self_para_id)]) => true,
+					(1, [Parachain(id)]) if *id == self_para_id => true,
 					_ => false,
 				}
 			} else {
