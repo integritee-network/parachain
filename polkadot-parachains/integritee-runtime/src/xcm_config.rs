@@ -34,11 +34,6 @@ use frame_support::{
 	traits::{Contains, ContainsPair, Everything, Nothing, TransformOrigin},
 };
 use frame_system::EnsureRoot;
-use orml_traits::{
-	location::{RelativeReserveProvider, Reserve},
-	parameter_type_with_key,
-};
-use orml_xcm_support::IsNativeConcrete;
 use pallet_xcm::XcmPassthrough;
 use parachains_common::{message_queue::ParaIdToSibling, AssetIdForTrustBackedAssets};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
@@ -499,67 +494,4 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 			)),
 		}
 	}
-}
-parameter_types! {
-	pub SelfReserveAlias: MultiLocation = MultiLocation {
-		parents:0,
-		interior: Junctions::X1(TEER_GENERAL_KEY)
-	};
-	// This is how we are going to detect whether the asset is a Reserve asset
-	pub SelfLocation: MultiLocation = MultiLocation::here();
-	// We need this to be able to catch when someone is trying to execute a non-
-	// cross-chain transfer in xtokens through the absolute path way
-	pub SelfLocationAbsolute: MultiLocation = MultiLocation {
-		parents:1,
-		interior: Junctions::X1(
-			Parachain(ParachainInfo::parachain_id().into())
-		)
-	};
-
-}
-
-/// This struct offers uses RelativeReserveProvider to output relative views of multilocations
-/// However, additionally accepts a MultiLocation that aims at representing the chain part
-/// (parent: 1, Parachain(paraId)) of the absolute representation of our chain.
-/// If a token reserve matches against this absolute view, we return  Some(MultiLocation::here())
-/// This helps users by preventing errors when they try to transfer a token through xtokens
-/// to our chain (either inserting the relative or the absolute value).
-pub struct AbsoluteAndRelativeReserve<AbsoluteMultiLocation>(PhantomData<AbsoluteMultiLocation>);
-impl<AbsoluteMultiLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteMultiLocation>
-where
-	AbsoluteMultiLocation: Get<MultiLocation>,
-{
-	fn reserve(asset: &MultiAsset) -> Option<MultiLocation> {
-		RelativeReserveProvider::reserve(asset).map(|relative_reserve| {
-			if relative_reserve == AbsoluteMultiLocation::get() {
-				MultiLocation::here()
-			} else {
-				relative_reserve
-			}
-		})
-	}
-}
-
-pub struct AccountIdToMultiLocation;
-impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
-	fn convert(account: AccountId) -> MultiLocation {
-		X1(AccountId32 { network: None, id: account.into() }).into()
-	}
-}
-
-impl orml_xtokens::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-	type CurrencyIdConvert = CurrencyIdConvert;
-	type AccountIdToMultiLocation = AccountIdToMultiLocation;
-	type SelfLocation = SelfLocation;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type BaseXcmWeight = BaseXcmWeight;
-	type UniversalLocation = UniversalLocation;
-	type MaxAssetsForTransfer = MaxAssetsForTransfer;
-	type MinXcmFee = ParachainMinFee;
-	type MultiLocationsFilter = Everything;
-	type ReserveProvider = AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
 }

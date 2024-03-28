@@ -31,11 +31,6 @@ use frame_support::{
 	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
-use orml_traits::{
-	location::{RelativeReserveProvider, Reserve},
-	parameter_type_with_key,
-};
-use orml_xcm_support::{IsNativeConcrete, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
 use parachains_common::message_queue::ParaIdToSibling;
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};

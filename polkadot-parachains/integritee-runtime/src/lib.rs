@@ -787,11 +787,6 @@ impl pallet_democracy::Config for Runtime {
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 }
 
-impl orml_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type SovereignOrigin = EnsureRoot<AccountId>;
-}
-
 pub type AssetBalance = Balance;
 /// always denies creation of assets
 pub struct NoAssetCreators;
@@ -973,8 +968,8 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		MessageQueue: pallet_message_queue = 33,
-		XTokens: orml_xtokens = 34,
-		OrmlXcm: orml_xcm = 35,
+		//XTokens: orml_xtokens = 34,
+		//OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
 
 		// fungibles
