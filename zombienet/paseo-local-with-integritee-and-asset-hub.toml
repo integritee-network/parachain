@@ -1,0 +1,50 @@
+[settings]
+timeout = 1000
+
+[relaychain]
+chain_spec_path = "./paseo.local.raw.json"
+default_command = "~/bin/polkadot"
+default_args = [ "-lparachain=debug,xcm=trace" ]
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+ws_port = 9999
+extra_args = [ "-lparachain=debug" ]
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+extra_args = [ "-lparachain=debug" ]
+
+[[relaychain.nodes]]
+name = "charlie"
+validator = true
+extra_args = [ "-lparachain=debug" ]
+
+[[relaychain.nodes]]
+name = "dave"
+validator = true
+extra_args = [ "-lparachain=debug" ]
+
+[[parachains]]
+id = 2015
+add_to_genesis = false
+cumulus_based = true
+onboard_as_parachain = true
+chain = "integritee-paseo-local-dev"
+
+[[parachains.collators]]
+name = "integritee-collator01"
+#command = "~/bin/integritee-collator-v1.6.4"
+command = "./target/release/integritee-collator"
+args = ["-lxcm=trace,runtime=debug"]
+ws_port = 9944
+
+[[parachains.collators]]
+name = "integritee-collator02"
+#command = "~/bin/integritee-collator-v1.6.4"
+command = "./target/release/integritee-collator"
+args = ["-lxcm=trace,runtime=debug"]
+ws_port = 9945
+

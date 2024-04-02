@@ -41,10 +41,7 @@ use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
-use sp_runtime::{
-	traits::{Convert},
-	RuntimeDebug,
-};
+use sp_runtime::{traits::Convert, RuntimeDebug};
 use sp_std::{
 	convert::{From, Into},
 	prelude::*,
@@ -60,7 +57,7 @@ use staging_xcm_builder::{
 	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
 	UsingComponents,
 };
-use staging_xcm_executor::{XcmExecutor};
+use staging_xcm_executor::XcmExecutor;
 use xcm_transactor_primitives::*;
 
 const fn teer_general_key() -> Junction {
