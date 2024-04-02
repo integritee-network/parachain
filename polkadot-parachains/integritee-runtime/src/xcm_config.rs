@@ -105,11 +105,7 @@ impl Convert<Location, Option<CurrencyId>> for CurrencyIdConvert {
 /// Converts a Asset into a CurrencyId, using the defined Location.
 impl Convert<Asset, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(asset: Asset) -> Option<CurrencyId> {
-		if let Asset { id: AssetId(location), .. } = asset {
-			Self::convert(location)
-		} else {
-			None
-		}
+		Self::convert(asset.id.0)
 	}
 }
 

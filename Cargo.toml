@@ -12,14 +12,14 @@ panic = "unwind"
 
 [workspace.dependencies]
 async-trait = "0.1.73"
-clap = { version = "4.4.10", features = ["derive"] }
+clap = { version = "4.5.1", features = ["derive"] }
 parity-scale-codec = { version = "3.6.5", default-features = false, features = ["derive"] }
 color-print = "0.3.4"
 futures = "0.3.28"
 hex-literal = "0.4.1"
 log = { version = "0.4.20", default-features = false }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0.195", features = ["derive"] }
+serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0"
 smallvec = "1.11.0"
 # num-traits feature needed for dex integer sq root:
@@ -114,7 +114,7 @@ cumulus-relay-chain-minimal-node = "0.10.0"
 cumulus-relay-chain-rpc-interface = "0.10.0"
 frame-benchmarking-cli = "35.0.0"
 substrate-frame-rpc-system = "31.0.0"
-jsonrpsee = { version = "0.16.3", features = ["server"] }
+jsonrpsee = { version = "0.22.0", features = ["server"] }
 pallet-transaction-payment-rpc = "33.0.0"
 polkadot-cli = "10.0.0"
 polkadot-service = "10.0.0"
