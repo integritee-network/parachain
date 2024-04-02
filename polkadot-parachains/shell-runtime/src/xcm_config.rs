@@ -27,7 +27,7 @@ use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
 use frame_support::{
 	pallet_prelude::{Get, Weight},
 	parameter_types,
-	traits::{ContainsPair, Everything, Nothing, TransformOrigin},
+	traits::{Everything, Nothing, TransformOrigin},
 	weights::IdentityFee,
 };
 use frame_system::EnsureRoot;
@@ -42,7 +42,7 @@ use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
 use sp_runtime::{
-	traits::{CheckedConversion, Convert},
+	traits::{Convert},
 	RuntimeDebug,
 };
 use sp_std::{
@@ -60,7 +60,7 @@ use staging_xcm_builder::{
 	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
 	UsingComponents,
 };
-use staging_xcm_executor::{traits::MatchesFungible, XcmExecutor};
+use staging_xcm_executor::{XcmExecutor};
 use xcm_transactor_primitives::*;
 
 const fn teer_general_key() -> Junction {
