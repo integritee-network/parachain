@@ -52,10 +52,10 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_asset_registry::WeightInfo for WeightInfo<T> {
     /// Storage: `Assets::Asset` (r:1 w:0)
     /// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(210), added: 2685, mode: `MaxEncodedLen`)
-    /// Storage: `AssetRegistry::AssetIdMultiLocation` (r:1 w:1)
-    /// Proof: `AssetRegistry::AssetIdMultiLocation` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
-    /// Storage: `AssetRegistry::AssetMultiLocationId` (r:0 w:1)
-    /// Proof: `AssetRegistry::AssetMultiLocationId` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
+    /// Storage: `AssetRegistry::AssetIdLocation` (r:1 w:1)
+    /// Proof: `AssetRegistry::AssetIdLocation` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
+    /// Storage: `AssetRegistry::AssetLocationId` (r:0 w:1)
+    /// Proof: `AssetRegistry::AssetLocationId` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
     fn register_reserve_asset() -> Weight {
         // Proof Size summary in bytes:
         //  Measured:  `123`
@@ -66,10 +66,10 @@ impl<T: frame_system::Config> pallet_asset_registry::WeightInfo for WeightInfo<T
             .saturating_add(T::DbWeight::get().reads(2))
             .saturating_add(T::DbWeight::get().writes(2))
     }
-    /// Storage: `AssetRegistry::AssetIdMultiLocation` (r:1 w:1)
-    /// Proof: `AssetRegistry::AssetIdMultiLocation` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
-    /// Storage: `AssetRegistry::AssetMultiLocationId` (r:0 w:1)
-    /// Proof: `AssetRegistry::AssetMultiLocationId` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
+    /// Storage: `AssetRegistry::AssetIdLocation` (r:1 w:1)
+    /// Proof: `AssetRegistry::AssetIdLocation` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
+    /// Storage: `AssetRegistry::AssetLocationId` (r:0 w:1)
+    /// Proof: `AssetRegistry::AssetLocationId` (`max_values`: None, `max_size`: Some(622), added: 3097, mode: `MaxEncodedLen`)
     fn unregister_reserve_asset() -> Weight {
         // Proof Size summary in bytes:
         //  Measured:  `107`

@@ -2,7 +2,7 @@
 name = "shell-runtime"
 description = "The Integritee shell parachain runtime"
 # major.minor revision must match collator node. patch should match spec_version
-version = "1.9.15"
+version = "1.9.16"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -30,9 +30,6 @@ frame-support = { workspace = true }
 frame-system = { workspace = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
-orml-traits = { workspace = true }
-orml-xcm = { workspace = true }
-orml-xcm-support = { workspace = true }
 pallet-aura = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-message-queue = { workspace = true }
@@ -89,9 +86,6 @@ std = [
     "frame-system/std",
     "integritee-parachains-common/std",
     "log/std",
-    "orml-traits/std",
-    "orml-xcm-support/std",
-    "orml-xcm/std",
     "pallet-aura/std",
     "pallet-balances/std",
     "pallet-message-queue/std",
@@ -158,7 +152,6 @@ try-runtime = [
     "frame-executive/try-runtime",
     "frame-system/try-runtime",
     "frame-try-runtime/try-runtime",
-    "orml-xcm/try-runtime",
     "pallet-aura/try-runtime",
     "pallet-balances/try-runtime",
     "pallet-message-queue/try-runtime",

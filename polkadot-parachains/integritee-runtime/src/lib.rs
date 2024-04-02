@@ -119,7 +119,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 50,
+	spec_version: 51,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 7,
@@ -249,7 +249,6 @@ impl pallet_balances::Config for Runtime {
 	type RuntimeHoldReason = RuntimeHoldReason;
 	type RuntimeFreezeReason = ();
 	type FreezeIdentifier = ();
-	type MaxHolds = MaxReserves;
 	type MaxFreezes = ();
 }
 
@@ -787,11 +786,6 @@ impl pallet_democracy::Config for Runtime {
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 }
 
-impl orml_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type SovereignOrigin = EnsureRoot<AccountId>;
-}
-
 pub type AssetBalance = Balance;
 /// always denies creation of assets
 pub struct NoAssetCreators;
@@ -973,8 +967,8 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		MessageQueue: pallet_message_queue = 33,
-		XTokens: orml_xtokens = 34,
-		OrmlXcm: orml_xcm = 35,
+		//XTokens: orml_xtokens = 34,
+		//OrmlXcm: orml_xcm = 35,
 		XcmTransactor: pallet_xcm_transactor = 36,
 
 		// fungibles
@@ -1083,7 +1077,7 @@ impl_runtime_apis! {
 			Executive::execute_block(block)
 		}
 
-		fn initialize_block(header: &<Block as BlockT>::Header) {
+		fn initialize_block(header: &<Block as BlockT>::Header) -> sp_runtime::ExtrinsicInclusionMode {
 			Executive::initialize_block(header)
 		}
 	}

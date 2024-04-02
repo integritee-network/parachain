@@ -28,17 +28,12 @@ use core::marker::PhantomData;
 use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
 use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
-	match_types,
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
 	traits::{Contains, ContainsPair, Everything, Nothing, TransformOrigin},
 };
 use frame_system::EnsureRoot;
-use orml_traits::{
-	location::{RelativeReserveProvider, Reserve},
-	parameter_type_with_key,
-};
-use orml_xcm_support::IsNativeConcrete;
+use integritee_parachains_common::xcm_config::IsNativeConcrete;
 use pallet_xcm::XcmPassthrough;
 use parachains_common::{message_queue::ParaIdToSibling, AssetIdForTrustBackedAssets};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
@@ -58,13 +53,14 @@ use staging_xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, DenyReserveTransferToRelayChain,
 	DenyThenTry, DescribeAllTerminal, DescribeFamily, EnsureXcmOrigin, FixedRateOfFungible,
-	FixedWeightBounds, FungiblesAdapter, HashedDescription, NativeAsset, NoChecking,
-	ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
+	FixedWeightBounds, FrameTransactionalProcessor, FungiblesAdapter, HashedDescription,
+	NativeAsset, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
+	WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::JustTry, XcmExecutor};
-use xcm_primitives::{AsAssetMultiLocation, ConvertedRegisteredAssetId};
+use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
 /// Supported local Currencies. Keep this to TEER,
@@ -89,57 +85,44 @@ pub enum CurrencyId {
 /// Converts a Mulitloaction into a CurrencyId. Used by XCMP LocalAssetTransactor for asset filtering:
 /// we only accept Assets that are convertable to a "CurrencyId".
 /// other assets will be handled through AssetRegistry pallet
-impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
-	fn convert(location: MultiLocation) -> Option<CurrencyId> {
+impl Convert<Location, Option<CurrencyId>> for CurrencyIdConvert {
+	fn convert(location: Location) -> Option<CurrencyId> {
 		let self_para_id: u32 = ParachainInfo::parachain_id().into();
 
-		match location {
-			// semi-absolute location spec
-			MultiLocation { parents, interior } if parents == 1 => match interior {
-				// that's how xTokens with Karura, Bifrost, Moonriver refers to TEER
-				X2(Parachain(para_id), junction)
-					if junction == TEER_GENERAL_KEY && para_id == self_para_id =>
-					Some(CurrencyId::TEER),
-				// that's how the Asset Hub refers to TEER
-				X1(Parachain(para_id)) if para_id == self_para_id => Some(CurrencyId::TEER),
-				_ => None,
-			},
+		match location.unpack() {
+			// that's how xTokens with Karura, Bifrost, Moonriver refers to TEER
+			(1, [Parachain(id), TEER_GENERAL_KEY]) if *id == self_para_id => Some(CurrencyId::TEER),
+			// that's how the Asset Hub refers to TEER
+			(1, [Parachain(id)]) if *id == self_para_id => Some(CurrencyId::TEER),
 			// same for local location spec. we don't care if parents is 0 or 1
-			MultiLocation { parents, interior } if parents == 0 => match interior {
-				X1(junction) if junction == TEER_GENERAL_KEY => Some(CurrencyId::TEER),
-				Here => Some(CurrencyId::TEER),
-				_ => None,
-			},
+			(0, [TEER_GENERAL_KEY]) => Some(CurrencyId::TEER),
+			(0, []) => Some(CurrencyId::TEER),
 			_ => None,
 		}
 	}
 }
 
-/// Converts a MultiAsset into a CurrencyId, using the defined Mulitlocation.
-impl Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
-	fn convert(asset: MultiAsset) -> Option<CurrencyId> {
-		if let MultiAsset { id: Concrete(location), .. } = asset {
-			Self::convert(location)
-		} else {
-			None
-		}
+/// Converts a Asset into a CurrencyId, using the defined Location.
+impl Convert<Asset, Option<CurrencyId>> for CurrencyIdConvert {
+	fn convert(asset: Asset) -> Option<CurrencyId> {
+		Self::convert(asset.id.0)
 	}
 }
 
 parameter_types! {
-	pub const RelayChainLocation: MultiLocation = MultiLocation::parent();
-	pub AssetHubLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(1000)));
+	pub const RelayChainLocation: Location = Location::parent();
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(1000)]);
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// The universal location within the global consensus system
-	pub UniversalLocation: InteriorMultiLocation =
-		X2(GlobalConsensus(RelayNetwork::get()), Parachain(ParachainInfo::parachain_id().into()));
-	pub AssetsPalletLocation: MultiLocation =
+	pub UniversalLocation: InteriorLocation =
+		[GlobalConsensus(RelayNetwork::get()), Parachain(ParachainInfo::parachain_id().into())].into();
+	pub AssetsPalletLocation: Location =
 		PalletInstance(<Assets as PalletInfoAccess>::index() as u8).into();
 	pub CheckingAccount: AccountId = PolkadotXcm::check_account();
 }
 
-/// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
+/// Type for specifying how a `Location` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
 /// `Transact` in order to determine the dispatch Origin.
 pub type LocationToAccountId = (
@@ -160,7 +143,7 @@ pub type LocalNativeTransactor = CurrencyAdapter<
 	Balances,
 	// Matcher: matches concrete fungible assets whose `id` could be converted into `CurrencyId`.
 	IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
+	// Do a simple punn to convert an AccountId32 Location into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -180,7 +163,7 @@ pub type LocalFungiblesTransactor = FungiblesAdapter<
 	Assets,
 	// Use this currency when it is a fungible asset matching the given location or name:
 	TrustBackedAssetsConvertedConcreteId,
-	// Convert an XCM MultiLocation into a local account id:
+	// Convert an XCM Location into a local account id:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -192,7 +175,7 @@ pub type LocalFungiblesTransactor = FungiblesAdapter<
 >;
 
 /// Means for transacting reserved fungible assets.
-/// AsAssetMultiLocation uses pallet_asset_registry to convert between AssetId and MultiLocation.
+/// AsAssetLocation uses pallet_asset_registry to convert between AssetId and Location.
 /// This will be used for ROC/KSM/DOT derivatives through pallet AssetRegistry
 pub type ReservedFungiblesTransactor = FungiblesAdapter<
 	// Use this fungibles implementation:
@@ -202,10 +185,10 @@ pub type ReservedFungiblesTransactor = FungiblesAdapter<
 	ConvertedRegisteredAssetId<
 		AssetIdForTrustBackedAssets,
 		Balance,
-		AsAssetMultiLocation<AssetIdForTrustBackedAssets, AssetRegistry>,
+		AsAssetLocation<AssetIdForTrustBackedAssets, AssetRegistry>,
 		JustTry,
 	>,
-	// Convert an XCM MultiLocation into a local account id:
+	// Convert an XCM Location into a local account id:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -240,17 +223,18 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	XcmPassthrough<RuntimeOrigin>,
 );
 
-match_types! {
-	pub type ParentOrParentsExecutivePlurality: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: Here } |
-		MultiLocation { parents: 1, interior: X1(Plurality { id: BodyId::Executive, .. }) }
-	};
+pub struct ParentOrParentsExecutivePlurality;
+impl Contains<Location> for ParentOrParentsExecutivePlurality {
+	fn contains(location: &Location) -> bool {
+		matches!(location.unpack(), (1, []) | (1, [Plurality { id: BodyId::Executive, .. }]))
+	}
 }
-match_types! {
-	pub type ParentOrSiblings: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: Here } |
-		MultiLocation { parents: 1, interior: X1(_) }
-	};
+
+pub struct ParentOrSiblings;
+impl Contains<Location> for ParentOrSiblings {
+	fn contains(location: &Location) -> bool {
+		matches!(location.unpack(), (1, []) | (1, _))
+	}
 }
 
 // The barrier decides if we spend time executing an incoming XCM message
@@ -281,30 +265,24 @@ pub type Barrier = TrailingSetTopicAsId<
 >;
 
 pub struct ReserveAssetsFrom<T>(PhantomData<T>);
-impl<T: Get<MultiLocation>> ContainsPair<MultiAsset, MultiLocation> for ReserveAssetsFrom<T> {
-	fn contains(asset: &MultiAsset, origin: &MultiLocation) -> bool {
+impl<T: Get<Location>> ContainsPair<Asset, Location> for ReserveAssetsFrom<T> {
+	fn contains(asset: &Asset, origin: &Location) -> bool {
 		let prefix = T::get();
 		log::trace!(target: "xcm::AssetsFrom", "prefix: {:?}, origin: {:?}, asset: {:?}", prefix, origin, asset);
 		&prefix == origin
 	}
 }
 pub struct OnlyTeleportNative;
-impl Contains<(MultiLocation, Vec<MultiAsset>)> for OnlyTeleportNative {
-	fn contains(t: &(MultiLocation, Vec<MultiAsset>)) -> bool {
+impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
+	fn contains(t: &(Location, Vec<Asset>)) -> bool {
 		let self_para_id: u32 = ParachainInfo::parachain_id().into();
 		t.1.iter().any(|asset| {
 			log::trace!(target: "xcm::OnlyTeleportNative", "Asset requested to be teleported: {:?}", asset);
 
-			if let MultiAsset {
-				id: staging_xcm::latest::AssetId::Concrete(asset_loc),
-				fun: Fungible(_a),
-			} = asset
-			{
-				match asset_loc {
-					MultiLocation { parents: 0, interior: Here } => true,
-					MultiLocation { parents: 1, interior: X1(Parachain(para_id)) }
-						if *para_id == self_para_id =>
-						true,
+			if let Asset { id: AssetId(asset_loc), fun: Fungible(_a) } = asset {
+				match asset_loc.unpack() {
+					(0, []) => true,
+					(1, [Parachain(id)]) if *id == self_para_id => true,
 					_ => false,
 				}
 			} else {
@@ -334,13 +312,13 @@ pub type Traders = (
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
-	pub NativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(0,Here).into(), TEER * 70, 0u128);
-	pub NativeAliasPerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(0,X1(TEER_GENERAL_KEY)).into(), TEER * 70, 0u128);
-	pub RelayNativePerSecond: (staging_xcm::v3::AssetId, u128,u128) = (MultiLocation::new(1,Here).into(), TEER * 70, 0u128);
+	pub NativePerSecond: (AssetId, u128,u128) = (Location::new(0,Here).into(), TEER * 70, 0u128);
+	pub NativeAliasPerSecond: (AssetId, u128,u128) = (Location::new(0,[TEER_GENERAL_KEY]).into(), TEER * 70, 0u128);
+	pub RelayNativePerSecond: (AssetId, u128,u128) = (Location::new(1,Here).into(), TEER * 70, 0u128);
 	// Weight for one XCM operation.
 	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
-	pub const IntegriteeNative: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(MultiLocation::here()) });
-	pub AssetHubTrustedTeleporter: (MultiAssetFilter, MultiLocation) = (IntegriteeNative::get(), AssetHubLocation::get());
+	pub const IntegriteeNative: AssetFilter = Wild(AllOf { fun: WildFungible, id: AssetId(Location::here()) });
+	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (IntegriteeNative::get(), AssetHubLocation::get());
 }
 
 pub type TrustedTeleporters = (staging_xcm_builder::Case<AssetHubTrustedTeleporter>,);
@@ -395,9 +373,10 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type UniversalAliases = Nothing;
 	type SafeCallFilter = SafeCallFilter;
 	type Aliasers = Nothing;
+	type TransactionalProcessor = FrameTransactionalProcessor;
 }
 
-// Converts a Signed Local Origin into a MultiLocation
+// Converts a Signed Local Origin into a Location
 pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
 
 impl pallet_xcm::Config for Runtime {
@@ -467,19 +446,6 @@ parameter_types! {
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
-// The min fee amount in fee asset is split into two parts:
-//
-// - fee asset sent to fee reserve chain = fee_amount - min_xcm_fee
-// - fee asset sent to dest reserve chain = min_xcm_fee
-// Check out for more information:
-// https://github.com/open-web3-stack/open-runtime-module-library/tree/master/xtokens#transfer-multiple-currencies
-
-parameter_type_with_key! {
-	pub ParachainMinFee: |_location: MultiLocation| -> Option<u128> {
-		None
-	};
-}
-
 // What follows here are specialties only used for xToken reserve-transferring TEER to Karura, Bifrost and Moonriver
 
 const fn teer_general_key() -> Junction {
@@ -488,78 +454,15 @@ const fn teer_general_key() -> Junction {
 }
 const TEER_GENERAL_KEY: Junction = teer_general_key();
 
-/// Converts a CurrencyId into a Multilocation, used by xtoken for XCMP.
+/// Converts a CurrencyId into a Location, used by xtoken for XCMP.
 pub struct CurrencyIdConvert;
-impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
-	fn convert(id: CurrencyId) -> Option<MultiLocation> {
+impl Convert<CurrencyId, Option<Location>> for CurrencyIdConvert {
+	fn convert(id: CurrencyId) -> Option<Location> {
 		match id {
-			CurrencyId::TEER => Some(MultiLocation::new(
+			CurrencyId::TEER => Some(Location::new(
 				1,
-				X2(Parachain(ParachainInfo::parachain_id().into()), TEER_GENERAL_KEY),
+				[Parachain(ParachainInfo::parachain_id().into()), TEER_GENERAL_KEY],
 			)),
 		}
 	}
-}
-parameter_types! {
-	pub SelfReserveAlias: MultiLocation = MultiLocation {
-		parents:0,
-		interior: Junctions::X1(TEER_GENERAL_KEY)
-	};
-	// This is how we are going to detect whether the asset is a Reserve asset
-	pub SelfLocation: MultiLocation = MultiLocation::here();
-	// We need this to be able to catch when someone is trying to execute a non-
-	// cross-chain transfer in xtokens through the absolute path way
-	pub SelfLocationAbsolute: MultiLocation = MultiLocation {
-		parents:1,
-		interior: Junctions::X1(
-			Parachain(ParachainInfo::parachain_id().into())
-		)
-	};
-
-}
-
-/// This struct offers uses RelativeReserveProvider to output relative views of multilocations
-/// However, additionally accepts a MultiLocation that aims at representing the chain part
-/// (parent: 1, Parachain(paraId)) of the absolute representation of our chain.
-/// If a token reserve matches against this absolute view, we return  Some(MultiLocation::here())
-/// This helps users by preventing errors when they try to transfer a token through xtokens
-/// to our chain (either inserting the relative or the absolute value).
-pub struct AbsoluteAndRelativeReserve<AbsoluteMultiLocation>(PhantomData<AbsoluteMultiLocation>);
-impl<AbsoluteMultiLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteMultiLocation>
-where
-	AbsoluteMultiLocation: Get<MultiLocation>,
-{
-	fn reserve(asset: &MultiAsset) -> Option<MultiLocation> {
-		RelativeReserveProvider::reserve(asset).map(|relative_reserve| {
-			if relative_reserve == AbsoluteMultiLocation::get() {
-				MultiLocation::here()
-			} else {
-				relative_reserve
-			}
-		})
-	}
-}
-
-pub struct AccountIdToMultiLocation;
-impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
-	fn convert(account: AccountId) -> MultiLocation {
-		X1(AccountId32 { network: None, id: account.into() }).into()
-	}
-}
-
-impl orml_xtokens::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-	type CurrencyIdConvert = CurrencyIdConvert;
-	type AccountIdToMultiLocation = AccountIdToMultiLocation;
-	type SelfLocation = SelfLocation;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type BaseXcmWeight = BaseXcmWeight;
-	type UniversalLocation = UniversalLocation;
-	type MaxAssetsForTransfer = MaxAssetsForTransfer;
-	type MinXcmFee = ParachainMinFee;
-	type MultiLocationsFilter = Everything;
-	type ReserveProvider = AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
 }
