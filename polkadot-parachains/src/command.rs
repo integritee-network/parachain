@@ -48,7 +48,7 @@ const KUSAMA_PARA_ID: u32 = 2015;
 const KUSAMA_SWAP_PARA_ID: u32 = 2267;
 const POLKADOT_PARA_ID: u32 = 2039;
 const MOONBASE_PARA_ID: u32 = 2015;
-const PASEO_PARA_ID: u32 = 2015;
+const PASEO_PARA_ID: u32 = 2025; //temporary mod. should be 2015
 
 trait IdentifyChain {
 	fn is_shell(&self) -> bool;
