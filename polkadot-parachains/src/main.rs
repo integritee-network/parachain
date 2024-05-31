@@ -3,8 +3,6 @@
 //! this file has no customizations for integritee runtimes. Upon upgrades of polkadot-sdk,
 //! just overwrite from parachain_template
 
-//! Substrate Parachain Node Template CLI
-
 #![warn(missing_docs)]
 
 mod chain_spec;

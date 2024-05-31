@@ -101,6 +101,7 @@ pub enum CurrencyId {
 
 /// Converts a CurrencyId into a Location, used by xtoken for XCMP.
 pub struct CurrencyIdConvert;
+
 impl Convert<CurrencyId, Option<Location>> for CurrencyIdConvert {
 	fn convert(id: CurrencyId) -> Option<Location> {
 		match id {
@@ -207,6 +208,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 /// This helps users by preventing errors when they try to transfer a token through xtokens
 /// to our chain (either inserting the relative or the absolute value).
 pub struct AbsoluteAndRelativeReserve<AbsoluteLocation>(PhantomData<AbsoluteLocation>);
+
 impl<AbsoluteLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteLocation>
 where
 	AbsoluteLocation: Get<Location>,
@@ -242,6 +244,7 @@ pub type Barrier = DenyThenTry<
 >;
 
 pub struct SafeCallFilter;
+
 impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 	fn contains(_call: &RuntimeCall) -> bool {
 		// This is safe, as we prevent arbitrary xcm-transact executions.
@@ -255,6 +258,7 @@ parameter_types! {
 }
 
 pub struct XcmConfig;
+
 impl staging_xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
@@ -282,6 +286,9 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type SafeCallFilter = SafeCallFilter;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = FrameTransactionalProcessor;
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
 }
 
 // Converts a Signed Local Origin into a Location

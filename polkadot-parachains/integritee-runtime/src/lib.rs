@@ -145,6 +145,7 @@ pub fn native_version() -> NativeVersion {
 }
 
 pub struct DealWithFees;
+
 impl OnUnbalanced<pallet_balances::NegativeImbalance<Runtime>> for DealWithFees {
 	fn on_unbalanceds<B>(
 		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<Runtime>>,
@@ -313,11 +314,13 @@ pub enum ProxyType {
 	CancelProxy,
 	// Auction,
 }
+
 impl Default for ProxyType {
 	fn default() -> Self {
 		Self::Any
 	}
 }
+
 impl InstanceFilter<RuntimeCall> for ProxyType {
 	fn filter(&self, c: &RuntimeCall) -> bool {
 		match self {
@@ -497,6 +500,7 @@ impl pallet_message_queue::Config for Runtime {
 	type HeapSize = sp_core::ConstU32<{ 64 * 1024 }>;
 	type MaxStale = sp_core::ConstU32<8>;
 	type ServiceWeight = MessageQueueServiceWeight;
+	type IdleMaxServiceWeight = ();
 }
 
 parameter_types! {
@@ -514,7 +518,6 @@ impl pallet_aura::Config for Runtime {
 	type DisabledValidators = ();
 	type MaxAuthorities = MaxAuthorities;
 	type AllowMultipleBlocksPerSlot = ConstBool<false>;
-	#[cfg(feature = "experimental")]
 	type SlotDuration = pallet_aura::MinimumPeriodTimesTwo<Self>;
 }
 
@@ -587,10 +590,11 @@ parameter_types! {
 }
 
 pub struct NoConversion;
+
 impl ConversionFromAssetBalance<u128, (), u128> for NoConversion {
 	type Error = ();
 	fn from_asset_balance(balance: Balance, _asset_id: ()) -> Result<Balance, Self::Error> {
-		return Ok(balance)
+		return Ok(balance);
 	}
 	#[cfg(feature = "runtime-benchmarks")]
 	fn ensure_successful(_: ()) {}
@@ -787,8 +791,10 @@ impl pallet_democracy::Config for Runtime {
 }
 
 pub type AssetBalance = Balance;
+
 /// always denies creation of assets
 pub struct NoAssetCreators;
+
 impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAssetCreators {
 	type Success = AccountId;
 
@@ -796,7 +802,7 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 		o: RuntimeOrigin,
 		_a: &AssetIdForTrustBackedAssets,
 	) -> sp_std::result::Result<Self::Success, RuntimeOrigin> {
-		return Err(o)
+		return Err(o);
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
@@ -806,6 +812,7 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 }
 
 pub type MainAssetsInstance = pallet_assets::Instance1;
+
 impl pallet_assets::Config<MainAssetsInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = AssetBalance;
@@ -831,6 +838,7 @@ impl pallet_assets::Config<MainAssetsInstance> for Runtime {
 
 #[cfg(feature = "runtime-benchmarks")]
 pub struct AssetRegistryBenchmarkHelper;
+
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_asset_registry::BenchmarkHelper<AssetIdForTrustBackedAssets>
 	for AssetRegistryBenchmarkHelper
@@ -904,6 +912,7 @@ ord_parameter_types! {
 		AccountIdConversion::<sp_runtime::AccountId32>::into_account_truncating(&AssetConversionPalletId::get());
 }
 pub type PoolAssetsInstance = pallet_assets::Instance2;
+
 impl pallet_assets::Config<PoolAssetsInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
@@ -1064,7 +1073,7 @@ impl_runtime_apis! {
 		}
 
 		fn authorities() -> Vec<AuraId> {
-			Aura::authorities().into_inner()
+			pallet_aura::Authorities::<Runtime>::get().into_inner()
 		}
 	}
 
