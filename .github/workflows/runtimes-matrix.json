@@ -1,9 +1,16 @@
 [
   {
-    "name": "integritee",
+    "name": "integritee-kusama",
     "package": "integritee-runtime",
     "path": "polkadot-parachains/integritee-runtime",
     "uri": "wss://kusama.api.integritee.network:443",
+    "is_relay": false
+  },
+  {
+    "name": "integritee-paseo",
+    "package": "integritee-runtime",
+    "path": "polkadot-parachains/integritee-runtime",
+    "uri": "wss://paseo.api.integritee.network:443",
     "is_relay": false
   }
 ]
