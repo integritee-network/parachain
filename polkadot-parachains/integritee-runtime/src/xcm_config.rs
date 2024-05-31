@@ -485,39 +485,36 @@ impl Convert<CurrencyId, Option<Location>> for CurrencyIdConvert {
 }
 
 parameter_types! {
-	pub SelfReserveAlias: Location = Location {
-		parents:0,
-		interior: Junctions::X1(TEER_GENERAL_KEY)
-	};
+	pub SelfReserveAlias: Location = Location::new(
+        0, [TEER_GENERAL_KEY]
+    );
 	// This is how we are going to detect whether the asset is a Reserve asset
 	pub SelfLocation: Location = Location::here();
 	// We need this to be able to catch when someone is trying to execute a non-
 	// cross-chain transfer in xtokens through the absolute path way
-	pub SelfLocationAbsolute: Location = Location {
-		parents:1,
-		interior: Junctions::X1(
-			Parachain(ParachainInfo::parachain_id().into())
-		)
-	};
+	pub SelfLocationAbsolute: Location = Location::new(
+        1,
+        [Parachain(ParachainInfo::parachain_id().into())]
+    );
 
 }
 
-/// This struct offers uses RelativeReserveProvider to output relative views of multilocations
-/// However, additionally accepts a MultiLocation that aims at representing the chain part
+/// This struct offers uses RelativeReserveProvider to output relative views of Locations
+/// However, additionally accepts a Location that aims at representing the chain part
 /// (parent: 1, Parachain(paraId)) of the absolute representation of our chain.
-/// If a token reserve matches against this absolute view, we return  Some(MultiLocation::here())
+/// If a token reserve matches against this absolute view, we return  Some(Location::here())
 /// This helps users by preventing errors when they try to transfer a token through xtokens
 /// to our chain (either inserting the relative or the absolute value).
-pub struct AbsoluteAndRelativeReserve<AbsoluteMultiLocation>(PhantomData<AbsoluteMultiLocation>);
+pub struct AbsoluteAndRelativeReserve<AbsoluteLocation>(PhantomData<AbsoluteLocation>);
 
-impl<AbsoluteMultiLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteMultiLocation>
+impl<AbsoluteLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteLocation>
     where
-        AbsoluteMultiLocation: Get<MultiLocation>,
+        AbsoluteLocation: Get<Location>,
 {
-    fn reserve(asset: &MultiAsset) -> Option<MultiLocation> {
+    fn reserve(asset: &Asset) -> Option<Location> {
         RelativeReserveProvider::reserve(asset).map(|relative_reserve| {
-            if relative_reserve == AbsoluteMultiLocation::get() {
-                MultiLocation::here()
+            if relative_reserve == AbsoluteLocation::get() {
+                Location::here()
             } else {
                 relative_reserve
             }
@@ -525,12 +522,25 @@ impl<AbsoluteMultiLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteMulti
     }
 }
 
-pub struct AccountIdToMultiLocation;
+pub struct AccountIdToLocation;
 
-impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
-    fn convert(account: AccountId) -> MultiLocation {
-        X1(AccountId32 { network: None, id: account.into() }).into()
+impl Convert<AccountId, Location> for AccountIdToLocation {
+    fn convert(account: AccountId) -> Location {
+        Location::new(0, [Junction::AccountId32 { network: None, id: account.into() }])
     }
+}
+
+// The min fee amount in fee asset is split into two parts:
+//
+// - fee asset sent to fee reserve chain = fee_amount - min_xcm_fee
+// - fee asset sent to dest reserve chain = min_xcm_fee
+// Check out for more information:
+// https://github.com/open-web3-stack/open-runtime-module-library/tree/master/xtokens#transfer-multiple-currencies
+
+parameter_type_with_key! {
+	pub ParachainMinFee: |_location: Location| -> Option<u128> {
+		None
+	};
 }
 
 impl orml_xtokens::Config for Runtime {
@@ -538,7 +548,7 @@ impl orml_xtokens::Config for Runtime {
     type Balance = Balance;
     type CurrencyId = CurrencyId;
     type CurrencyIdConvert = CurrencyIdConvert;
-    type AccountIdToMultiLocation = AccountIdToMultiLocation;
+    type AccountIdToLocation = AccountIdToLocation;
     type SelfLocation = SelfLocation;
     type XcmExecutor = XcmExecutor<XcmConfig>;
     type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -546,6 +556,8 @@ impl orml_xtokens::Config for Runtime {
     type UniversalLocation = UniversalLocation;
     type MaxAssetsForTransfer = MaxAssetsForTransfer;
     type MinXcmFee = ParachainMinFee;
-    type MultiLocationsFilter = Everything;
+    type LocationsFilter = Everything;
     type ReserveProvider = AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
+    type RateLimiterId = ();
+    type RateLimiter = ();
 }
