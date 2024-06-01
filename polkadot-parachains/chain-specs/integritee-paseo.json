@@ -1,6 +1,7 @@
 {
   "bootNodes": [
-    "/ip4/148.72.177.57/tcp/30333/p2p/12D3KooW9yiocj1StJiRL3n1ZLFweiry4YN4k2KfwSGmr3td2m1X"
+    "/ip4/148.72.177.57/tcp/30333/p2p/12D3KooW9yiocj1StJiRL3n1ZLFweiry4YN4k2KfwSGmr3td2m1X",
+    "/ip4/212.126.160.46/tcp/35305/p2p/12D3KooWFUaAUXqTXAjthWZsGwzQN6a4JcJPXFQ4oyerHUpueviW"
   ],
   "chainType": "Live",
   "codeSubstitutes": {},
