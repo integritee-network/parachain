@@ -8,7 +8,7 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+-dev*'
   pull_request:
-    branches: [master]
+    branches: [ master ]
   workflow_dispatch:
     inputs:
       verbose:
@@ -49,9 +49,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04]
-        rust: [stable]
-        binary: [release]
+        os: [ ubuntu-22.04 ]
+        rust: [ stable ]
+        binary: [ release ]
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
@@ -76,8 +76,8 @@ jobs:
 
       - name: Install protobuf
         run: |
-           sudo apt update
-           sudo apt install --assume-yes protobuf-compiler
+          sudo apt update
+          sudo apt install --assume-yes protobuf-compiler
 
       - name: Release
         if: ${{ matrix.binary == 'release' }}
@@ -104,9 +104,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04]
-        rust: [stable]
-        binary: [release]
+        os: [ ubuntu-22.04 ]
+        rust: [ stable ]
+        binary: [ release ]
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
@@ -162,11 +162,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        rust: [stable]
-        rust-target: [x86_64-unknown-linux-gnu]
-#        check: [fmt --all -- --check, clippy -- -D warnings]
-        check: [fmt --all -- --check, check --features runtime-benchmarks] # skip clippy for now
+        os: [ ubuntu-latest ]
+        rust: [ nightly-2024-04-14 ]
+        rust-target: [ x86_64-unknown-linux-gnu ]
+        #        check: [fmt --all -- --check, clippy -- -D warnings]
+        check: [ +nightly fmt --all -- --check, check --features runtime-benchmarks ] # skip clippy for now
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
@@ -231,7 +231,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime: ["shell", "integritee"]
+        runtime: [ "shell", "integritee" ]
     steps:
       - uses: actions/checkout@v3
 
@@ -285,12 +285,12 @@ jobs:
           subwasm meta ${{ steps.srtool_build.outputs.wasm }}
           subwasm --json meta ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime }}-metadata.json
 
-# This is unsupported it wants to diff the metadata with a running chain. i.e. wss://kusama-<matrix.chain>-rpc.parity.io
-#      - name: Check the metadata diff
-#        shell: bash
-#        run: |
-#          subwasm diff ${{ steps.srtool_build.outputs.wasm }} --chain-b ${{ matrix.chain }} > ${{ matrix.chain }}-diff.txt
-#          cat ${{ matrix.chain }}-diff.txt
+      # This is unsupported it wants to diff the metadata with a running chain. i.e. wss://kusama-<matrix.chain>-rpc.parity.io
+      #      - name: Check the metadata diff
+      #        shell: bash
+      #        run: |
+      #          subwasm diff ${{ steps.srtool_build.outputs.wasm }} --chain-b ${{ matrix.chain }} > ${{ matrix.chain }}-diff.txt
+      #          cat ${{ matrix.chain }}-diff.txt
 
       - name: Archive Subwasm results
         uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
@@ -320,8 +320,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        chain: [integritee]
-        config: [rococo, westend, kusama, polkadot, moonbase, paseo]
+        chain: [ integritee ]
+        config: [ rococo, westend, kusama, polkadot, moonbase, paseo ]
         include:
           - chain: shell
             config: kusama-lease2
@@ -368,7 +368,7 @@ jobs:
     name: Draft Release
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    needs: [create_artifacts, build_primary_binaries, check]
+    needs: [ create_artifacts, build_primary_binaries, check ]
     outputs:
       release_url: ${{ steps.create-release.outputs.html_url }}
       asset_upload_url: ${{ steps.create-release.outputs.upload_url }}
@@ -415,10 +415,10 @@ jobs:
   publish-runtimes:
     name: Publish Runtimes
     runs-on: ubuntu-latest
-    needs: ["release"]
+    needs: [ "release" ]
     strategy:
       matrix:
-        runtime: ["shell", "integritee"]
+        runtime: [ "shell", "integritee" ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3

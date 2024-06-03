@@ -595,7 +595,7 @@ pub struct NoConversion;
 impl ConversionFromAssetBalance<u128, (), u128> for NoConversion {
 	type Error = ();
 	fn from_asset_balance(balance: Balance, _asset_id: ()) -> Result<Balance, Self::Error> {
-		return Ok(balance);
+		return Ok(balance)
 	}
 	#[cfg(feature = "runtime-benchmarks")]
 	fn ensure_successful(_: ()) {}
@@ -808,7 +808,7 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 		o: RuntimeOrigin,
 		_a: &AssetIdForTrustBackedAssets,
 	) -> sp_std::result::Result<Self::Success, RuntimeOrigin> {
-		return Err(o);
+		return Err(o)
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
