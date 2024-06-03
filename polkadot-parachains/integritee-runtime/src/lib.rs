@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 51,
+	spec_version: 52,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 7,
