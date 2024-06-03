@@ -41,6 +41,7 @@ use sc_cli::{
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_runtime::traits::AccountIdConversion;
 use std::net::SocketAddr;
+
 const LOCAL_PARA_ID: u32 = 2015;
 const ROCOCO_PARA_ID: u32 = 2015;
 const WESTEND_PARA_ID: u32 = 2081;
@@ -69,63 +70,63 @@ impl<T: sc_service::ChainSpec + 'static> IdentifyChain for T {
 // If we don't skipp here, each cmd expands to 5 lines. I think we have better overview like this.
 #[rustfmt::skip]
 fn load_spec(
-	id: &str,
+    id: &str,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-	Ok(match id {
-		// live configs (hard coded genesis state. genesis will always be shell for a live system)
-		"integritee-rococo" => Box::new(shell_rococo_config()?),
-		"integritee-westend" => Box::new(shell_westend_config()?),
-		"integritee-kusama" => Box::new(shell_kusama_config()?),
-		"integritee-polkadot" => Box::new(shell_polkadot_config()?),
-		"integritee-moonbase" => Box::new(integritee_moonbase_config()?),
-		"integritee-paseo" => Box::new(integritee_paseo_config()?),
-		// chain-spec that has been registered for the next kusama slot lease
-		"shell-kusama-lease2" => Box::new(shell_kusama_lease2_config()?),
-		"shell-kusama-lease3" => Box::new(shell_kusama_lease3_config()?),
+    Ok(match id {
+        // live configs (hard coded genesis state. genesis will always be shell for a live system)
+        "integritee-rococo" => Box::new(shell_rococo_config()?),
+        "integritee-westend" => Box::new(shell_westend_config()?),
+        "integritee-kusama" => Box::new(shell_kusama_config()?),
+        "integritee-polkadot" => Box::new(shell_polkadot_config()?),
+        "integritee-moonbase" => Box::new(integritee_moonbase_config()?),
+        "integritee-paseo" => Box::new(integritee_paseo_config()?),
+        // chain-spec that has been registered for the next kusama slot lease
+        "shell-kusama-lease2" => Box::new(shell_kusama_lease2_config()?),
+        "shell-kusama-lease3" => Box::new(shell_kusama_lease3_config()?),
 
-		// live config initialize
-		"integritee-rococo-fresh" => Box::new(integritee_chain_spec(ROCOCO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Rococo)),
-		"integritee-westend-fresh" => Box::new(shell_chain_spec(WESTEND_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Westend)),
-		"integritee-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
-		"integritee-polkadot-fresh" => Box::new(shell_chain_spec(POLKADOT_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Polkadot)),
-		"integritee-moonbase-fresh" => Box::new(integritee_chain_spec(MOONBASE_PARA_ID.into(), GenesisKeys::IntegriteeDev, RelayChain::Moonbase)),
-		"integritee-paseo-fresh" => Box::new(integritee_chain_spec(PASEO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Paseo)),
-		"shell-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
+        // live config initialize
+        "integritee-rococo-fresh" => Box::new(integritee_chain_spec(ROCOCO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Rococo)),
+        "integritee-westend-fresh" => Box::new(shell_chain_spec(WESTEND_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Westend)),
+        "integritee-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
+        "integritee-polkadot-fresh" => Box::new(shell_chain_spec(POLKADOT_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Polkadot)),
+        "integritee-moonbase-fresh" => Box::new(integritee_chain_spec(MOONBASE_PARA_ID.into(), GenesisKeys::IntegriteeDev, RelayChain::Moonbase)),
+        "integritee-paseo-fresh" => Box::new(integritee_chain_spec(PASEO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Paseo)),
+        "shell-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
 
-		// on-the-spot specs
-		"integritee-rococo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
-		"integritee-rococo-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
+        // on-the-spot specs
+        "integritee-rococo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
+        "integritee-rococo-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
 
-		"integritee-paseo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PaseoLocal)),
-		"integritee-paseo-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PaseoLocal)),
+        "integritee-paseo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PaseoLocal)),
+        "integritee-paseo-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PaseoLocal)),
 
-		"integritee-westend-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
-		"integritee-westend-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
+        "integritee-westend-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
+        "integritee-westend-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
 
-		"integritee-kusama-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
-		"integritee-kusama-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
+        "integritee-kusama-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
+        "integritee-kusama-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
 
-		"integritee-polkadot-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
-		"integritee-polkadot-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
+        "integritee-polkadot-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
+        "integritee-polkadot-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
 
-		"shell-rococo-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
-		"shell-rococo-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
+        "shell-rococo-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
+        "shell-rococo-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
 
-		"shell-westend-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
-		"shell-westend-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
+        "shell-westend-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
+        "shell-westend-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
 
-		"shell-kusama-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
-		"shell-kusama-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
+        "shell-kusama-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
+        "shell-kusama-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
 
-		"shell-polkadot-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
-		"shell-polkadot-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
+        "shell-polkadot-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
+        "shell-polkadot-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
 
-		"" => panic!("Please supply chain_spec to be loaded."),
-		path => {
-			let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
-			Box::new(chain_spec)
-		}
-	})
+        "" => panic!("Please supply chain_spec to be loaded."),
+        path => {
+            let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
+            Box::new(chain_spec)
+        }
+    })
 }
 
 impl SubstrateCli for Cli {
@@ -241,157 +242,170 @@ pub fn run() -> Result<()> {
 	let cli = Cli::from_args();
 
 	match &cli.subcommand {
-		Some(Subcommand::BuildSpec(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
-		},
-		Some(Subcommand::CheckBlock(cmd)) => {
-			construct_async_run!(|components, cli, cmd, config| {
+        Some(Subcommand::BuildSpec(cmd)) => {
+            let runner = cli.create_runner(cmd)?;
+            runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
+        }
+        Some(Subcommand::CheckBlock(cmd)) => {
+            construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
-		},
-		Some(Subcommand::ExportBlocks(cmd)) => {
-			construct_async_run!(|components, cli, cmd, config| {
+        }
+        Some(Subcommand::ExportBlocks(cmd)) => {
+            construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.database))
 			})
-		},
-		Some(Subcommand::ExportState(cmd)) => {
-			construct_async_run!(|components, cli, cmd, config| {
+        }
+        Some(Subcommand::ExportState(cmd)) => {
+            construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.chain_spec))
 			})
-		},
-		Some(Subcommand::ImportBlocks(cmd)) => {
-			construct_async_run!(|components, cli, cmd, config| {
+        }
+        Some(Subcommand::ImportBlocks(cmd)) => {
+            construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
-		},
-		Some(Subcommand::Revert(cmd)) => {
-			construct_async_run!(|components, cli, cmd, config| {
+        }
+        Some(Subcommand::Revert(cmd)) => {
+            construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.backend, None))
 			})
-		},
-		Some(Subcommand::PurgeChain(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
+        }
+        Some(Subcommand::PurgeChain(cmd)) => {
+            let runner = cli.create_runner(cmd)?;
 
-			runner.sync_run(|config| {
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
+            runner.sync_run(|config| {
+                let polkadot_cli = RelayChainCli::new(
+                    &config,
+                    [RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+                );
 
-				let polkadot_config = SubstrateCli::create_configuration(
-					&polkadot_cli,
-					&polkadot_cli,
-					config.tokio_handle.clone(),
-				)
-					.map_err(|err| format!("Relay chain argument error: {}", err))?;
+                let polkadot_config = SubstrateCli::create_configuration(
+                    &polkadot_cli,
+                    &polkadot_cli,
+                    config.tokio_handle.clone(),
+                )
+                    .map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				cmd.run(config, polkadot_config)
-			})
-		},
-		Some(Subcommand::ExportGenesisHead(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|config| {
-				construct_partials!(config, |partials| cmd.run(partials.client))
-			})
-		},
-		Some(Subcommand::ExportGenesisWasm(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|_config| {
-				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				cmd.run(&*spec)
-			})
-		},
-		Some(Subcommand::Benchmark(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			// Switch on the concrete benchmark sub-command-
-			match cmd {
-				BenchmarkCmd::Pallet(cmd) =>
-					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(config))
-					} else {
-						Err("Benchmarking wasn't enabled when building the node. \
+                cmd.run(config, polkadot_config)
+            })
+        }
+        Some(Subcommand::ExportGenesisHead(cmd)) => {
+            let runner = cli.create_runner(cmd)?;
+            runner.sync_run(|config| {
+                construct_partials!(config, |partials| cmd.run(partials.client))
+            })
+        }
+        Some(Subcommand::ExportGenesisWasm(cmd)) => {
+            let runner = cli.create_runner(cmd)?;
+            runner.sync_run(|_config| {
+                let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+                cmd.run(&*spec)
+            })
+        }
+        Some(Subcommand::Benchmark(cmd)) => {
+            let runner = cli.create_runner(cmd)?;
+            // Switch on the concrete benchmark sub-command-
+            match cmd {
+                BenchmarkCmd::Pallet(cmd) =>
+                    if cfg!(feature = "runtime-benchmarks") {
+                        runner.sync_run(|config| cmd.run::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(config))
+                    } else {
+                        Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
-							.into())
-					},
-				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					construct_partials!(config, |partials| cmd.run(partials.client))
-				}),
-				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) =>
-					return Err(sc_cli::Error::Input(
-						"Compile with --features=runtime-benchmarks \
+                            .into())
+                    },
+                BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
+                    construct_partials!(config, |partials| cmd.run(partials.client))
+                }),
+                #[cfg(not(feature = "runtime-benchmarks"))]
+                BenchmarkCmd::Storage(_) =>
+                    return Err(sc_cli::Error::Input(
+                        "Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
-							.into(),
-					)
-						.into()),
-				#[cfg(feature = "runtime-benchmarks")]
-				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					construct_partials!(config, |partials| {
+                            .into(),
+                    )
+                        .into()),
+                #[cfg(feature = "runtime-benchmarks")]
+                BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
+                    construct_partials!(config, |partials| {
 						let db = partials.backend.expose_db();
 						let storage = partials.backend.expose_storage();
 
 						cmd.run(config, partials.client.clone(), db, storage)
 					})
-				}),
-				BenchmarkCmd::Machine(cmd) =>
-					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
-				// NOTE: this allows the Client to leniently implement
-				// new benchmark commands without requiring a companion MR.
-				#[allow(unreachable_patterns)]
-				_ => Err("Benchmarking sub-command unsupported".into()),
-			}
-		},
-		Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
-		None => {
-			let runner = cli.create_runner(&cli.run.normalize())?;
-			let collator_options = cli.run.collator_options();
+                }),
+                BenchmarkCmd::Machine(cmd) =>
+                    runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
+                // NOTE: this allows the Client to leniently implement
+                // new benchmark commands without requiring a companion MR.
+                #[allow(unreachable_patterns)]
+                _ => Err("Benchmarking sub-command unsupported".into()),
+            }
+        }
+        Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
+        None => {
+            let runner = cli.create_runner(&cli.run.normalize())?;
+            let collator_options = cli.run.collator_options();
 
-			runner.run_node_until_exit(|config| async move {
-				let hwbench = (!cli.no_hardware_benchmarks)
-					.then_some(config.database.path().map(|database_path| {
-						let _ = std::fs::create_dir_all(database_path);
-						sc_sysinfo::gather_hwbench(Some(database_path))
-					}))
-					.flatten();
+            runner.run_node_until_exit(|config| async move {
+                let hwbench = (!cli.no_hardware_benchmarks)
+                    .then_some(config.database.path().map(|database_path| {
+                        let _ = std::fs::create_dir_all(database_path);
+                        sc_sysinfo::gather_hwbench(Some(database_path))
+                    }))
+                    .flatten();
 
-				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
-					.map(|e| e.para_id)
-					.ok_or("Could not find parachain ID in chain-spec.")?;
+                let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+                    .map(|e| e.para_id)
+                    .ok_or("Could not find parachain ID in chain-spec.")?;
 
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
+                let polkadot_cli = RelayChainCli::new(
+                    &config,
+                    [RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+                );
 
-				let id = ParaId::from(para_id);
+                let id = ParaId::from(para_id);
 
-				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
-						&id,
-					);
+                let parachain_account =
+                    AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
+                        &id,
+                    );
 
-				let tokio_handle = config.tokio_handle.clone();
-				let polkadot_config =
-					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-						.map_err(|err| format!("Relay chain argument error: {}", err))?;
+                let tokio_handle = config.tokio_handle.clone();
+                let polkadot_config =
+                    SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+                        .map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				info!("Parachain Account: {parachain_account}");
-				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+                info!("Parachain Account: {parachain_account}");
+                info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				crate::service::start_parachain_node(
-					config,
-					polkadot_config,
-					collator_options,
-					id,
-					hwbench,
-				)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
-			})
-		},
-	}
+                if config.chain_spec.is_shell() {
+                    crate::service_shell::start_parachain_node(
+                        config,
+                        polkadot_config,
+                        collator_options,
+                        id,
+                        hwbench,
+                    )
+                        .await
+                        .map(|r| r.0)
+                        .map_err(Into::into)
+                } else {
+                    crate::service::start_parachain_node(
+                        config,
+                        polkadot_config,
+                        collator_options,
+                        id,
+                        hwbench,
+                    )
+                        .await
+                        .map(|r| r.0)
+                        .map_err(Into::into)
+                }
+            })
+        }
+    }
 }
 
 impl DefaultConfigurationValues for RelayChainCli {

@@ -34,6 +34,10 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 use integritee_parachains_common::xcm_config::IsNativeConcrete;
+use orml_traits::{
+	location::{RelativeReserveProvider, Reserve},
+	parameter_type_with_key,
+};
 use pallet_xcm::XcmPassthrough;
 use parachains_common::{message_queue::ParaIdToSibling, AssetIdForTrustBackedAssets};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
@@ -224,6 +228,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 );
 
 pub struct ParentOrParentsExecutivePlurality;
+
 impl Contains<Location> for ParentOrParentsExecutivePlurality {
 	fn contains(location: &Location) -> bool {
 		matches!(location.unpack(), (1, []) | (1, [Plurality { id: BodyId::Executive, .. }]))
@@ -231,6 +236,7 @@ impl Contains<Location> for ParentOrParentsExecutivePlurality {
 }
 
 pub struct ParentOrSiblings;
+
 impl Contains<Location> for ParentOrSiblings {
 	fn contains(location: &Location) -> bool {
 		matches!(location.unpack(), (1, []) | (1, _))
@@ -265,6 +271,7 @@ pub type Barrier = TrailingSetTopicAsId<
 >;
 
 pub struct ReserveAssetsFrom<T>(PhantomData<T>);
+
 impl<T: Get<Location>> ContainsPair<Asset, Location> for ReserveAssetsFrom<T> {
 	fn contains(asset: &Asset, origin: &Location) -> bool {
 		let prefix = T::get();
@@ -272,7 +279,9 @@ impl<T: Get<Location>> ContainsPair<Asset, Location> for ReserveAssetsFrom<T> {
 		&prefix == origin
 	}
 }
+
 pub struct OnlyTeleportNative;
+
 impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
 	fn contains(t: &(Location, Vec<Asset>)) -> bool {
 		let self_para_id: u32 = ParachainInfo::parachain_id().into();
@@ -339,6 +348,7 @@ pub type AssetTransactors =
 	(LocalNativeTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
 
 pub struct SafeCallFilter;
+
 impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 	fn contains(_call: &RuntimeCall) -> bool {
 		// This is safe, as we prevent arbitrary xcm-transact executions.
@@ -346,7 +356,9 @@ impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 		true
 	}
 }
+
 pub struct XcmConfig;
+
 impl staging_xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
@@ -374,6 +386,9 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type SafeCallFilter = SafeCallFilter;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = FrameTransactionalProcessor;
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
 }
 
 // Converts a Signed Local Origin into a Location
@@ -452,10 +467,12 @@ const fn teer_general_key() -> Junction {
 	const TEER_KEY: [u8; 32] = *b"TEER\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 	GeneralKey { length: 4, data: TEER_KEY }
 }
+
 const TEER_GENERAL_KEY: Junction = teer_general_key();
 
 /// Converts a CurrencyId into a Location, used by xtoken for XCMP.
 pub struct CurrencyIdConvert;
+
 impl Convert<CurrencyId, Option<Location>> for CurrencyIdConvert {
 	fn convert(id: CurrencyId) -> Option<Location> {
 		match id {
@@ -465,4 +482,82 @@ impl Convert<CurrencyId, Option<Location>> for CurrencyIdConvert {
 			)),
 		}
 	}
+}
+
+parameter_types! {
+	pub SelfReserveAlias: Location = Location::new(
+		0, [TEER_GENERAL_KEY]
+	);
+	// This is how we are going to detect whether the asset is a Reserve asset
+	pub SelfLocation: Location = Location::here();
+	// We need this to be able to catch when someone is trying to execute a non-
+	// cross-chain transfer in xtokens through the absolute path way
+	pub SelfLocationAbsolute: Location = Location::new(
+		1,
+		[Parachain(ParachainInfo::parachain_id().into())]
+	);
+
+}
+
+/// This struct offers uses RelativeReserveProvider to output relative views of Locations
+/// However, additionally accepts a Location that aims at representing the chain part
+/// (parent: 1, Parachain(paraId)) of the absolute representation of our chain.
+/// If a token reserve matches against this absolute view, we return  Some(Location::here())
+/// This helps users by preventing errors when they try to transfer a token through xtokens
+/// to our chain (either inserting the relative or the absolute value).
+pub struct AbsoluteAndRelativeReserve<AbsoluteLocation>(PhantomData<AbsoluteLocation>);
+
+impl<AbsoluteLocation> Reserve for AbsoluteAndRelativeReserve<AbsoluteLocation>
+where
+	AbsoluteLocation: Get<Location>,
+{
+	fn reserve(asset: &Asset) -> Option<Location> {
+		RelativeReserveProvider::reserve(asset).map(|relative_reserve| {
+			if relative_reserve == AbsoluteLocation::get() {
+				Location::here()
+			} else {
+				relative_reserve
+			}
+		})
+	}
+}
+
+pub struct AccountIdToLocation;
+
+impl Convert<AccountId, Location> for AccountIdToLocation {
+	fn convert(account: AccountId) -> Location {
+		Location::new(0, [Junction::AccountId32 { network: None, id: account.into() }])
+	}
+}
+
+// The min fee amount in fee asset is split into two parts:
+//
+// - fee asset sent to fee reserve chain = fee_amount - min_xcm_fee
+// - fee asset sent to dest reserve chain = min_xcm_fee
+// Check out for more information:
+// https://github.com/open-web3-stack/open-runtime-module-library/tree/master/xtokens#transfer-multiple-currencies
+
+parameter_type_with_key! {
+	pub ParachainMinFee: |_location: Location| -> Option<u128> {
+		None
+	};
+}
+
+impl orml_xtokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+	type CurrencyIdConvert = CurrencyIdConvert;
+	type AccountIdToLocation = AccountIdToLocation;
+	type SelfLocation = SelfLocation;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type BaseXcmWeight = BaseXcmWeight;
+	type UniversalLocation = UniversalLocation;
+	type MaxAssetsForTransfer = MaxAssetsForTransfer;
+	type MinXcmFee = ParachainMinFee;
+	type LocationsFilter = Everything;
+	type ReserveProvider = AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
+	type RateLimiterId = ();
+	type RateLimiter = ();
 }
