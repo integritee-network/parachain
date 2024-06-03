@@ -224,6 +224,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 );
 
 pub struct ParentOrParentsExecutivePlurality;
+
 impl Contains<Location> for ParentOrParentsExecutivePlurality {
 	fn contains(location: &Location) -> bool {
 		matches!(location.unpack(), (1, []) | (1, [Plurality { id: BodyId::Executive, .. }]))
@@ -231,6 +232,7 @@ impl Contains<Location> for ParentOrParentsExecutivePlurality {
 }
 
 pub struct ParentOrSiblings;
+
 impl Contains<Location> for ParentOrSiblings {
 	fn contains(location: &Location) -> bool {
 		matches!(location.unpack(), (1, []) | (1, _))
@@ -265,6 +267,7 @@ pub type Barrier = TrailingSetTopicAsId<
 >;
 
 pub struct ReserveAssetsFrom<T>(PhantomData<T>);
+
 impl<T: Get<Location>> ContainsPair<Asset, Location> for ReserveAssetsFrom<T> {
 	fn contains(asset: &Asset, origin: &Location) -> bool {
 		let prefix = T::get();
@@ -272,7 +275,9 @@ impl<T: Get<Location>> ContainsPair<Asset, Location> for ReserveAssetsFrom<T> {
 		&prefix == origin
 	}
 }
+
 pub struct OnlyTeleportNative;
+
 impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
 	fn contains(t: &(Location, Vec<Asset>)) -> bool {
 		let self_para_id: u32 = ParachainInfo::parachain_id().into();
@@ -339,6 +344,7 @@ pub type AssetTransactors =
 	(LocalNativeTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
 
 pub struct SafeCallFilter;
+
 impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 	fn contains(_call: &RuntimeCall) -> bool {
 		// This is safe, as we prevent arbitrary xcm-transact executions.
@@ -346,7 +352,9 @@ impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
 		true
 	}
 }
+
 pub struct XcmConfig;
+
 impl staging_xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
@@ -374,6 +382,9 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type SafeCallFilter = SafeCallFilter;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = FrameTransactionalProcessor;
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
 }
 
 // Converts a Signed Local Origin into a Location
@@ -452,10 +463,12 @@ const fn teer_general_key() -> Junction {
 	const TEER_KEY: [u8; 32] = *b"TEER\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 	GeneralKey { length: 4, data: TEER_KEY }
 }
+
 const TEER_GENERAL_KEY: Junction = teer_general_key();
 
 /// Converts a CurrencyId into a Location, used by xtoken for XCMP.
 pub struct CurrencyIdConvert;
+
 impl Convert<CurrencyId, Option<Location>> for CurrencyIdConvert {
 	fn convert(id: CurrencyId) -> Option<Location> {
 		match id {
