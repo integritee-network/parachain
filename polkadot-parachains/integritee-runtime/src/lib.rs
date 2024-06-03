@@ -68,7 +68,7 @@ pub use integritee_parachains_common::{
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_claims;
-use pallet_collective;
+pub use pallet_collective;
 pub use pallet_enclave_bridge;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
@@ -385,7 +385,7 @@ impl pallet_proxy::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinVestedTransfer: Balance = 1 * TEER;
+	pub const MinVestedTransfer: Balance = TEER;
 		pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons =
 			WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
 }
@@ -429,7 +429,7 @@ impl pallet_utility::Config for Runtime {
 }
 
 parameter_types! {
-	pub const PreimageBaseDeposit: Balance = 1 * TEER;
+	pub const PreimageBaseDeposit: Balance = TEER;
 	pub const PreimageByteDeposit: Balance = deposit(0, 1);
 	pub const PreimageHoldReason: RuntimeHoldReason =
 		RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
@@ -595,7 +595,7 @@ pub struct NoConversion;
 impl ConversionFromAssetBalance<u128, (), u128> for NoConversion {
 	type Error = ();
 	fn from_asset_balance(balance: Balance, _asset_id: ()) -> Result<Balance, Self::Error> {
-		return Ok(balance)
+		Ok(balance)
 	}
 	#[cfg(feature = "runtime-benchmarks")]
 	fn ensure_successful(_: ()) {}
@@ -629,12 +629,12 @@ impl pallet_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub const BountyDepositBase: Balance = 1 * TEER;
+	pub const BountyDepositBase: Balance = TEER;
 	pub const BountyDepositPayoutDelay: BlockNumber = prod_or_fast!(4 * DAYS, 4 * MINUTES);
 	pub const BountyUpdatePeriod: BlockNumber = prod_or_fast!(90 * DAYS, 15 * MINUTES);
 	pub const MaximumReasonLength: u32 = 16384;
 	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
-	pub const CuratorDepositMin: Balance = 1 * TEER;
+	pub const CuratorDepositMin: Balance = TEER;
 	pub const CuratorDepositMax: Balance = 100 * TEER;
 	pub const BountyValueMinimum: Balance = 100 * TEER;
 }
@@ -740,7 +740,7 @@ parameter_types! {
 	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 2 * MINUTES);
 	pub const MinimumDeposit: Balance = 100 * TEER;
 	pub EnactmentPeriod: BlockNumber = prod_or_fast!(2 * DAYS, 1);
-	pub const CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES);
+	pub const CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, MINUTES);
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
@@ -808,7 +808,7 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 		o: RuntimeOrigin,
 		_a: &AssetIdForTrustBackedAssets,
 	) -> sp_std::result::Result<Self::Success, RuntimeOrigin> {
-		return Err(o)
+		Err(o)
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]

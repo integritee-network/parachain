@@ -10,7 +10,7 @@ pub mod scheduler {
 	use sp_runtime::TryRuntimeError;
 
 	/// The log target.
-	const TARGET: &'static str = "runtime::fix::scheduler::migration";
+	const TARGET: &str = "runtime::fix::scheduler::migration";
 
 	pub mod v1 {
 		use super::*;

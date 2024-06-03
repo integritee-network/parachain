@@ -1,0 +1,41 @@
+name: Clippy
+
+on:
+  push:
+    paths:
+      - 'polkadot-parachains/integritee-runtime/**'
+  pull_request:
+    paths:
+      - 'polkadot-parachains/integritee-runtime/**'
+
+# cancel previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set rust version via common env file
+        run: cat .github/env >> $GITHUB_ENV
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Fetch cache
+        uses: Swatinem/rust-cache@a95ba195448af2da9b00fb742d14ffaaf3c21f43 # v2.7.0
+        with:
+          shared-key: "parachain-cache-clippy"
+      - name: Run clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path polkadot-parachains/integritee-runtime/Cargo.toml
+        env:
+          # RUSTFLAGS: "-D warnings" # FAIL-CI
+          SKIP_WASM_BUILD: 1
