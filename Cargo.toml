@@ -53,6 +53,10 @@ frame-system = { version = "32.0.0", default-features = false }
 frame-system-benchmarking = { version = "32.0.0", default-features = false }
 frame-system-rpc-runtime-api = { version = "30.0.0", default-features = false }
 frame-try-runtime = { version = "0.38.0", default-features = false }
+orml-traits = { version = "0.10", default-features = false }
+orml-xcm = { version = "0.10", default-features = false }
+orml-xcm-support = { version = "0.10", default-features = false }
+orml-xtokens = { version = "0.10", default-features = false }
 pallet-asset-conversion = { version = "14.0.0", default-features = false }
 pallet-assets = { version = "33.0.0", default-features = false }
 pallet-aura = { version = "31.0.0", default-features = false }
