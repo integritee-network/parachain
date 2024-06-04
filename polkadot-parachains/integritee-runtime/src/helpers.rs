@@ -26,7 +26,7 @@
 /// Usage:
 /// ```Rust
 /// parameter_types! {
-/// 	pub const VotingPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES);
+///   pub const VotingPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1 * MINUTES);
 /// }
 #[macro_export]
 macro_rules! prod_or_fast {
