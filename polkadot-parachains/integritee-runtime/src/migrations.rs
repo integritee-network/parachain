@@ -10,7 +10,7 @@ pub mod scheduler {
 	use sp_runtime::TryRuntimeError;
 
 	/// The log target.
-	const TARGET: &'static str = "runtime::fix::scheduler::migration";
+	const TARGET: &str = "runtime::fix::scheduler::migration";
 
 	pub mod v1 {
 		use super::*;
@@ -102,7 +102,7 @@ pub mod scheduler {
 					Expected version == 4, found {:?}",
 						onchain_version,
 					);
-					return T::DbWeight::get().reads(1);
+					return T::DbWeight::get().reads(1)
 				}
 				log::info!(target: TARGET, "migrating from {:?} to 4, purging agenda", onchain_version);
 				let purged_agendas = v1::Agenda::<T>::clear(u32::MAX, None).unique as u64;

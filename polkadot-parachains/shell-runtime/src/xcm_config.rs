@@ -125,10 +125,7 @@ impl Convert<Location, Option<CurrencyId>> for CurrencyIdConvert {
 				[Parachain(id), TEER_GENERAL_KEY] if *id == self_para_id => Some(CurrencyId::TEER),
 				_ => None,
 			},
-			(0, interior) => match interior {
-				[TEER_GENERAL_KEY] => Some(CurrencyId::TEER),
-				_ => None,
-			},
+			(0, [TEER_GENERAL_KEY]) => Some(CurrencyId::TEER),
 			_ => None,
 		}
 	}
