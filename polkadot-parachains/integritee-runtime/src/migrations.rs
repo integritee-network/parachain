@@ -135,7 +135,7 @@ pub mod collator_selection_init {
 	const TARGET: &str = "runtime::fix::collator_selection_init";
 	pub mod v0 {
 		use super::*;
-		use crate::SessionKeys;
+		use crate::{SessionKeys, TEER};
 		use frame_support::{pallet_prelude::*, traits::Currency};
 		use hex_literal::hex;
 		use log::info;
@@ -255,10 +255,12 @@ pub mod collator_selection_init {
 				pallet_collator_selection::Invulnerables::<T>::put(invulnerables);
 
 				pallet_collator_selection::CandidacyBond::<T>::put::<BalanceOf<T>>(
-					5_000_000_000_000u128.into(),
+					(500 * TEER).into(),
 				);
 
-				T::DbWeight::get().reads_writes(0, 4 + 5 * 2)
+				pallet_collator_selection::DesiredCandidates::<T>::put::<u32>(5);
+
+				T::DbWeight::get().reads_writes(0, 5 + 5 * 2)
 			}
 
 			#[cfg(feature = "try-runtime")]
