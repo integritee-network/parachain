@@ -2041,6 +2041,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "cumulus-pallet-session-benchmarking"
+version = "13.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63b08b5e3bba454f8eaa01a7507c1bacde9343a7a67fc20801e59e0c9c0ec9db"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-session",
+ "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "cumulus-pallet-xcm"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4372,6 +4387,7 @@ dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
+ "cumulus-pallet-session-benchmarking",
  "cumulus-pallet-xcm",
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-core",
@@ -4397,10 +4413,12 @@ dependencies = [
  "pallet-asset-registry",
  "pallet-assets",
  "pallet-aura",
+ "pallet-authorship",
  "pallet-balances",
  "pallet-bounties",
  "pallet-child-bounties",
  "pallet-claims",
+ "pallet-collator-selection",
  "pallet-collective",
  "pallet-democracy",
  "pallet-enclave-bridge",
@@ -4409,6 +4427,7 @@ dependencies = [
  "pallet-preimage",
  "pallet-proxy",
  "pallet-scheduler",
+ "pallet-session",
  "pallet-sidechain",
  "pallet-teeracle",
  "pallet-teerex",

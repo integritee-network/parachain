@@ -9,6 +9,7 @@ repository = "https://github.com/integritee-network/parachain"
 edition = "2021"
 
 [dependencies]
+hex-literal = { workspace = true }
 integritee-parachains-common = { path = "../common", default-features = false }
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
@@ -22,6 +23,7 @@ assets-common = { workspace = true }
 cumulus-pallet-aura-ext = { workspace = true }
 cumulus-pallet-dmp-queue = { workspace = true }
 cumulus-pallet-parachain-system = { workspace = true, features = ["parameterized-consensus-hook"] }
+cumulus-pallet-session-benchmarking = { optional = true, workspace = true }
 cumulus-pallet-xcm = { workspace = true }
 cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
@@ -40,10 +42,12 @@ pallet-asset-conversion = { workspace = true }
 pallet-asset-registry = { workspace = true }
 pallet-assets = { workspace = true }
 pallet-aura = { workspace = true }
+pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-bounties = { workspace = true }
 pallet-child-bounties = { workspace = true }
 pallet-claims = { workspace = true }
+pallet-collator-selection = { workspace = true }
 pallet-collective = { workspace = true }
 pallet-democracy = { workspace = true }
 pallet-enclave-bridge = { workspace = true }
@@ -52,6 +56,7 @@ pallet-multisig = { workspace = true }
 pallet-preimage = { workspace = true }
 pallet-proxy = { workspace = true }
 pallet-scheduler = { workspace = true }
+pallet-session = { workspace = true }
 pallet-sidechain = { workspace = true }
 pallet-teeracle = { workspace = true }
 pallet-teerex = { workspace = true }
@@ -90,12 +95,11 @@ xcm-transactor-primitives = { workspace = true }
 # Benchmarking
 frame-benchmarking = { workspace = true, optional = true }
 frame-system-benchmarking = { workspace = true, optional = true }
-hex-literal = { workspace = true, optional = true }
 
 [dev-dependencies]
 cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
 hex = { workspace = true }
-hex-literal = { workspace = true }
+
 polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-runtime-parachains = { workspace = true, features = ["std"] }
 
@@ -109,6 +113,7 @@ std = [
     "cumulus-pallet-aura-ext/std",
     "cumulus-pallet-dmp-queue/std",
     "cumulus-pallet-parachain-system/std",
+    "cumulus-pallet-session-benchmarking?/std",
     "cumulus-pallet-xcm/std",
     "cumulus-pallet-xcmp-queue/std",
     "cumulus-primitives-core/std",
@@ -131,10 +136,12 @@ std = [
     "pallet-asset-conversion/std",
     "pallet-asset-registry/std",
     "pallet-aura/std",
+    "pallet-authorship/std",
     "pallet-balances/std",
     "pallet-bounties/std",
     "pallet-child-bounties/std",
     "pallet-claims/std",
+    "pallet-collator-selection/std",
     "pallet-collective/std",
     "pallet-democracy/std",
     "pallet-enclave-bridge/std",
@@ -143,6 +150,7 @@ std = [
     "pallet-preimage/std",
     "pallet-proxy/std",
     "pallet-scheduler/std",
+    "pallet-session/std",
     "pallet-sidechain/std",
     "pallet-teeracle/std",
     "pallet-teerex/std",
@@ -184,13 +192,13 @@ std = [
 runtime-benchmarks = [
     "assets-common/runtime-benchmarks",
     "cumulus-pallet-parachain-system/runtime-benchmarks",
+    "cumulus-pallet-session-benchmarking/runtime-benchmarks",
     "cumulus-pallet-xcmp-queue/runtime-benchmarks",
     "cumulus-primitives-utility/runtime-benchmarks",
     "frame-benchmarking/runtime-benchmarks",
     "frame-support/runtime-benchmarks",
     "frame-system-benchmarking/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
-    "hex-literal",
     "orml-xtokens/runtime-benchmarks",
     "pallet-assets/runtime-benchmarks",
     "pallet-asset-conversion/runtime-benchmarks",
@@ -199,6 +207,7 @@ runtime-benchmarks = [
     "pallet-bounties/runtime-benchmarks",
     "pallet-child-bounties/runtime-benchmarks",
     "pallet-claims/runtime-benchmarks",
+    "pallet-collator-selection/runtime-benchmarks",
     "pallet-collective/runtime-benchmarks",
     "pallet-democracy/runtime-benchmarks",
     "pallet-enclave-bridge/runtime-benchmarks",
@@ -239,10 +248,12 @@ try-runtime = [
     "pallet-asset-conversion/try-runtime",
     "pallet-asset-registry/try-runtime",
     "pallet-aura/try-runtime",
+    "pallet-authorship/try-runtime",
     "pallet-balances/try-runtime",
     "pallet-bounties/try-runtime",
     "pallet-child-bounties/try-runtime",
     "pallet-claims/try-runtime",
+    "pallet-collator-selection/try-runtime",
     "pallet-collective/try-runtime",
     "pallet-democracy/try-runtime",
     "pallet-enclave-bridge/try-runtime",
@@ -251,6 +262,7 @@ try-runtime = [
     "pallet-preimage/try-runtime",
     "pallet-proxy/try-runtime",
     "pallet-scheduler/try-runtime",
+    "pallet-session/try-runtime",
     "pallet-sidechain/try-runtime",
     "pallet-teeracle/try-runtime",
     "pallet-teerex/try-runtime",
