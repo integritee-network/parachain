@@ -17,7 +17,7 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
-use integritee_parachains_common::AccountId;
+use integritee_parachains_common::{AccountId, AuraId};
 use integritee_runtime::TEER;
 use parity_scale_codec::{Decode, Encode};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
@@ -263,7 +263,7 @@ fn shell_genesis_config(
 				.map(|acc| {
 						Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
 					)
-				.collect(),
+				.collect::<Vec<AuraId>>(),
 		},
 		"balances": {
 			"balances": endowed_accounts.iter().cloned().map(|k| (k, 100 * TEER)).collect::<Vec<_>>(),
