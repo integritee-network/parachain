@@ -9,8 +9,8 @@ repository = "https://github.com/integritee-network/parachain"
 edition = "2021"
 
 [dependencies]
-integritee-parachains-common = { path = "../common", default-features = false }
 hex-literal = { workspace = true }
+integritee-parachains-common = { path = "../common", default-features = false }
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
 primitive-types = { workspace = true }
@@ -23,12 +23,12 @@ assets-common = { workspace = true }
 cumulus-pallet-aura-ext = { workspace = true }
 cumulus-pallet-dmp-queue = { workspace = true }
 cumulus-pallet-parachain-system = { workspace = true, features = ["parameterized-consensus-hook"] }
+cumulus-pallet-session-benchmarking = { optional = true, workspace = true }
 cumulus-pallet-xcm = { workspace = true }
 cumulus-pallet-xcmp-queue = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
-cumulus-pallet-session-benchmarking = { optional = true, workspace = true }
 frame-executive = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
