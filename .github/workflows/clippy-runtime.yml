@@ -1,10 +1,8 @@
 name: Clippy-Runtime
 
 on:
-  push:
-    paths:
-      - 'polkadot-parachains/integritee-runtime/**'
   pull_request:
+    branches: [ master ]
     paths:
       - 'polkadot-parachains/integritee-runtime/**'
 
