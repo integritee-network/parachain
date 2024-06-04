@@ -595,7 +595,7 @@ pub struct NoConversion;
 impl ConversionFromAssetBalance<u128, (), u128> for NoConversion {
 	type Error = ();
 	fn from_asset_balance(balance: Balance, _asset_id: ()) -> Result<Balance, Self::Error> {
-		return Ok(balance);
+		return Ok(balance)
 	}
 	#[cfg(feature = "runtime-benchmarks")]
 	fn ensure_successful(_: ()) {}
@@ -808,7 +808,7 @@ impl EnsureOriginWithArg<RuntimeOrigin, AssetIdForTrustBackedAssets> for NoAsset
 		o: RuntimeOrigin,
 		_a: &AssetIdForTrustBackedAssets,
 	) -> sp_std::result::Result<Self::Success, RuntimeOrigin> {
-		return Err(o);
+		return Err(o)
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
@@ -944,6 +944,50 @@ impl pallet_assets::Config<PoolAssetsInstance> for Runtime {
 	type BenchmarkHelper = ();
 }
 
+impl pallet_authorship::Config for Runtime {
+	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
+	type EventHandler = (CollatorSelection,);
+}
+
+parameter_types! {
+	pub const Period: u32 = 6 * HOURS;
+	pub const Offset: u32 = 0;
+}
+impl pallet_session::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ValidatorId = <Self as frame_system::Config>::AccountId;
+	// we don't have stash and controller, thus we don't need the convert as well.
+	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
+	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+	type SessionManager = CollatorSelection;
+	// Essentially just Aura, but let's be pedantic.
+	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = SessionKeys;
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
+}
+
+parameter_types! {
+	pub const PotId: PalletId = PalletId(*b"PotStake");
+	pub const SessionLength: BlockNumber = 6 * HOURS;
+}
+
+impl pallet_collator_selection::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type UpdateOrigin = EnsureRootOrMoreThanHalfCouncil;
+	type PotId = PotId;
+	type MaxCandidates = ConstU32<100>;
+	type MinEligibleCollators = ConstU32<4>;
+	type MaxInvulnerables = ConstU32<20>;
+	// should be a multiple of session or things will get inconsistent
+	type KickThreshold = Period;
+	type ValidatorId = <Self as frame_system::Config>::AccountId;
+	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
+	type ValidatorRegistration = Session;
+	type WeightInfo = weights::pallet_collator_selection::WeightInfo<Runtime>;
+}
+
 construct_runtime!(
 	pub enum Runtime
 	{
@@ -974,6 +1018,9 @@ construct_runtime!(
 		ChildBounties: pallet_child_bounties = 19,
 
 		// Consensus.
+		Authorship: pallet_authorship = 20,
+		CollatorSelection: pallet_collator_selection = 21,
+		Session: pallet_session = 22,
 		Aura: pallet_aura = 23,
 		AuraExt: cumulus_pallet_aura_ext = 24,
 
@@ -1027,6 +1074,7 @@ pub type BlockId = generic::BlockId<Block>;
 /// Migrations to apply on runtime upgrade.
 pub type Migrations = (
 	migrations::scheduler::v4::PurgeV4Agenda<Runtime>,
+	migrations::collator_selection_init::v0::InitInvulnerables<Runtime>,
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
 );
 
@@ -1055,6 +1103,7 @@ mod benches {
 		[pallet_bounties, Bounties]
 		[pallet_child_bounties, ChildBounties]
 		[pallet_claims, Claims]
+		[pallet_collator_selection, CollatorSelection]
 		[pallet_collective, Council]
 		[pallet_democracy, Democracy]
 		[pallet_message_queue, MessageQueue]
@@ -1062,6 +1111,7 @@ mod benches {
 		[pallet_preimage, Preimage]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
+		[pallet_session, SessionBench::<Runtime>]
 		[pallet_sidechain, Sidechain]
 		[pallet_teeracle, Teeracle]
 		[pallet_teerex, Teerex]
@@ -1247,6 +1297,7 @@ impl_runtime_apis! {
 			use frame_benchmarking::{Benchmarking, BenchmarkList};
 			use frame_support::traits::StorageInfoTrait;
 			use frame_system_benchmarking::Pallet as SystemBench;
+			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
 			list_benchmarks!(list, extra);
@@ -1260,6 +1311,8 @@ impl_runtime_apis! {
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
 			use frame_benchmarking::{Benchmarking, BenchmarkBatch, BenchmarkError};
 			use sp_storage::TrackedStorageKey;
+			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
