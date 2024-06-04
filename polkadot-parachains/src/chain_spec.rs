@@ -17,8 +17,9 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
-use integritee_parachains_common::{AccountId, AuraId};
+use integritee_parachains_common::AccountId;
 use integritee_runtime::TEER;
+use parity_scale_codec::{Decode, Encode};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -82,7 +83,7 @@ impl WellKnownKeys {
 		vec![Alice.to_account_id(), Bob.to_account_id()]
 	}
 
-	fn authorities() -> Vec<AuraId> {
+	fn authorities() -> Vec<AccountId> {
 		vec![Dave.public().into(), Eve.public().into()]
 	}
 }
@@ -93,7 +94,7 @@ impl IntegriteeKeys {
 	fn root() -> AccountId {
 		pub_sr25519("2JcYbKMfEGidntYP1LpPWsCMxFvUbjaPyipRViat4Sn5nuqm").into()
 	}
-	fn authorities() -> Vec<AuraId> {
+	fn authorities() -> Vec<AccountId> {
 		vec![
 			pub_sr25519("5GZJjbPPD9u6NDgK1ApYmbyGs7EBX4HeEz2y2CD38YJxjvQH").into(),
 			pub_sr25519("5CcSd1GZus6Jw7rP47LLqMMmtr2KeXCH6W11ZKk1LbCQ9dPY").into(),
@@ -110,7 +111,7 @@ impl IntegriteeDevKeys {
 	fn root() -> AccountId {
 		pub_sr25519("5DMCERPw2yC6LBWNKzswHKLCtuYdtmgKssLJAsPGPVp6fuMY").into()
 	}
-	fn authorities() -> Vec<AuraId> {
+	fn authorities() -> Vec<AccountId> {
 		vec![
 			pub_sr25519("5GZJjbPPD9u6NDgK1ApYmbyGs7EBX4HeEz2y2CD38YJxjvQH").into(),
 			pub_sr25519("5CcSd1GZus6Jw7rP47LLqMMmtr2KeXCH6W11ZKk1LbCQ9dPY").into(),
@@ -206,12 +207,26 @@ pub fn integritee_chain_spec(
 fn integritee_genesis_config(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	initial_authorities: Vec<AuraId>,
+	invulnerables: Vec<AccountId>,
 	parachain_id: ParaId,
 ) -> serde_json::Value {
 	serde_json::json!({
-		"aura": {
-			"authorities": initial_authorities
+		"collatorSelection": integritee_runtime::CollatorSelectionConfig {
+			invulnerables: invulnerables.clone(),
+			candidacy_bond: 500 * TEER,
+			..Default::default()
+		},
+		"session": integritee_runtime::SessionConfig {
+			keys: invulnerables
+				.into_iter()
+				.map(|acc| {
+					(
+						acc.clone(),                         // account id
+						acc.clone(),                         // validator id
+						integritee_runtime::SessionKeys { aura: Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
+					)
+				})
+				.collect(),
 		},
 		"balances": {
 			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect::<Vec<_>>(),
@@ -238,12 +253,17 @@ fn integritee_genesis_config(
 fn shell_genesis_config(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	initial_authorities: Vec<AuraId>,
+	initial_authorities: Vec<AccountId>,
 	parachain_id: ParaId,
 ) -> serde_json::Value {
 	serde_json::json!({
 		"aura": {
 			"authorities": initial_authorities
+				.into_iter()
+				.map(|acc| {
+						Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
+					)
+				.collect(),
 		},
 		"balances": {
 			"balances": endowed_accounts.iter().cloned().map(|k| (k, 100 * TEER)).collect::<Vec<_>>(),
