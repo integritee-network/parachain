@@ -1,20 +1,3 @@
-// Copyright 2021 Integritee AG and Supercomputing Systems AG
-// This file is part of the "Integritee parachain" and is
-// based on Cumulus from Parity Technologies (UK) Ltd.
-
-// Integritee parachain is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// Cumulus is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
-
 //!
 //! this file DOES HAVE CUSTOMIZATIONS for integritee runtimes. Upon upgrades of polkadot-sdk,
 //! look for blocks with `is_shell()` branching
@@ -242,170 +225,166 @@ pub fn run() -> Result<()> {
 	let cli = Cli::from_args();
 
 	match &cli.subcommand {
-        Some(Subcommand::BuildSpec(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
-        }
-        Some(Subcommand::CheckBlock(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
+		Some(Subcommand::BuildSpec(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
+		},
+		Some(Subcommand::CheckBlock(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
-        }
-        Some(Subcommand::ExportBlocks(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
+		},
+		Some(Subcommand::ExportBlocks(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.database))
 			})
-        }
-        Some(Subcommand::ExportState(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
+		},
+		Some(Subcommand::ExportState(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.chain_spec))
 			})
-        }
-        Some(Subcommand::ImportBlocks(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
+		},
+		Some(Subcommand::ImportBlocks(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
-        }
-        Some(Subcommand::Revert(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
+		},
+		Some(Subcommand::Revert(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.backend, None))
 			})
-        }
-        Some(Subcommand::PurgeChain(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
+		},
+		Some(Subcommand::PurgeChain(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
 
-            runner.sync_run(|config| {
-                let polkadot_cli = RelayChainCli::new(
-                    &config,
-                    [RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-                );
+			runner.sync_run(|config| {
+				let polkadot_cli = RelayChainCli::new(
+					&config,
+					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+				);
 
-                let polkadot_config = SubstrateCli::create_configuration(
-                    &polkadot_cli,
-                    &polkadot_cli,
-                    config.tokio_handle.clone(),
-                )
-                    .map_err(|err| format!("Relay chain argument error: {}", err))?;
+				let polkadot_config = SubstrateCli::create_configuration(
+					&polkadot_cli,
+					&polkadot_cli,
+					config.tokio_handle.clone(),
+				)
+				.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-                cmd.run(config, polkadot_config)
-            })
-        }
-        Some(Subcommand::ExportGenesisHead(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-            runner.sync_run(|config| {
-                construct_partials!(config, |partials| cmd.run(partials.client))
-            })
-        }
-        Some(Subcommand::ExportGenesisWasm(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-            runner.sync_run(|_config| {
-                let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-                cmd.run(&*spec)
-            })
-        }
-        Some(Subcommand::Benchmark(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-            // Switch on the concrete benchmark sub-command-
-            match cmd {
-                BenchmarkCmd::Pallet(cmd) =>
-                    if cfg!(feature = "runtime-benchmarks") {
-                        runner.sync_run(|config| cmd.run::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(config))
-                    } else {
-                        Err("Benchmarking wasn't enabled when building the node. \
+				cmd.run(config, polkadot_config)
+			})
+		},
+		Some(Subcommand::ExportGenesisHead(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner
+				.sync_run(|config| construct_partials!(config, |partials| cmd.run(partials.client)))
+		},
+		Some(Subcommand::ExportGenesisWasm(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|_config| {
+				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+				cmd.run(&*spec)
+			})
+		},
+		Some(Subcommand::Benchmark(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			// Switch on the concrete benchmark sub-command-
+			match cmd {
+				BenchmarkCmd::Pallet(cmd) =>
+					if cfg!(feature = "runtime-benchmarks") {
+						runner.sync_run(|config| cmd.run_with_spec::<sp_runtime::traits::HashingFor<Block>, ReclaimHostFunctions>(Some(config.chain_spec)))
+					} else {
+						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
-                            .into())
-                    },
-                BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-                    construct_partials!(config, |partials| cmd.run(partials.client))
-                }),
-                #[cfg(not(feature = "runtime-benchmarks"))]
-                BenchmarkCmd::Storage(_) =>
-                    return Err(sc_cli::Error::Input(
-                        "Compile with --features=runtime-benchmarks \
+							.into())
+					},
+				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
+					construct_partials!(config, |partials| cmd.run(partials.client))
+				}),
+				#[cfg(not(feature = "runtime-benchmarks"))]
+				BenchmarkCmd::Storage(_) => Err(sc_cli::Error::Input(
+					"Compile with --features=runtime-benchmarks \
 						to enable storage benchmarks."
-                            .into(),
-                    )
-                        .into()),
-                #[cfg(feature = "runtime-benchmarks")]
-                BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-                    construct_partials!(config, |partials| {
+						.into(),
+				)),
+				#[cfg(feature = "runtime-benchmarks")]
+				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
+					construct_partials!(config, |partials| {
 						let db = partials.backend.expose_db();
 						let storage = partials.backend.expose_storage();
 
 						cmd.run(config, partials.client.clone(), db, storage)
 					})
-                }),
-                BenchmarkCmd::Machine(cmd) =>
-                    runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
-                // NOTE: this allows the Client to leniently implement
-                // new benchmark commands without requiring a companion MR.
-                #[allow(unreachable_patterns)]
-                _ => Err("Benchmarking sub-command unsupported".into()),
-            }
-        }
-        Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
-        None => {
-            let runner = cli.create_runner(&cli.run.normalize())?;
-            let collator_options = cli.run.collator_options();
+				}),
+				BenchmarkCmd::Machine(cmd) =>
+					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
+				// NOTE: this allows the Client to leniently implement
+				// new benchmark commands without requiring a companion MR.
+				#[allow(unreachable_patterns)]
+				_ => Err("Benchmarking sub-command unsupported".into()),
+			}
+		},
+		None => {
+			let runner = cli.create_runner(&cli.run.normalize())?;
+			let collator_options = cli.run.collator_options();
 
-            runner.run_node_until_exit(|config| async move {
-                let hwbench = (!cli.no_hardware_benchmarks)
-                    .then_some(config.database.path().map(|database_path| {
-                        let _ = std::fs::create_dir_all(database_path);
-                        sc_sysinfo::gather_hwbench(Some(database_path))
-                    }))
-                    .flatten();
+			runner.run_node_until_exit(|config| async move {
+				let hwbench = (!cli.no_hardware_benchmarks)
+					.then_some(config.database.path().map(|database_path| {
+						let _ = std::fs::create_dir_all(database_path);
+						sc_sysinfo::gather_hwbench(Some(database_path))
+					}))
+					.flatten();
 
-                let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
-                    .map(|e| e.para_id)
-                    .ok_or("Could not find parachain ID in chain-spec.")?;
+				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+					.map(|e| e.para_id)
+					.ok_or("Could not find parachain ID in chain-spec.")?;
 
-                let polkadot_cli = RelayChainCli::new(
-                    &config,
-                    [RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-                );
+				let polkadot_cli = RelayChainCli::new(
+					&config,
+					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+				);
 
-                let id = ParaId::from(para_id);
+				let id = ParaId::from(para_id);
 
-                let parachain_account =
-                    AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
-                        &id,
-                    );
+				let parachain_account =
+					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
+						&id,
+					);
 
-                let tokio_handle = config.tokio_handle.clone();
-                let polkadot_config =
-                    SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-                        .map_err(|err| format!("Relay chain argument error: {}", err))?;
+				let tokio_handle = config.tokio_handle.clone();
+				let polkadot_config =
+					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-                info!("Parachain Account: {parachain_account}");
-                info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+				info!("Parachain Account: {parachain_account}");
+				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-                if config.chain_spec.is_shell() {
-                    crate::service_shell::start_parachain_node(
-                        config,
-                        polkadot_config,
-                        collator_options,
-                        id,
-                        hwbench,
-                    )
-                        .await
-                        .map(|r| r.0)
-                        .map_err(Into::into)
-                } else {
-                    crate::service::start_parachain_node(
-                        config,
-                        polkadot_config,
-                        collator_options,
-                        id,
-                        hwbench,
-                    )
-                        .await
-                        .map(|r| r.0)
-                        .map_err(Into::into)
-                }
-            })
-        }
-    }
+				if config.chain_spec.is_shell() {
+					crate::service_shell::start_parachain_node(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into)
+				} else {
+					crate::service::start_parachain_node(
+						config,
+						polkadot_config,
+						collator_options,
+						id,
+						hwbench,
+					)
+					.await
+					.map(|r| r.0)
+					.map_err(Into::into)
+				}
+			})
+		},
+	}
 }
 
 impl DefaultConfigurationValues for RelayChainCli {
