@@ -44,6 +44,7 @@ cumulus-pallet-parachain-system = { version = "0.14.0", default-features = false
 cumulus-pallet-session-benchmarking = { version = "16.0.0", default-features = false }
 cumulus-pallet-xcm = { version = "0.14.0", default-features = false }
 cumulus-pallet-xcmp-queue = { version = "0.14.0", default-features = false }
+cumulus-primitives-aura = { version = "0.14.0", default-features = false }
 cumulus-primitives-core = { version = "0.14.0", default-features = false }
 cumulus-primitives-timestamp = { version = "0.14.0", default-features = false }
 cumulus-primitives-utility = { version = "0.14.0", default-features = false }
