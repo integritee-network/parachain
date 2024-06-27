@@ -1089,6 +1089,7 @@ pub type Migrations = (
 	migrations::scheduler::v4::PurgeV4Agenda<Runtime>,
 	migrations::collator_selection_init::v0::InitInvulnerables<Runtime>,
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
+	cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
