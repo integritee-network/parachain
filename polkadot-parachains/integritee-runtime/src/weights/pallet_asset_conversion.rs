@@ -130,4 +130,14 @@ impl<T: frame_system::Config> pallet_asset_conversion::WeightInfo for WeightInfo
 			.saturating_add(T::DbWeight::get().writes((3_u64).saturating_mul(n.into())))
 			.saturating_add(Weight::from_parts(0, 5218).saturating_mul(n.into()))
 	}
+
+	fn touch(n: u32) -> Weight {
+		Weight::from_parts(66_012_000, 0)
+			.saturating_add(Weight::from_parts(0, 990))
+			// Standard Error: 119_947
+			.saturating_add(Weight::from_parts(943_346, 0).saturating_mul(n.into()))
+			.saturating_add(T::DbWeight::get().reads((3_u64).saturating_mul(n.into())))
+			.saturating_add(T::DbWeight::get().writes((3_u64).saturating_mul(n.into())))
+			.saturating_add(Weight::from_parts(0, 5218).saturating_mul(n.into()))
+	}
 }

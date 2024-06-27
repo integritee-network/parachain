@@ -877,9 +877,21 @@ pub type NativeAndAssets = UnionOf<
 	NativeOrWithId<AssetIdForTrustBackedAssets>,
 	AccountId,
 >;
-pub type AscendingLocator = Ascending<AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>>;
-pub type WithFirstAssetLocator =
-	WithFirstAsset<Native, AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>>;
+
+pub type PoolIdToAccountId = pallet_asset_conversion::AccountIdConverter<
+	AssetConversionPalletId,
+	(NativeOrWithId<AssetIdForTrustBackedAssets>, NativeOrWithId<AssetIdForTrustBackedAssets>),
+>;
+
+pub type AscendingLocator =
+	Ascending<AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>, PoolIdToAccountId>;
+
+pub type WithFirstAssetLocator = WithFirstAsset<
+	Native,
+	AccountId,
+	NativeOrWithId<AssetIdForTrustBackedAssets>,
+	PoolIdToAccountId,
+>;
 
 impl pallet_asset_conversion::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
