@@ -31,6 +31,7 @@ cumulus-primitives-core = { workspace = true }
 cumulus-primitives-timestamp = { workspace = true }
 cumulus-primitives-utility = { workspace = true }
 frame-executive = { workspace = true }
+frame-metadata-hash-extension = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 frame-system-rpc-runtime-api = { workspace = true }
@@ -105,7 +106,7 @@ polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-runtime-parachains = { workspace = true, features = ["std"] }
 
 [build-dependencies]
-substrate-wasm-builder = { workspace = true, optional = true }
+substrate-wasm-builder = { workspace = true, optional = true, features = ["metadata-hash"] }
 
 [features]
 default = ["std"]
@@ -123,6 +124,7 @@ std = [
     "cumulus-primitives-utility/std",
     "frame-benchmarking?/std",
     "frame-executive/std",
+    "frame-metadata-hash-extension/std",
     "frame-support/std",
     "frame-system-benchmarking?/std",
     "frame-system-rpc-runtime-api/std",
