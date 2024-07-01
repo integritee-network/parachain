@@ -28,6 +28,7 @@ use cumulus_primitives_core::AggregateMessageOrigin;
 pub use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
+	genesis_builder_helper::{build_state, get_preset},
 	pallet_prelude::Get,
 	parameter_types,
 	traits::{
@@ -41,9 +42,7 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 use frame_support::{
-	derive_impl,
-	genesis_builder_helper::{build_config, create_default_config},
-	ord_parameter_types,
+	derive_impl, ord_parameter_types,
 	traits::{
 		fungible::{HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
 		tokens::{imbalance::ResolveAssetTo, ConversionFromAssetBalance, PayFromAccount},
@@ -454,6 +453,13 @@ parameter_types! {
 	pub const RelayOrigin: AggregateMessageOrigin = AggregateMessageOrigin::Parent;
 }
 
+type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
+	Runtime,
+	RELAY_CHAIN_SLOT_DURATION_MILLIS,
+	BLOCK_PROCESSING_VELOCITY,
+	UNINCLUDED_SEGMENT_CAPACITY,
+>;
+
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Runtime>;
 	type RuntimeEvent = RuntimeEvent;
@@ -465,12 +471,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type XcmpMessageHandler = XcmpQueue;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = RelayNumberStrictlyIncreases;
-	type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
-		Runtime,
-		RELAY_CHAIN_SLOT_DURATION_MILLIS,
-		BLOCK_PROCESSING_VELOCITY,
-		UNINCLUDED_SEGMENT_CAPACITY,
-	>;
+	type ConsensusHook = ConsensusHook;
 }
 
 impl staging_parachain_info::Config for Runtime {}
@@ -878,9 +879,21 @@ pub type NativeAndAssets = UnionOf<
 	NativeOrWithId<AssetIdForTrustBackedAssets>,
 	AccountId,
 >;
-pub type AscendingLocator = Ascending<AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>>;
-pub type WithFirstAssetLocator =
-	WithFirstAsset<Native, AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>>;
+
+pub type PoolIdToAccountId = pallet_asset_conversion::AccountIdConverter<
+	AssetConversionPalletId,
+	(NativeOrWithId<AssetIdForTrustBackedAssets>, NativeOrWithId<AssetIdForTrustBackedAssets>),
+>;
+
+pub type AscendingLocator =
+	Ascending<AccountId, NativeOrWithId<AssetIdForTrustBackedAssets>, PoolIdToAccountId>;
+
+pub type WithFirstAssetLocator = WithFirstAsset<
+	Native,
+	AccountId,
+	NativeOrWithId<AssetIdForTrustBackedAssets>,
+	PoolIdToAccountId,
+>;
 
 impl pallet_asset_conversion::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -1076,6 +1089,7 @@ pub type Migrations = (
 	migrations::scheduler::v4::PurgeV4Agenda<Runtime>,
 	migrations::collator_selection_init::v0::InitInvulnerables<Runtime>,
 	cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
+	cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.
@@ -1133,6 +1147,15 @@ impl_runtime_apis! {
 
 		fn authorities() -> Vec<AuraId> {
 			pallet_aura::Authorities::<Runtime>::get().into_inner()
+		}
+	}
+
+	impl cumulus_primitives_aura::AuraUnincludedSegmentApi<Block> for Runtime {
+		fn can_build_upon(
+			included_hash: <Block as BlockT>::Hash,
+			slot: cumulus_primitives_aura::Slot,
+		) -> bool {
+			ConsensusHook::can_build_upon(included_hash, slot)
 		}
 	}
 
@@ -1356,12 +1379,16 @@ impl_runtime_apis! {
 	}
 
 	impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
-		fn create_default_config() -> Vec<u8> {
-			create_default_config::<RuntimeGenesisConfig>()
+		fn build_state(config: Vec<u8>) -> sp_genesis_builder::Result {
+			build_state::<RuntimeGenesisConfig>(config)
 		}
 
-		fn build_config(config: Vec<u8>) -> sp_genesis_builder::Result {
-			build_config::<RuntimeGenesisConfig>(config)
+		fn get_preset(id: &Option<sp_genesis_builder::PresetId>) -> Option<Vec<u8>> {
+			get_preset::<RuntimeGenesisConfig>(id, |_| None)
+		}
+
+		fn preset_names() -> Vec<sp_genesis_builder::PresetId> {
+			Default::default()
 		}
 	}
 }
