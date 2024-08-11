@@ -26,8 +26,6 @@ while read -r line; do
   --repeat=20 \
   --pallet="$pallet" \
   --extrinsic="*" \
-  --execution=wasm \
-  --wasm-execution=compiled \
   --heap-pages=4096 \
   --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/"$pallet".rs
 done < "integritee_runtime_pallets"
