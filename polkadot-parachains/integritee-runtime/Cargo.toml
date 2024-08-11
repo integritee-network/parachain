@@ -61,8 +61,8 @@ pallet-scheduler = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sidechain = { workspace = true }
 pallet-teeracle = { workspace = true }
-pallet-teerex = { workspace = true }
 pallet-teerdays = { workspace = true }
+pallet-teerex = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
