@@ -31,6 +31,7 @@ pallet-claims = { default-features = false, git = "https://github.com/integritee
 pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
 pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
 pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
+pallet-teerdays = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
 pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
 pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
 xcm-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v1.13.0" }
@@ -178,10 +179,12 @@ substrate-wasm-builder = "23.0.0"
 #pallet-enclave-bridge = { path = '../pallets/enclave-bridge' }
 #pallet-sidechain = { path = '../pallets/sidechain' }
 #pallet-teeracle = { path = '../pallets/teeracle' }
+#pallet-teerdays = { path = '../pallets/teerdays' }
 #pallet-teerex = { path = '../pallets/teerex' }
 #pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
 #sgx-verify = { path = '../pallets/teerex/sgx-verify' }
 #teeracle-primitives = { path = '../pallets/primitives/teeracle' }
+#teerdays-primitives = { path = '../pallets/primitives/teerdays' }
 #teerex-primitives = { path = '../pallets/primitives/teerex' }
 #test-utils = { path = '../pallets/test-utils' }
 #xcm-primitives = { path = '../pallets/primitives/xcm' }

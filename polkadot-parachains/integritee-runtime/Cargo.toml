@@ -2,7 +2,7 @@
 name = "integritee-runtime"
 description = "The Integritee parachain runtime"
 # align major.minor revision with polkadot SDK. patch revision must match runtime spec_version
-version = "1.13.530"
+version = "1.13.540"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -61,6 +61,7 @@ pallet-scheduler = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sidechain = { workspace = true }
 pallet-teeracle = { workspace = true }
+pallet-teerdays = { workspace = true }
 pallet-teerex = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
@@ -157,6 +158,7 @@ std = [
     "pallet-session/std",
     "pallet-sidechain/std",
     "pallet-teeracle/std",
+    "pallet-teerdays/std",
     "pallet-teerex/std",
     "pallet-timestamp/std",
     "pallet-transaction-payment-rpc-runtime-api/std",
@@ -222,6 +224,7 @@ runtime-benchmarks = [
     "pallet-scheduler/runtime-benchmarks",
     "pallet-sidechain/runtime-benchmarks",
     "pallet-teeracle/runtime-benchmarks",
+    "pallet-teerdays/runtime-benchmarks",
     "pallet-teerex/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
     "pallet-treasury/runtime-benchmarks",
@@ -269,6 +272,7 @@ try-runtime = [
     "pallet-session/try-runtime",
     "pallet-sidechain/try-runtime",
     "pallet-teeracle/try-runtime",
+    "pallet-teerdays/try-runtime",
     "pallet-teerex/try-runtime",
     "pallet-timestamp/try-runtime",
     "pallet-transaction-payment/try-runtime",

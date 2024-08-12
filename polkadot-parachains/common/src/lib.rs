@@ -76,6 +76,7 @@ mod types {
 mod constants {
 	use super::types::BlockNumber;
 	use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
+	use polkadot_core_primitives::Moment;
 	use sp_runtime::Perbill;
 	/// This determines the average expected block time that we are targeting. Blocks will be
 	/// produced at a minimum duration defined by `SLOT_DURATION`. `SLOT_DURATION` is picked up by
@@ -90,6 +91,11 @@ mod constants {
 	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
 	pub const HOURS: BlockNumber = MINUTES * 60;
 	pub const DAYS: BlockNumber = HOURS * 24;
+
+	// Time helpers in milliseconds.
+	pub const MS_PER_MINUTE: Moment = 60_000;
+	pub const MS_PER_HOUR: Moment = crate::MS_PER_MINUTE * 60;
+	pub const MS_PER_DAY: Moment = crate::MS_PER_HOUR * 24;
 
 	/// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 	/// used to limit the maximal weight of a single extrinsic.

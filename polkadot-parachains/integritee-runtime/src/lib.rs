@@ -58,8 +58,8 @@ use frame_system::{
 use integritee_parachains_common::{
 	fee::{SlowAdjustingFeeUpdate, WeightToFee},
 	AuraId, AVERAGE_ON_INITIALIZE_RATIO, BLOCK_PROCESSING_VELOCITY, DAYS, HOURS,
-	MAXIMUM_BLOCK_WEIGHT, MINUTES, NORMAL_DISPATCH_RATIO, RELAY_CHAIN_SLOT_DURATION_MILLIS,
-	SLOT_DURATION, UNINCLUDED_SEGMENT_CAPACITY,
+	MAXIMUM_BLOCK_WEIGHT, MINUTES, MS_PER_DAY, NORMAL_DISPATCH_RATIO,
+	RELAY_CHAIN_SLOT_DURATION_MILLIS, SLOT_DURATION, UNINCLUDED_SEGMENT_CAPACITY,
 };
 pub use integritee_parachains_common::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
@@ -119,7 +119,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 530,
+	spec_version: 540,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 8,
@@ -550,6 +550,17 @@ parameter_types! {
 impl pallet_sidechain::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_sidechain::WeightInfo<Runtime>;
+}
+// added by Integritee
+parameter_types! {
+	pub const UnlockPeriod: Moment = 7 * MS_PER_DAY;
+}
+impl pallet_teerdays::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = weights::pallet_teerdays::WeightInfo<Runtime>;
+	type Currency = Balances;
+	type CurrencyBalance = Balance;
+	type UnlockPeriod = UnlockPeriod;
 }
 
 parameter_types! {
@@ -1058,6 +1069,7 @@ construct_runtime!(
 		Teeracle: pallet_teeracle = 52,
 		Sidechain: pallet_sidechain= 53,
 		EnclaveBridge: pallet_enclave_bridge = 54,
+		TeerDays: pallet_teerdays = 55,
 	}
 );
 
@@ -1129,6 +1141,7 @@ mod benches {
 		[pallet_session, SessionBench::<Runtime>]
 		[pallet_sidechain, Sidechain]
 		[pallet_teeracle, Teeracle]
+		[pallet_teerdays, TeerDays]
 		[pallet_teerex, Teerex]
 		[pallet_enclave_bridge, EnclaveBridge]
 		[pallet_timestamp, Timestamp]
