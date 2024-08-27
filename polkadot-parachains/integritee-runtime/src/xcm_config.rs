@@ -51,17 +51,15 @@ use sp_std::{
 	prelude::*,
 };
 use staging_xcm::latest::prelude::*;
-#[allow(deprecated)]
-use staging_xcm_builder::CurrencyAdapter;
 use staging_xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, DenyReserveTransferToRelayChain,
 	DenyThenTry, DescribeAllTerminal, DescribeFamily, EnsureXcmOrigin, FixedRateOfFungible,
-	FixedWeightBounds, FrameTransactionalProcessor, FungiblesAdapter, HashedDescription,
-	NativeAsset, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
-	WithComputedOrigin,
+	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	HashedDescription, NativeAsset, NoChecking, ParentAsSuperuser, ParentIsPreset,
+	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	TrailingSetTopicAsId, WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
@@ -141,8 +139,7 @@ pub type LocationToAccountId = (
 );
 
 /// Means for transacting TEER only.
-#[allow(deprecated)]
-pub type LocalNativeTransactor = CurrencyAdapter<
+pub type LocalNativeTransactor = FungibleAdapter<
 	// Use this currency:
 	Balances,
 	// Matcher: matches concrete fungible assets whose `id` could be converted into `CurrencyId`.

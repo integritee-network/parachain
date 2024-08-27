@@ -44,8 +44,11 @@ pub use frame_support::{
 use frame_support::{
 	derive_impl, ord_parameter_types,
 	traits::{
-		fungible::{HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
-		tokens::{imbalance::ResolveAssetTo, ConversionFromAssetBalance, PayFromAccount},
+		fungible::{Credit, HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
+		tokens::{
+			imbalance::{ResolveAssetTo, ResolveTo},
+			ConversionFromAssetBalance, PayFromAccount,
+		},
 		AsEnsureOriginWithArg, ConstBool, EnsureOriginWithArg, EqualPrivilegeOnly, Imbalance,
 		InstanceFilter, LinearStoragePrice, OnUnbalanced,
 	},
@@ -73,6 +76,7 @@ pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
 pub use pallet_timestamp::Call as TimestampCall;
+use pallet_treasury::TreasuryAccountId;
 use parachains_common::{message_queue::NarrowOriginToSibling, AssetIdForTrustBackedAssets};
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -119,7 +123,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("integritee-parachain"),
 	impl_name: create_runtime_str!("integritee-full"),
 	authoring_version: 2,
-	spec_version: 540,
+	spec_version: 550,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 8,
@@ -144,11 +148,16 @@ pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
-pub struct DealWithFees;
+pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
 
-impl OnUnbalanced<pallet_balances::NegativeImbalance<Runtime>> for DealWithFees {
+impl<R> OnUnbalanced<Credit<R::AccountId, pallet_balances::Pallet<R>>> for DealWithFees<R>
+where
+	R: pallet_balances::Config + pallet_authorship::Config + pallet_treasury::Config,
+	<R as frame_system::Config>::AccountId: From<AccountId>,
+	<R as frame_system::Config>::AccountId: Into<AccountId>,
+{
 	fn on_unbalanceds<B>(
-		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<Runtime>>,
+		mut fees_then_tips: impl Iterator<Item = Credit<R::AccountId, pallet_balances::Pallet<R>>>,
 	) {
 		if let Some(fees) = fees_then_tips.next() {
 			// for fees, 1% to treasury, 99% burned
@@ -159,7 +168,7 @@ impl OnUnbalanced<pallet_balances::NegativeImbalance<Runtime>> for DealWithFees 
 			if let Some(tips) = fees_then_tips.next() {
 				tips.merge_into(&mut split.0);
 			}
-			Treasury::on_unbalanced(split.0);
+			ResolveTo::<TreasuryAccountId<R>, pallet_balances::Pallet<R>>::on_unbalanced(split.0);
 			// burn remainder by not assigning imbalance to someone
 		}
 	}
@@ -255,7 +264,8 @@ impl pallet_balances::Config for Runtime {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
+	type OnChargeTransaction =
+		pallet_transaction_payment::FungibleAdapter<Balances, DealWithFees<Runtime>>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
