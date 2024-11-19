@@ -5,6 +5,7 @@ on:
     branches: [ master ]
     paths:
       - '../../polkadot-parachains/integritee-kusama/**'
+      - '../../polkadot-parachains/integritee-polkadot/**'
 
 # cancel previous runs
 concurrency:
@@ -12,8 +13,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  clippy:
+  clippy-runtimes:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -33,7 +37,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path polkadot-parachains/integritee-kusama/Cargo.toml
+          args: --manifest-path polkadot-parachains/${{ matrix.runtime }}/Cargo.toml
         env:
           # RUSTFLAGS: "-D warnings" # FAIL-CI
           SKIP_WASM_BUILD: 1
