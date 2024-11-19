@@ -309,7 +309,7 @@ pub type Traders = (
 		NativeAliasPerSecond,
 		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
 	>,
-	// for KSM aka RelayNative
+	// for DOT aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
 		XcmFeesTo32ByteAccount<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
