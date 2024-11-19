@@ -68,31 +68,6 @@ jobs:
           RUNTIME_BLOB_NAME=$(echo $PACKAGE_NAME | sed 's/-/_/g').compact.compressed.wasm
           RUNTIME_BLOB_PATH=./target/release/wbuild/$PACKAGE_NAME/$RUNTIME_BLOB_NAME
 
-          # When running on relay, we don't need weight checks.
-          EXTRA_FLAGS=""
-          if [[ "${{ matrix.runtime.is_relay }}" == "true" ]]; then
-            EXTRA_FLAGS+="--no-weight-warnings"
-            echo "Disabling weight checks since we are on a relay"
-          else
-            echo "Enabling weight checks since we are not on a relay"
-          fi
-
-          # Disable the spec version check when we dont want to release.
-          if ! .github/changelog-processor.py CHANGELOG.md --should-release ; then
-            EXTRA_FLAGS+=" --disable-spec-version-check"
-            echo "Disabling the spec version check since we are not releasing"
-          else
-            echo "Enabling the spec version check since we are releasing"
-          fi
-
-          # Disable idemepotency checks on Polkadot until we enact them.
-          if [[ "${{ matrix.runtime.name }}" == "polkadot" ]]; then
-            echo "Disabling the idempotency check since we are on Polkadot"
-            EXTRA_FLAGS+=" --disable-idempotency-checks"
-          else
-            echo "Enabling the idempotency check since we are not on Polkadot"
-          fi
-
           echo "Flags: $EXTRA_FLAGS"
 
           ./try-runtime \
