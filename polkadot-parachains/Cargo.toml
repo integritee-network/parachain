@@ -25,7 +25,8 @@ serde_json = { workspace = true }
 
 # Parachain runtimes
 integritee-parachains-common = { path = "common" }
-integritee-runtime = { path = "integritee-runtime" }
+integritee-kusama-runtime = { path = "integritee-kusama" }
+integritee-polkadot-runtime = { path = "integritee-polkadot" }
 shell-runtime = { path = "shell-runtime" }
 
 # Substrate dependencies
@@ -115,7 +116,7 @@ runtime-benchmarks = [
     "cumulus-primitives-core/runtime-benchmarks",
     "frame-benchmarking-cli/runtime-benchmarks",
     "frame-benchmarking/runtime-benchmarks",
-    "integritee-runtime/runtime-benchmarks",
+    "integritee-kusama-runtime/runtime-benchmarks",
     "polkadot-cli/runtime-benchmarks",
     "polkadot-primitives/runtime-benchmarks",
     "sc-service/runtime-benchmarks",
@@ -125,11 +126,11 @@ runtime-benchmarks = [
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",
-    "integritee-runtime/fast-runtime",
+    "integritee-kusama-runtime/fast-runtime",
 ]
 try-runtime = [
     "polkadot-cli/try-runtime",
     "sp-runtime/try-runtime",
-    "integritee-runtime/try-runtime",
+    "integritee-kusama-runtime/try-runtime",
     "shell-runtime/try-runtime",
 ]

@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - 'polkadot-parachains/integritee-runtime/**'
+      - '../../polkadot-parachains/integritee-kusama/**'
 
 # cancel previous runs
 concurrency:
@@ -33,7 +33,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path polkadot-parachains/integritee-runtime/Cargo.toml
+          args: --manifest-path polkadot-parachains/integritee-kusama/Cargo.toml
         env:
           # RUSTFLAGS: "-D warnings" # FAIL-CI
           SKIP_WASM_BUILD: 1

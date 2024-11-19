@@ -17,8 +17,8 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
+use integritee_kusama_runtime::TEER;
 use integritee_parachains_common::{AccountId, AuraId};
-use integritee_runtime::TEER;
 use parity_scale_codec::{Decode, Encode};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
@@ -186,10 +186,18 @@ pub fn integritee_chain_spec(
 	};
 
 	#[allow(deprecated)]
-	ChainSpec::builder(
-		integritee_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
-		Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
-	)
+	match relay_chain {
+		RelayChain::Polkadot | RelayChain::PolkadotLocal => ChainSpec::builder(
+			integritee_polkadot_runtime::WASM_BINARY
+				.expect("WASM binary was not built, please build it!"),
+			Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
+		),
+		_ => ChainSpec::builder(
+			integritee_kusama_runtime::WASM_BINARY
+				.expect("WASM binary was not built, please build it!"),
+			Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
+		),
+	}
 	.with_name("Integritee Network")
 	.with_id(&format!("integritee-{}", relay_chain.to_string()))
 	.with_protocol_id(relay_chain.protocol_id())
@@ -211,19 +219,19 @@ fn integritee_genesis_config(
 	parachain_id: ParaId,
 ) -> serde_json::Value {
 	serde_json::json!({
-		"collatorSelection": integritee_runtime::CollatorSelectionConfig {
+		"collatorSelection": integritee_kusama_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.clone(),
 			candidacy_bond: 500 * TEER,
 			..Default::default()
 		},
-		"session": integritee_runtime::SessionConfig {
+		"session": integritee_kusama_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|acc| {
 					(
 						acc.clone(),                         // account id
 						acc.clone(),                         // validator id
-						integritee_runtime::SessionKeys { aura: Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
+						integritee_kusama_runtime::SessionKeys { aura: Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
 					)
 				})
 				.collect(),
