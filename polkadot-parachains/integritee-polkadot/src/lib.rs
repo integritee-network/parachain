@@ -1072,7 +1072,7 @@ construct_runtime!(
 		MessageQueue: pallet_message_queue = 33,
 		XTokens: orml_xtokens = 34,
 		OrmlXcm: orml_xcm = 35,
-		XcmTransactor: pallet_xcm_transactor = 36,
+		//XcmTransactor: pallet_xcm_transactor = 36,
 
 		// fungibles
 		Assets: pallet_assets::<Instance1> = 41,

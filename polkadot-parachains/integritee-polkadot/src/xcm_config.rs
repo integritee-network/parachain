@@ -418,21 +418,6 @@ impl pallet_xcm::Config for Runtime {
 	type RemoteLockConsumerIdentifier = ();
 }
 
-parameter_types! {
-	pub const ShellRuntimeParaId: u32 = 2267u32;
-	pub const IntegriteeDotParaId: u32 = 2039u32;
-}
-
-impl pallet_xcm_transactor::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type RelayCallBuilder = RelayCallBuilder<IntegriteeDotParaId>;
-	type XcmSender = XcmRouter;
-	type SwapOrigin = EnsureRootOrMoreThanHalfCouncil;
-	type ShellRuntimeParaId = ShellRuntimeParaId;
-	type IntegriteeKsmParaId = IntegriteeDotParaId;
-	type WeightInfo = ();
-}
-
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
