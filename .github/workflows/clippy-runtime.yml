@@ -4,8 +4,8 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - '../../polkadot-parachains/integritee-kusama/**'
-      - '../../polkadot-parachains/integritee-polkadot/**'
+      - 'polkadot-parachains/integritee-kusama/**'
+      - 'polkadot-parachains/integritee-polkadot/**'
 
 # cancel previous runs
 concurrency:
@@ -20,7 +20,7 @@ jobs:
         runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set rust version via common env file
         run: cat .github/env >> $GITHUB_ENV
       - name: Install stable toolchain
