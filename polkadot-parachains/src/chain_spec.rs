@@ -18,7 +18,7 @@
 
 use cumulus_primitives_core::ParaId;
 use integritee_kusama_runtime::TEER;
-use integritee_parachains_common::{AccountId, AuraId};
+use integritee_parachains_common::AccountId;
 use parity_scale_codec::{Decode, Encode};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
