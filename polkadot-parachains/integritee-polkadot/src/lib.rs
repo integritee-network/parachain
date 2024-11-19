@@ -1021,6 +1021,11 @@ impl pallet_collator_selection::Config for Runtime {
 	type ValidatorRegistration = Session;
 	type WeightInfo = weights::pallet_collator_selection::WeightInfo<Runtime>;
 }
+impl pallet_sudo::Config for Runtime {
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+}
 
 construct_runtime!(
 	pub enum Runtime
@@ -1041,6 +1046,8 @@ construct_runtime!(
 		Balances: pallet_balances = 10,
 		TransactionPayment: pallet_transaction_payment = 11,
 		Vesting: pallet_vesting = 12,
+
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
 
 		// Governance.
 		Treasury: pallet_treasury = 13,

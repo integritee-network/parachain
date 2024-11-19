@@ -60,6 +60,7 @@ pallet-proxy = { workspace = true }
 pallet-scheduler = { workspace = true }
 pallet-session = { workspace = true }
 pallet-sidechain = { workspace = true }
+pallet-sudo = { workspace = true }
 pallet-teeracle = { workspace = true }
 pallet-teerdays = { workspace = true }
 pallet-teerex = { workspace = true }
@@ -157,6 +158,7 @@ std = [
     "pallet-scheduler/std",
     "pallet-session/std",
     "pallet-sidechain/std",
+    "pallet-sudo/std",
     "pallet-teeracle/std",
     "pallet-teerdays/std",
     "pallet-teerex/std",
@@ -223,6 +225,7 @@ runtime-benchmarks = [
     "pallet-proxy/runtime-benchmarks",
     "pallet-scheduler/runtime-benchmarks",
     "pallet-sidechain/runtime-benchmarks",
+    "pallet-sudo/runtime-benchmarks",
     "pallet-teeracle/runtime-benchmarks",
     "pallet-teerdays/runtime-benchmarks",
     "pallet-teerex/runtime-benchmarks",
@@ -271,6 +274,7 @@ try-runtime = [
     "pallet-scheduler/try-runtime",
     "pallet-session/try-runtime",
     "pallet-sidechain/try-runtime",
+    "pallet-sudo/try-runtime",
     "pallet-teeracle/try-runtime",
     "pallet-teerdays/try-runtime",
     "pallet-teerex/try-runtime",
