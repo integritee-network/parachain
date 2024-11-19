@@ -250,7 +250,7 @@ jobs:
         with:
           image: paritytech/srtool
           chain: ${{ matrix.runtime }}
-          runtime_dir: polkadot-parachains/${{ matrix.runtime }}-runtime
+          runtime_dir: polkadot-parachains/${{ matrix.runtime }}
 
       - name: Summary
         run: |
