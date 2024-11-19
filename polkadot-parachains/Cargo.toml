@@ -24,8 +24,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 
 # Parachain runtimes
-integritee-parachains-common = { path = "common" }
 integritee-kusama-runtime = { path = "integritee-kusama" }
+integritee-parachains-common = { path = "common" }
 integritee-polkadot-runtime = { path = "integritee-polkadot" }
 
 # Substrate dependencies
