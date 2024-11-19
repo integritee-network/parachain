@@ -8,8 +8,6 @@
 mod chain_spec;
 #[macro_use]
 mod service;
-#[macro_use]
-mod service_shell;
 mod cli;
 mod command;
 mod rpc;

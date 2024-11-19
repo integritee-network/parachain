@@ -231,7 +231,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime: [ "shell", "integritee" ]
+        runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - uses: actions/checkout@v3
 
@@ -321,10 +321,7 @@ jobs:
       fail-fast: false
       matrix:
         chain: [ integritee ]
-        config: [ rococo, westend, kusama, polkadot, moonbase, paseo ]
-        include:
-          - chain: shell
-            config: kusama-lease2
+        config: [ kusama, polkadot, paseo ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -418,7 +415,7 @@ jobs:
     needs: [ "release" ]
     strategy:
       matrix:
-        runtime: [ "shell", "integritee" ]
+        runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
