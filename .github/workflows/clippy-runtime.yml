@@ -4,7 +4,8 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - 'polkadot-parachains/integritee-runtime/**'
+      - 'polkadot-parachains/integritee-kusama/**'
+      - 'polkadot-parachains/integritee-polkadot/**'
 
 # cancel previous runs
 concurrency:
@@ -12,11 +13,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  clippy:
+  clippy-runtimes:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set rust version via common env file
         run: cat .github/env >> $GITHUB_ENV
       - name: Install stable toolchain
@@ -33,7 +37,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path polkadot-parachains/integritee-runtime/Cargo.toml
+          args: --manifest-path polkadot-parachains/${{ matrix.runtime }}/Cargo.toml
         env:
           # RUSTFLAGS: "-D warnings" # FAIL-CI
           SKIP_WASM_BUILD: 1

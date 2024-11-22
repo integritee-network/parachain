@@ -6,7 +6,7 @@
 # Optionally accepts a path that is the root of the project which defaults to
 # the current working directory
 def get_runtime(runtime, path = '.')
-    File.open(path + "/polkadot-parachains/#{runtime}-runtime/src/lib.rs") do |f|
+    File.open(path + "/polkadot-parachains/#{runtime}/src/lib.rs") do |f|
       f.find { |l| l =~ /spec_version/ }.match(/[0-9]+/)[0]
     end
 end

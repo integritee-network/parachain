@@ -17,8 +17,8 @@
 #![allow(clippy::inconsistent_digit_grouping)]
 
 use cumulus_primitives_core::ParaId;
-use integritee_parachains_common::{AccountId, AuraId};
-use integritee_runtime::TEER;
+use integritee_kusama_runtime::TEER;
+use integritee_parachains_common::AccountId;
 use parity_scale_codec::{Decode, Encode};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
@@ -121,48 +121,6 @@ impl IntegriteeDevKeys {
 		]
 	}
 }
-
-pub fn shell_chain_spec(
-	para_id: ParaId,
-	genesis_keys: GenesisKeys,
-	relay_chain: RelayChain,
-) -> ChainSpec {
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "TEER".into());
-	properties.insert("tokenDecimals".into(), 12.into());
-	properties.insert("ss58Format".into(), 13.into());
-
-	let (root, endowed, authorities) = match genesis_keys {
-		GenesisKeys::Integritee =>
-			(IntegriteeKeys::root(), vec![IntegriteeKeys::root()], IntegriteeKeys::authorities()),
-		GenesisKeys::IntegriteeDev => (
-			IntegriteeDevKeys::root(),
-			vec![IntegriteeDevKeys::root()],
-			IntegriteeDevKeys::authorities(),
-		),
-		GenesisKeys::WellKnown =>
-			(WellKnownKeys::root(), WellKnownKeys::endowed(), WellKnownKeys::authorities()),
-	};
-
-	#[allow(deprecated)]
-	ChainSpec::builder(
-		shell_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
-		Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
-	)
-	.with_name("Integritee Shell")
-	.with_id(&format!("shell-{}", relay_chain.to_string()))
-	.with_protocol_id(relay_chain.protocol_id())
-	.with_chain_type(relay_chain.chain_type())
-	.with_properties(properties)
-	.with_genesis_config_patch(shell_genesis_config(
-		root.clone(),
-		endowed.clone(),
-		authorities.clone(),
-		para_id,
-	))
-	.build()
-}
-
 pub fn integritee_chain_spec(
 	para_id: ParaId,
 	genesis_keys: GenesisKeys,
@@ -186,10 +144,18 @@ pub fn integritee_chain_spec(
 	};
 
 	#[allow(deprecated)]
-	ChainSpec::builder(
-		integritee_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
-		Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
-	)
+	match relay_chain {
+		RelayChain::Polkadot | RelayChain::PolkadotLocal => ChainSpec::builder(
+			integritee_polkadot_runtime::WASM_BINARY
+				.expect("WASM binary was not built, please build it!"),
+			Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
+		),
+		_ => ChainSpec::builder(
+			integritee_kusama_runtime::WASM_BINARY
+				.expect("WASM binary was not built, please build it!"),
+			Extensions { relay_chain: relay_chain.to_string(), para_id: para_id.into() },
+		),
+	}
 	.with_name("Integritee Network")
 	.with_id(&format!("integritee-{}", relay_chain.to_string()))
 	.with_protocol_id(relay_chain.protocol_id())
@@ -211,19 +177,19 @@ fn integritee_genesis_config(
 	parachain_id: ParaId,
 ) -> serde_json::Value {
 	serde_json::json!({
-		"collatorSelection": integritee_runtime::CollatorSelectionConfig {
+		"collatorSelection": integritee_kusama_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.clone(),
 			candidacy_bond: 500 * TEER,
 			..Default::default()
 		},
-		"session": integritee_runtime::SessionConfig {
+		"session": integritee_kusama_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|acc| {
 					(
 						acc.clone(),                         // account id
 						acc.clone(),                         // validator id
-						integritee_runtime::SessionKeys { aura: Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
+						integritee_kusama_runtime::SessionKeys { aura: Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
 					)
 				})
 				.collect(),
@@ -247,34 +213,6 @@ fn integritee_genesis_config(
 		"technicalCommittee": {
 			"members": vec![root_key.clone()]
 		},
-	})
-}
-
-fn shell_genesis_config(
-	root_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
-	initial_authorities: Vec<AccountId>,
-	parachain_id: ParaId,
-) -> serde_json::Value {
-	serde_json::json!({
-		"aura": {
-			"authorities": initial_authorities
-				.into_iter()
-				.map(|acc| {
-						Decode::decode(&mut acc.encode().as_ref()).unwrap() }, // session keys
-					)
-				.collect::<Vec<AuraId>>(),
-		},
-		"balances": {
-			"balances": endowed_accounts.iter().cloned().map(|k| (k, 100 * TEER)).collect::<Vec<_>>(),
-		},
-		"parachainInfo": {
-			"parachainId": parachain_id,
-		},
-		"polkadotXcm": {
-			"safeXcmVersion": Some(SAFE_XCM_VERSION),
-		},
-		"sudo": { "key": Some(root_key) }
 	})
 }
 

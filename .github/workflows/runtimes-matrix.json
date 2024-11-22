@@ -1,15 +1,22 @@
 [
   {
     "name": "integritee-kusama",
-    "package": "integritee-runtime",
-    "path": "polkadot-parachains/integritee-runtime",
+    "package": "integritee-kusama-runtime",
+    "path": "polkadot-parachains/integritee-kusama",
     "uri": "wss://kusama.api.integritee.network:443",
     "is_relay": false
   },
   {
+    "name": "integritee-polkadot",
+    "package": "integritee-polkadot-runtime",
+    "path": "polkadot-parachains/integritee-polkadot",
+    "uri": "wss://polkadot.api.integritee.network:443",
+    "is_relay": false
+  },
+  {
     "name": "integritee-paseo",
-    "package": "integritee-runtime",
-    "path": "polkadot-parachains/integritee-runtime",
+    "package": "integritee-kusama-runtime",
+    "path": "polkadot-parachains/integritee-kusama",
     "uri": "wss://paseo.api.integritee.network:443",
     "is_relay": false
   }

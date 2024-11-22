@@ -1,21 +1,19 @@
 //!
 //! this file DOES HAVE CUSTOMIZATIONS for integritee runtimes. Upon upgrades of polkadot-sdk,
-//! look for blocks with `is_shell()` branching
 
 use crate::{
 	chain_spec,
 	chain_spec::{
 		integritee_chain_spec, integritee_moonbase_config, integritee_paseo_config,
-		shell_chain_spec, shell_kusama_config, shell_kusama_lease2_config,
-		shell_kusama_lease3_config, shell_polkadot_config, shell_rococo_config,
-		shell_westend_config, GenesisKeys, RelayChain,
+		shell_kusama_config, shell_kusama_lease2_config, shell_kusama_lease3_config,
+		shell_polkadot_config, shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
 };
 use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use integritee_runtime::Block;
+use integritee_kusama_runtime::Block;
 use log::info;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
@@ -29,7 +27,7 @@ const LOCAL_PARA_ID: u32 = 2015;
 const ROCOCO_PARA_ID: u32 = 2015;
 const WESTEND_PARA_ID: u32 = 2081;
 const KUSAMA_PARA_ID: u32 = 2015;
-const KUSAMA_SWAP_PARA_ID: u32 = 2267;
+//const KUSAMA_SWAP_PARA_ID: u32 = 2267;
 const POLKADOT_PARA_ID: u32 = 2039;
 const MOONBASE_PARA_ID: u32 = 2015;
 const PASEO_PARA_ID: u32 = 2015;
@@ -69,12 +67,11 @@ fn load_spec(
 
         // live config initialize
         "integritee-rococo-fresh" => Box::new(integritee_chain_spec(ROCOCO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Rococo)),
-        "integritee-westend-fresh" => Box::new(shell_chain_spec(WESTEND_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Westend)),
-        "integritee-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
-        "integritee-polkadot-fresh" => Box::new(shell_chain_spec(POLKADOT_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Polkadot)),
+        "integritee-westend-fresh" => Box::new(integritee_chain_spec(WESTEND_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Westend)),
+        "integritee-kusama-fresh" => Box::new(integritee_chain_spec(KUSAMA_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
+        "integritee-polkadot-fresh" => Box::new(integritee_chain_spec(POLKADOT_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Polkadot)),
         "integritee-moonbase-fresh" => Box::new(integritee_chain_spec(MOONBASE_PARA_ID.into(), GenesisKeys::IntegriteeDev, RelayChain::Moonbase)),
         "integritee-paseo-fresh" => Box::new(integritee_chain_spec(PASEO_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Paseo)),
-        "shell-kusama-fresh" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::Kusama)),
 
         // on-the-spot specs
         "integritee-rococo-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
@@ -91,19 +88,7 @@ fn load_spec(
 
         "integritee-polkadot-local" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
         "integritee-polkadot-local-dev" => Box::new(integritee_chain_spec(LOCAL_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
-
-        "shell-rococo-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::RococoLocal)),
-        "shell-rococo-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::RococoLocal)),
-
-        "shell-westend-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::WestendLocal)),
-        "shell-westend-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::WestendLocal)),
-
-        "shell-kusama-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::KusamaLocal)),
-        "shell-kusama-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::KusamaLocal)),
-
-        "shell-polkadot-local" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::Integritee, RelayChain::PolkadotLocal)),
-        "shell-polkadot-local-dev" => Box::new(shell_chain_spec(KUSAMA_SWAP_PARA_ID.into(), GenesisKeys::WellKnown, RelayChain::PolkadotLocal)),
-
+		
         "" => panic!("Please supply chain_spec to be loaded."),
         path => {
             let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
@@ -188,8 +173,7 @@ impl SubstrateCli for RelayChainCli {
 macro_rules! construct_partials {
 	($config:expr, |$partials:ident| $code:expr) => {
 		if $config.chain_spec.is_shell() {
-			let $partials = crate::service_shell::new_partial(&$config)?;
-			$code
+			unimplemented!()
 		} else {
 			let $partials = crate::service::new_partial(&$config)?;
 			$code
@@ -201,13 +185,7 @@ macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
 		if runner.config().chain_spec.is_shell() {
-			runner.async_run(|$config| {
-				let $components = crate::service_shell::new_partial(
-					&$config,
-				)?;
-				let task_manager = $components.task_manager;
-				{ $( $code )* }.map(|v| (v, task_manager))
-			})
+			unimplemented!()
 		} else {
 			runner.async_run(|$config| {
 			let $components = crate::service::new_partial(
@@ -360,16 +338,7 @@ pub fn run() -> Result<()> {
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				if config.chain_spec.is_shell() {
-					crate::service_shell::start_parachain_node(
-						config,
-						polkadot_config,
-						collator_options,
-						id,
-						hwbench,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
+					unimplemented!()
 				} else {
 					crate::service::start_parachain_node(
 						config,
