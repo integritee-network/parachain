@@ -142,7 +142,7 @@ jobs:
       - name: Upload integritee-collator
         uses: actions/upload-artifact@v4
         with:
-          name: integritee-collator-${{ github.sha }}
+          name: integritee-collator-try-and-benchmark-runtime-${{ github.sha }}
           path: target/release/integritee-collator
 
       - name: Slack Notification
