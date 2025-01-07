@@ -85,7 +85,7 @@ jobs:
 
       # Upload artifacts
       - name: Upload integritee-collator
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: integritee-collator-${{ github.sha }}
           path: target/release/integritee-collator
@@ -140,9 +140,9 @@ jobs:
 
       # Upload artifacts
       - name: Upload integritee-collator
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: integritee-collator-${{ github.sha }}
+          name: integritee-collator-try-and-benchmark-runtime-${{ github.sha }}
           path: target/release/integritee-collator
 
       - name: Slack Notification
@@ -208,7 +208,7 @@ jobs:
         run: cargo +stable about generate about.hbs > license.html
 
       - name: Archive license file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license
           path: license.html
@@ -326,7 +326,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: integritee-collator-${{ github.sha }}
 
@@ -373,7 +373,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download Integritee Collator
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: integritee-collator-${{ github.sha }}
 
@@ -418,7 +418,7 @@ jobs:
         runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
 
       - name: Set up Ruby 3
         uses: ruby/setup-ruby@v1

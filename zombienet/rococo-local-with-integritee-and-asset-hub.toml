@@ -3,23 +3,23 @@ timeout = 10000
 
 [relaychain]
 default_command = "~/bin/polkadot"
-default_args = ["-lparachain=debug,xcm=trace"]
+default_args = ["-lparachain=debug,xcm=trace --state-pruning=archive --blocks-pruning=archive"]
 chain = "rococo-local"
 
-[[relaychain.nodes]]
-name = "alice"
-validator = true
-ws_port = 9999
+    [[relaychain.nodes]]
+    name = "alice"
+    validator = true
+    ws_port = 9999
 
-[[relaychain.nodes]]
-name = "bob"
-validator = true
-ws_port = 9988
+    [[relaychain.nodes]]
+    name = "bob"
+    validator = true
+    ws_port = 9988
 
-[[relaychain.nodes]]
-name = "charlie"
-validator = true
-ws_port = 9977
+    [[relaychain.nodes]]
+    name = "charlie"
+    validator = true
+    ws_port = 9977
 
 [[parachains]]
 id = 2015
@@ -27,17 +27,17 @@ addToGenesis = true
 cumulus_based = true
 chain = "integritee-rococo-local-dev"
 
-[[parachains.collators]]
-name = "integritee-collator-1"
-command = "~/bin/integritee-collator"
-args = ["-lxcm=trace,runtime=debug"]
-ws_port = 9944
+    [[parachains.collators]]
+    name = "integritee-collator-1"
+    command = "./target/release/integritee-collator"
+    args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive"]
+    ws_port = 9944
 
-[[parachains.collators]]
-name = "integritee-collator-2"
-command = "~/bin/integritee-collator"
-args = ["-lxcm=trace,runtime=debug"]
-ws_port = 9945
+    [[parachains.collators]]
+    name = "integritee-collator-2"
+    command = "./target/release/integritee-collator"
+    args = ["-lxcm=trace,runtime=debug"]
+    ws_port = 9945
 
 [[parachains]]
 id = 1000
@@ -45,18 +45,18 @@ addToGenesis = true
 cumulus_based = true
 chain = "asset-hub-rococo-local"
 
-[[parachains.collators]]
-name = "asset-hub-collator-1"
-validator = true
-command = "~/bin/polkadot-parachain"
-args = ["-lxcm=trace,runtime=debug"]
-ws_port = 9954
+    [[parachains.collators]]
+    name = "asset-hub-collator-1"
+    validator = true
+    command = "~/bin/polkadot-parachain"
+    args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive"]
+    ws_port = 9954
 
-[[parachains.collators]]
-name = "asset-hub-collator-2"
-validator = true
-command = "~/bin/polkadot-parachain"
-args = ["-lxcm=trace,runtime=debug"]
-ws_port = 9955
+    [[parachains.collators]]
+    name = "asset-hub-collator-2"
+    validator = true
+    command = "~/bin/polkadot-parachain"
+    args = ["-lxcm=trace,runtime=debug"]
+    ws_port = 9955
 
 # don't open HRMP channels here, will stop block production of parachains. use ./scripts/hrmp_helper.sh
