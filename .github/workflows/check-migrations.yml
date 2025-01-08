@@ -72,8 +72,6 @@ jobs:
 
           ./try-runtime \
             --runtime $RUNTIME_BLOB_PATH \
-            --disable-spec-name-check \
             on-runtime-upgrade --checks=pre-and-post \
-            --disable-spec-version-check \
             $EXTRA_FLAGS \
             live --uri ${{ matrix.runtime.uri }}
