@@ -231,7 +231,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime: [ "shell", "integritee" ]
+        runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - uses: actions/checkout@v3
 
@@ -250,7 +250,7 @@ jobs:
         with:
           image: paritytech/srtool
           chain: ${{ matrix.runtime }}
-          runtime_dir: polkadot-parachains/${{ matrix.runtime }}-runtime
+          runtime_dir: polkadot-parachains/${{ matrix.runtime }}
 
       - name: Summary
         run: |
@@ -321,10 +321,7 @@ jobs:
       fail-fast: false
       matrix:
         chain: [ integritee ]
-        config: [ rococo, westend, kusama, polkadot, moonbase, paseo ]
-        include:
-          - chain: shell
-            config: kusama-lease2
+        config: [ kusama, polkadot, paseo ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -418,7 +415,7 @@ jobs:
     needs: [ "release" ]
     strategy:
       matrix:
-        runtime: [ "shell", "integritee" ]
+        runtime: [ "integritee-kusama", "integritee-polkadot" ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v4
@@ -436,14 +433,18 @@ jobs:
           runtime_ver="$(ruby -e 'require "./scripts/github/lib.rb"; puts get_runtime("${{ matrix.runtime }}")')"
           echo "Found version: >$runtime_ver<"
           echo "runtime_ver={$runtime_ver}" >> $GITHUB_OUTPUT
-
+      - name: Set wasm filename
+        run: echo "WASM_FILE=${MATRIX_RUNTIME//-/_}_runtime.compact.compressed.wasm" >> $GITHUB_ENV
+        env:
+          MATRIX_RUNTIME: ${{ matrix.runtime }}
+          GITHUB_SHA: ${{ github.sha }}
       - name: Upload compressed ${{ matrix.runtime }} wasm
         uses: shogo82148/actions-upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.asset_upload_url }}
-          asset_path: "${{ matrix.runtime }}-runtime-${{ github.sha }}/${{ matrix.runtime }}_runtime.compact.compressed.wasm"
+          asset_path: "${{ matrix.runtime }}-runtime-${{ github.sha }}/${{ env.WASM_FILE }}"
           asset_name: ${{ matrix.runtime }}_runtime-v${{ steps.get-runtime-ver.outputs.runtime_ver }}.compact.compressed.wasm
           asset_content_type: application/wasm
 

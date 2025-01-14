@@ -3,8 +3,8 @@ resolver = "2"
 members = [
     "polkadot-parachains",
     "polkadot-parachains/common",
-    "polkadot-parachains/integritee-runtime",
-    "polkadot-parachains/shell-runtime",
+    "polkadot-parachains/integritee-kusama",
+    "polkadot-parachains/integritee-polkadot",
 ]
 
 [profile.release]

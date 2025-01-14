@@ -40,7 +40,7 @@ where
 	fn contains(asset: &Asset, origin: &Location) -> bool {
 		if let Some(ref reserve) = ReserveProvider::reserve(asset) {
 			if reserve == origin {
-				return true
+				return true;
 			}
 		}
 		false
@@ -61,7 +61,7 @@ where
 	fn matches_fungible(a: &Asset) -> Option<Amount> {
 		if let (Fungible(ref amount), AssetId(location)) = (&a.fun, &a.id) {
 			if CurrencyIdConvert::convert(location.clone()).is_some() {
-				return CheckedConversion::checked_from(*amount)
+				return CheckedConversion::checked_from(*amount);
 			}
 		}
 		None

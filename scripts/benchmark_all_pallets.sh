@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Create `WeightInfo` implementations for all the pallets and store it in the weight module of the `integritee-runtime`.
+# Create `WeightInfo` implementations for all the pallets and store it in the weight module of the `integritee-kusama`.
 
-INTEGRITEE_RUNTIME_WEIGHT_DIR=polkadot-parachains/integritee-runtime/src/weights
+INTEGRITEE_RUNTIME_WEIGHT_DIR=polkadot-parachains/integritee-kusama/src/weights
 COLLATOR=./target/release/integritee-collator
 
 mkdir -p $INTEGRITEE_RUNTIME_WEIGHT_DIR

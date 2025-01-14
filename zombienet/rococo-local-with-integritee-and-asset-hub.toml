@@ -29,13 +29,13 @@ chain = "integritee-rococo-local-dev"
 
     [[parachains.collators]]
     name = "integritee-collator-1"
-    command = "~/bin/integritee-collator"
+    command = "./target/release/integritee-collator"
     args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive"]
     ws_port = 9944
 
     [[parachains.collators]]
     name = "integritee-collator-2"
-    command = "~/bin/integritee-collator"
+    command = "./target/release/integritee-collator"
     args = ["-lxcm=trace,runtime=debug"]
     ws_port = 9945
 
