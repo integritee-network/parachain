@@ -195,6 +195,7 @@ fn integritee_genesis_config(
 					)
 				})
 				.collect(),
+			non_authority_keys: vec![],
 		},
 		"balances": {
 			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect::<Vec<_>>(),
