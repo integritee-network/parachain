@@ -260,7 +260,7 @@ jobs:
 
       # It takes a while to build the runtime, so let's save the artifact as soon as we have it.
       - name: Archive Artifacts for ${{ matrix.runtime }}
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.runtime }}-runtime-${{ github.sha }}
           path: |
@@ -293,7 +293,7 @@ jobs:
       #          cat ${{ matrix.chain }}-diff.txt
 
       - name: Archive Subwasm results
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.runtime }}-srtool-json-${{ github.sha }}
           path: |
@@ -344,7 +344,7 @@ jobs:
           sha256sum ${{ env.CHAIN_SPEC }}.json >> checksums.txt
 
       - name: Upload ${{ env.CHAIN_SPEC }} Files
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.CHAIN_SPEC }}-${{ github.sha }}
           path: |
