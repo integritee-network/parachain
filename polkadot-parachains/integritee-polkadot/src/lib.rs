@@ -156,7 +156,7 @@ where
 	<R as frame_system::Config>::AccountId: From<AccountId>,
 	<R as frame_system::Config>::AccountId: Into<AccountId>,
 {
-	fn on_unbalanceds<B>(
+	fn on_unbalanceds(
 		mut fees_then_tips: impl Iterator<Item = Credit<R::AccountId, pallet_balances::Pallet<R>>>,
 	) {
 		if let Some(fees) = fees_then_tips.next() {
@@ -626,13 +626,8 @@ impl ConversionFromAssetBalance<u128, (), u128> for NoConversion {
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = pallet_balances::Pallet<Runtime>;
-	type ApproveOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type RejectOrigin = EnsureRootOrMoreThanHalfCouncil;
 	type RuntimeEvent = RuntimeEvent;
-	type OnSlash = (); // No Proposal
-	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ProposalBondMinimum;
-	type ProposalBondMaximum = ProposalBondMaximum;
 	type SpendPeriod = SpendPeriod; //Cannot be 0: Error: Thread 'tokio-runtime-worker' panicked at 'attempt to calculate the remainder with a divisor of zero
 	type Burn = (); //No burn
 	type BurnDestination = (); //No burn
@@ -674,6 +669,7 @@ impl pallet_bounties::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type MaximumReasonLength = MaximumReasonLength;
 	type WeightInfo = weights::pallet_bounties::WeightInfo<Runtime>;
+	type OnSlash = (); // Don't slash rejected bounties
 }
 
 parameter_types! {

@@ -9,6 +9,7 @@ use crate::{
 		shell_polkadot_config, shell_rococo_config, shell_westend_config, GenesisKeys, RelayChain,
 	},
 	cli::{Cli, RelayChainCli, Subcommand},
+	service::new_partial,
 };
 use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 use cumulus_primitives_core::ParaId;
@@ -17,11 +18,10 @@ use integritee_kusama_runtime::Block;
 use log::info;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, SharedParams, SubstrateCli,
+	NetworkParams, Result, RpcEndpoint, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_runtime::traits::AccountIdConversion;
-use std::net::SocketAddr;
 
 const LOCAL_PARA_ID: u32 = 2015;
 const ROCOCO_PARA_ID: u32 = 2015;
@@ -110,8 +110,8 @@ impl SubstrateCli for Cli {
 		format!(
 			"Integritee Collator\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
-		to the relaychain node.\n\n\
-		{} [parachain-args] -- [relaychain-args]",
+		to the relay chain node.\n\n\
+		{} <parachain-args> -- <relay-chain-args>",
 			Self::executable_name()
 		)
 	}
@@ -128,7 +128,7 @@ impl SubstrateCli for Cli {
 		2019
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		load_spec(id)
 	}
 }
@@ -146,8 +146,8 @@ impl SubstrateCli for RelayChainCli {
 		format!(
 			"Integritee Collator\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
-		to the relaychain node.\n\n\
-		{} [parachain-args] -- [relaychain-args]",
+		to the relay chain node.\n\n\
+		{} <parachain-args> -- <relay-chain-args>",
 			Self::executable_name()
 		)
 	}
@@ -167,18 +167,6 @@ impl SubstrateCli for RelayChainCli {
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
-}
-
-/// Creates partial components for the runtimes that are supported by the benchmarks.
-macro_rules! construct_partials {
-	($config:expr, |$partials:ident| $code:expr) => {
-		if $config.chain_spec.is_shell() {
-			unimplemented!()
-		} else {
-			let $partials = crate::service::new_partial(&$config)?;
-			$code
-		}
-	};
 }
 
 macro_rules! construct_async_run {
@@ -253,8 +241,11 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisHead(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			runner
-				.sync_run(|config| construct_partials!(config, |partials| cmd.run(partials.client)))
+			runner.sync_run(|config| {
+				let partials = new_partial(&config)?;
+
+				cmd.run(partials.client)
+			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -276,7 +267,8 @@ pub fn run() -> Result<()> {
 							.into())
 					},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					construct_partials!(config, |partials| cmd.run(partials.client))
+					let partials = new_partial(&config)?;
+					cmd.run(partials.client)
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
 				BenchmarkCmd::Storage(_) => Err(sc_cli::Error::Input(
@@ -286,12 +278,10 @@ pub fn run() -> Result<()> {
 				)),
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					construct_partials!(config, |partials| {
-						let db = partials.backend.expose_db();
-						let storage = partials.backend.expose_storage();
-
-						cmd.run(config, partials.client.clone(), db, storage)
-					})
+					let partials = new_partial(&config)?;
+					let db = partials.backend.expose_db();
+					let storage = partials.backend.expose_storage();
+					cmd.run(config, partials.client.clone(), db, storage)
 				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
@@ -309,7 +299,10 @@ pub fn run() -> Result<()> {
 				let hwbench = (!cli.no_hardware_benchmarks)
 					.then_some(config.database.path().map(|database_path| {
 						let _ = std::fs::create_dir_all(database_path);
-						sc_sysinfo::gather_hwbench(Some(database_path))
+						sc_sysinfo::gather_hwbench(
+							Some(database_path),
+							&SUBSTRATE_REFERENCE_HARDWARE,
+						)
 					}))
 					.flatten();
 
@@ -394,7 +387,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 			.or_else(|| self.base_path.clone().map(Into::into)))
 	}
 
-	fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+	fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<Vec<RpcEndpoint>>> {
 		self.base.base.rpc_addr(default_listen_port)
 	}
 
@@ -406,15 +399,9 @@ impl CliConfiguration<Self> for RelayChainCli {
 		self.base.base.prometheus_config(default_listen_port, chain_spec)
 	}
 
-	fn init<F>(
-		&self,
-		_support_url: &String,
-		_impl_version: &String,
-		_logger_hook: F,
-		_config: &sc_service::Configuration,
-	) -> Result<()>
+	fn init<F>(&self, _support_url: &String, _impl_version: &String, _logger_hook: F) -> Result<()>
 	where
-		F: FnOnce(&mut sc_cli::LoggerBuilder, &sc_service::Configuration),
+		F: FnOnce(&mut sc_cli::LoggerBuilder),
 	{
 		unreachable!("PolkadotCli is never initialized; qed");
 	}
