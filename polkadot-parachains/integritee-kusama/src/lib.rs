@@ -608,7 +608,7 @@ parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const DataDepositPerByte: Balance = 100 * MILLITEER;
 	pub const MaxApprovals: u32 = 100;
-	pub const MaxBalance: Balance = Balance::max_value();
+	pub const MaxBalance: Balance = Balance::MAX;
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 
