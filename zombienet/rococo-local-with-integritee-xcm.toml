@@ -4,27 +4,27 @@ timeout = 10000
 [relaychain]
 chain = "rococo-local"
 default_command = "~/bin/polkadot"
-default_args = [ "-lparachain=debug" ]
+default_args = ["-lparachain=debug"]
 
 [[relaychain.nodes]]
 name = "alice"
 validator = true
-ws_port = 9999
+rpc_port = 9999
 
 [[relaychain.nodes]]
 name = "bob"
 validator = true
-ws_port = 9988
+rpc_port = 9988
 
 [[relaychain.nodes]]
 name = "charlie"
 validator = true
-ws_port = 9977
+rpc_port = 9977
 
 [[relaychain.nodes]]
 name = "eve"
 validator = true
-ws_port = 9966
+rpc_port = 9966
 
 [[parachains]]
 id = 2015
@@ -35,12 +35,12 @@ chain = "integritee-rococo-local-dev"
 [[parachains.collators]]
 name = "integritee-collator01"
 command = "./target/release/integritee-collator"
-ws_port = 9994
+rpc_port = 9994
 
 [[parachains.collators]]
 name = "integritee-collator02"
 command = "./target/release/integritee-collator"
-ws_port = 9995
+rpc_port = 9995
 
 [[parachains]]
 id = 2000
@@ -51,7 +51,7 @@ chain = "karura-dev"
 [[parachains.collators]]
 name = "acala-collator01"
 command = "../../bin/acala"
-ws_port = 9984
+rpc_port = 9984
 
 [[hrmp_channels]]
 sender = 2015
