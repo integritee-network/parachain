@@ -16,7 +16,8 @@ accepted = [
     "Unicode-3.0",
     # This is suddendly needed for webpki v0.22.0
     # because it can't identify the licence. See https://github.com/integritee-network/integritee-node/pull/154
-    "NOASSERTION"
+    "NOASSERTION",
+    "Pixar"
 ]
 ignore-dev-dependencies = true
 ignore-build-dependencies = true
