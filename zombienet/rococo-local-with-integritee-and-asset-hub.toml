@@ -45,14 +45,10 @@ addToGenesis = true
 cumulus_based = true
 chain = "asset-hub-rococo-local"
 
-[parachains.genesis.runtimeGenesis.patch.balances]
-balances = [
-    ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 3000000000000]
-]
-
 [parachains.genesis.runtimeGenesis.patch.assets]
 accounts = [
-    [1984, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 30000000000000]
+    [1984, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 30000000000000],
+    [1984, "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", 30000000000000]
 ]
 assets = [
     [
@@ -77,6 +73,11 @@ accounts = [
         { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
         "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         30000000000000
+    ],
+    [
+        { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
+        "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        30000000000000
     ]
 ]
 assets = [
@@ -93,14 +94,14 @@ assets = [
 name = "asset-hub-collator-1"
 validator = true
 command = "~/bin/polkadot-parachain"
-args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive"]
+args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive --pool-type=fork-aware"]
 rpc_port = 9954
 
 [[parachains.collators]]
 name = "asset-hub-collator-2"
 validator = true
 command = "~/bin/polkadot-parachain"
-args = ["-lxcm=trace,runtime=debug"]
+args = ["-lxcm=trace,runtime=debug --pool-type=fork-aware"]
 rpc_port = 9955
 
 # don't open HRMP channels here, will stop block production of parachains. use ./scripts/hrmp_helper.sh
