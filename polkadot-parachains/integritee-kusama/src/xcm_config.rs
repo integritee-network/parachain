@@ -325,11 +325,30 @@ parameter_types! {
 	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
 	pub const IntegriteeNative: AssetFilter = Wild(AllOf { fun: WildFungible, id: AssetId(Location::here()) });
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (IntegriteeNative::get(), AssetHubLocation::get());
+
+	pub const RelayLocation: Location = Location::parent();
+	pub RelayLocationFilter: AssetFilter = Wild(AllOf {
+		fun: WildFungible,
+		id: AssetId(RelayLocation::get()),
+	});
+
+	/// KSM from Asset Hub
+	pub RelayChainNativeAssetFromAssetHub: (AssetFilter, Location) = (
+		RelayLocationFilter::get(),
+		AssetHubLocation::get()
+	);
 }
 
-pub type TrustedTeleporters = (staging_xcm_builder::Case<AssetHubTrustedTeleporter>,);
+pub type TrustedTeleporters = (Case<AssetHubTrustedTeleporter>,);
 
-pub type Reserves = (NativeAsset, ReserveAssetsFrom<AssetHubLocation>);
+// This is only the xcm config. XCMs transferring assets that are not
+// registered in the AssetRegistry will fail and trap the asset.
+type Reserves = (
+	// Relay chain (KSM) from Asset Hub
+	Case<RelayChainNativeAssetFromAssetHub>,
+	// Assets for which the reserve is asset hub
+	ReserveAssetsFrom<AssetHubLocation>,
+);
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
