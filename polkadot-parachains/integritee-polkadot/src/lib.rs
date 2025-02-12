@@ -1111,7 +1111,7 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 
 /// Migrations to apply on runtime upgrade.
-pub type Migrations = (migrations::scheduler::v4::PurgeV4Agenda<Runtime>,);
+pub type Migrations = ();
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
