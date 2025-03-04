@@ -1,0 +1,25 @@
+# Same as the following config, but with a local wasm override for convenience.
+# https://github.com/AcalaNetwork/chopsticks/blob/master/configs/integritee-polkadot.yml
+
+endpoint:
+  - wss://kusama.api.integritee.network
+mock-signature-host: true
+block: ${env.INTEGRITEE_KUSAMA_BLOCK_NUMBER}
+db: ./integritee-kusama.db.sqlite
+runtime-log-level: 5
+wasm-override: target/release/wbuild/integritee-kusama-runtime/integritee_kusama_runtime.compact.compressed.wasm
+import-storage:
+  System:
+    Account:
+      -
+        -
+          - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+        - providers: 1
+          data:
+            free: 1000000000000000
+  Council:
+    Members:
+      - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+  TechnicalCommittee:
+    Members:
+      - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
