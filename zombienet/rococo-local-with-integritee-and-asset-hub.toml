@@ -45,19 +45,23 @@ addToGenesis = true
 cumulus_based = true
 chain = "asset-hub-rococo-local"
 
-[parachains.genesis.runtimeGenesis.patch.balances]
-balances = [
-    ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 3000000000000]
-]
-
 [parachains.genesis.runtimeGenesis.patch.assets]
 accounts = [
-    [1984, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 30000000000000]
+    [1984, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 1000000000],
+    [1984, "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", 1000000000],
+    [1337, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 1000000000],
+    [1337, "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", 1000000000]
 ]
 assets = [
     [
         1984,
-        "1jMhfSJv5MkSQmEq97UmXCmMV63SHoQ3ednwkRSKETrCREU",
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        true,
+        1
+    ],
+    [
+        1337,
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         true,
         1
     ]
@@ -68,6 +72,12 @@ metadata = [
         [84, 101, 116, 104, 101, 114, 32, 85, 83, 68], # "Tether USD" as ASCII array
         [85, 83, 68, 84], # "USDT" as ASCII array
         6
+    ],
+    [
+        1337,
+        [85, 83, 68, 32, 67, 111, 105, 110], # "USD Coin" as ASCII array
+        [85, 83, 68, 67], # "USDC" as ASCII array
+        6
     ]
 ]
 
@@ -76,16 +86,37 @@ accounts = [
     [
         { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
         "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-        30000000000000
-    ]
+        1000000000 # 1000 USDC
+    ],
+    [
+        { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
+        "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        1000000000 # 1000 USDC
+    ],
+    [
+        { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 11155111 } } }, { AccountKey20 = { key = [255, 249, 151, 103, 130, 212, 108, 192, 86, 48, 209, 246, 235, 171, 24, 178, 50, 77, 107, 20] } }] } },
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        1000000000000000000000 # 1000 WETH
+    ],
+    [
+        { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 11155111 } } }, { AccountKey20 = { key = [255, 249, 151, 103, 130, 212, 108, 192, 86, 48, 209, 246, 235, 171, 24, 178, 50, 77, 107, 20] } }] } },
+        "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        1000000000000000000000 # 1000 WETH
+    ],
 ]
 assets = [
     [# USDC on ethereum: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
         { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
-        "1jMhfSJv5MkSQmEq97UmXCmMV63SHoQ3ednwkRSKETrCREU",
-        true,
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        false, # bridged USDC is not sufficient on AHP
         1
-    ]
+    ],
+    [# WETH on ethereum sepolia:
+        { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 11155111 } } }, { AccountKey20 = { key = [255, 249, 151, 103, 130, 212, 108, 192, 86, 48, 209, 246, 235, 171, 24, 178, 50, 77, 107, 20] } }] } },
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        true, # WETH is sufficient on AHP
+        1
+    ],
 ]
 
 
@@ -93,14 +124,14 @@ assets = [
 name = "asset-hub-collator-1"
 validator = true
 command = "~/bin/polkadot-parachain"
-args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive"]
+args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive --pool-type=fork-aware"]
 rpc_port = 9954
 
 [[parachains.collators]]
 name = "asset-hub-collator-2"
 validator = true
 command = "~/bin/polkadot-parachain"
-args = ["-lxcm=trace,runtime=debug"]
+args = ["-lxcm=trace,runtime=debug --pool-type=fork-aware"]
 rpc_port = 9955
 
 # don't open HRMP channels here, will stop block production of parachains. use ./scripts/hrmp_helper.sh
