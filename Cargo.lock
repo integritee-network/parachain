@@ -2951,7 +2951,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3342,9 +3342,9 @@ dependencies = [
 
 [[package]]
 name = "frame-executive"
-version = "38.0.0"
+version = "38.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c365bf3879de25bbee28e9584096955a02fbe8d7e7624e10675800317f1cee5b"
+checksum = "e305d8c5cf9f884795d3c57c899be86e3a476e5b5f914fa0ffefb5afd9cba5c5"
 dependencies = [
  "aquamarine",
  "frame-support",
@@ -4539,7 +4539,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.13.3"
+version = "1.16.1"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -4621,7 +4621,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-kusama-runtime"
-version = "1.13.551"
+version = "1.16.552"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -4740,7 +4740,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-polkadot-runtime"
-version = "1.13.551"
+version = "1.16.552"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -10930,7 +10930,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -11087,9 +11087,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.14"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+checksum = "8a0d197bd2c9dc6e53b84da9556a69ba4cdfab8619eb41a8bd1cc2027a0f6b1d"
 
 [[package]]
 name = "ruzstd"
@@ -13437,9 +13437,9 @@ dependencies = [
 
 [[package]]
 name = "sp-io"
-version = "38.0.0"
+version = "38.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59ef7eb561bb4839cc8424ce58c5ea236cbcca83f26fcc0426d8decfe8aa97d4"
+checksum = "61e20e9d9fe236466c1e38add64b591237c58540a07408407869d52d0e79fd18"
 dependencies = [
  "bytes",
  "docify",

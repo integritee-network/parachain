@@ -50,7 +50,7 @@ cumulus-primitives-core = { version = "0.16.0", default-features = false }
 cumulus-primitives-timestamp = { version = "0.16.0", default-features = false }
 cumulus-primitives-utility = { version = "0.17.0", default-features = false }
 frame-benchmarking = { version = "38.0.0", default-features = false }
-frame-executive = { version = "38.0.0", default-features = false }
+frame-executive = { version = "38.0.1", default-features = false }
 frame-metadata-hash-extension = { version = "0.6.0", default-features = false }
 frame-support = { version = "38.2.0", default-features = false }
 frame-system = { version = "38.0.0", default-features = false }
