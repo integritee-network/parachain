@@ -94,6 +94,7 @@ staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
 xcm-primitives = { workspace = true }
 xcm-transactor-primitives = { workspace = true }
+xcm-runtime-apis = { workspace = true }
 
 # Benchmarking
 frame-benchmarking = { workspace = true, optional = true }

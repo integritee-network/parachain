@@ -4710,6 +4710,7 @@ dependencies = [
  "staging-xcm-executor",
  "substrate-wasm-builder",
  "xcm-primitives",
+ "xcm-runtime-apis",
  "xcm-transactor-primitives",
 ]
 
