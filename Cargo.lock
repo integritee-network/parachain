@@ -5114,7 +5114,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.16.1"
+version = "1.16.2"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -5196,7 +5196,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-kusama-runtime"
-version = "1.16.552"
+version = "1.16.553"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -5285,6 +5285,7 @@ dependencies = [
  "staging-xcm-executor",
  "substrate-wasm-builder",
  "xcm-primitives",
+ "xcm-runtime-apis",
  "xcm-transactor-primitives",
 ]
 
@@ -5315,7 +5316,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-polkadot-runtime"
-version = "1.16.552"
+version = "1.16.553"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -5405,6 +5406,7 @@ dependencies = [
  "staging-xcm-executor",
  "substrate-wasm-builder",
  "xcm-primitives",
+ "xcm-runtime-apis",
  "xcm-transactor-primitives",
 ]
 
