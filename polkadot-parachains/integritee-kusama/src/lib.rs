@@ -23,6 +23,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+extern crate alloc;
+use alloc::borrow::Cow;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use cumulus_primitives_core::AggregateMessageOrigin;
 pub use frame_support::{
@@ -85,7 +87,7 @@ use sp_core::{crypto::KeyTypeId, ConstU128, ConstU32, OpaqueMetadata};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
+	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, RuntimeDebug,
@@ -120,8 +122,8 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("integritee-kusama"),
-	impl_name: create_runtime_str!("integritee-full"),
+	spec_name: Cow::Borrowed("integritee-kusama"),
+	impl_name: Cow::Borrowed("integritee-full"),
 	authoring_version: 2,
 	spec_version: 552,
 	impl_version: 1,
