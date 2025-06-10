@@ -55,7 +55,7 @@ validator = true
 command = "{{POLKADOT_PARACHAIN_BINARY}}"
 rpc_port = 8945
 args = [
-	"-lparachain=debug,runtime::mmr=info,substrate=info,runtime=info,runtime::bridge-hub=trace,runtime::bridge=trace,runtime::bridge-dispatch=trace,bridge=trace,runtime::bridge-messages=trace,xcm=trace",
+    "-lparachain=debug,runtime::mmr=info,substrate=info,runtime=info,runtime::bridge-hub=trace,runtime::bridge=trace,runtime::bridge-dispatch=trace,bridge=trace,runtime::bridge-messages=trace,xcm=trace",
 ]
 
 # run bob as parachain collator
@@ -65,5 +65,23 @@ validator = true
 command = "{{POLKADOT_PARACHAIN_BINARY}}"
 rpc_port = 8946
 args = [
-	"-lparachain=trace,runtime::mmr=info,substrate=info,runtime=info,runtime::bridge-hub=trace,runtime::bridge=trace,runtime::bridge-dispatch=trace,bridge=trace,runtime::bridge-messages=trace,xcm=trace",
+    "-lparachain=trace,runtime::mmr=info,substrate=info,runtime=info,runtime::bridge-hub=trace,runtime::bridge=trace,runtime::bridge-dispatch=trace,bridge=trace,runtime::bridge-messages=trace,xcm=trace",
 ]
+
+[[parachains]]
+id = 2015
+addToGenesis = true
+cumulus_based = true
+chain = "integritee-kusama-local-dev"
+
+[[parachains.collators]]
+name = "integritee-kusama-1"
+command = "{{INTEGRITEE_PARACHAIN_BINARY}}"
+args = ["-lxcm=trace,runtime=debug --state-pruning=archive --blocks-pruning=archive"]
+rpc_port = 9144
+
+[[parachains.collators]]
+name = "integritee-kusama-2"
+command = "{{INTEGRITEE_PARACHAIN_BINARY}}"
+args = ["-lxcm=trace,runtime=debug"]
+rpc_port = 9145
