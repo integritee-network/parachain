@@ -121,6 +121,9 @@ runtime-benchmarks = [
     "sc-service/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
     "polkadot-service/runtime-benchmarks",
+    "integritee-polkadot-runtime/runtime-benchmarks",
+    "pallet-sudo/runtime-benchmarks",
+    "staging-xcm/runtime-benchmarks",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",
@@ -130,4 +133,7 @@ try-runtime = [
     "polkadot-cli/try-runtime",
     "sp-runtime/try-runtime",
     "integritee-kusama-runtime/try-runtime",
+    "integritee-polkadot-runtime/try-runtime",
+    "pallet-sudo/try-runtime",
+    "polkadot-service/try-runtime",
 ]

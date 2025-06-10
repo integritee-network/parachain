@@ -196,6 +196,8 @@ std = [
     "staging-xcm/std",
     "substrate-wasm-builder",
     "xcm-transactor-primitives/std",
+    "polkadot-primitives/std",
+    "xcm-primitives/std",
 ]
 runtime-benchmarks = [
     "assets-common/runtime-benchmarks",
@@ -241,6 +243,12 @@ runtime-benchmarks = [
     "sp-runtime/runtime-benchmarks",
     "staging-xcm-builder/runtime-benchmarks",
     "staging-xcm-executor/runtime-benchmarks",
+    "cumulus-pallet-dmp-queue/runtime-benchmarks",
+    "cumulus-primitives-core/runtime-benchmarks",
+    "pallet-transaction-payment/runtime-benchmarks",
+    "polkadot-primitives/runtime-benchmarks",
+    "polkadot-runtime-parachains/runtime-benchmarks",
+    "staging-xcm/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -287,6 +295,9 @@ try-runtime = [
     "pallet-xcm/try-runtime",
     "polkadot-runtime-common/try-runtime",
     "staging-parachain-info/try-runtime",
+    "frame-support/try-runtime",
+    "polkadot-runtime-parachains/try-runtime",
+    "sp-runtime/try-runtime",
 ]
 # Set timing constants (e.g. session period) to faster versions to speed up testing.
 fast-runtime = []
