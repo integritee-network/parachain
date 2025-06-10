@@ -2,7 +2,7 @@
 name = "integritee-kusama-runtime"
 description = "The Integritee Kusama parachain runtime"
 # align major.minor revision with polkadot SDK. patch revision must match runtime spec_version
-version = "1.16.552"
+version = "1.16.553"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
@@ -93,6 +93,7 @@ staging-xcm = { workspace = true }
 staging-xcm-builder = { workspace = true }
 staging-xcm-executor = { workspace = true }
 xcm-primitives = { workspace = true }
+xcm-runtime-apis = { workspace = true }
 xcm-transactor-primitives = { workspace = true }
 
 # Benchmarking
