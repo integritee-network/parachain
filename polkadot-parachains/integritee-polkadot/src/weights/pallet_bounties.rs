@@ -77,6 +77,11 @@ impl<T: frame_system::Config> pallet_bounties::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
+
+	fn approve_bounty_with_curator() -> Weight {
+		todo!()
+	}
+
 	/// Storage: `Bounties::Bounties` (r:1 w:1)
 	/// Proof: `Bounties::Bounties` (`max_values`: None, `max_size`: Some(177), added: 2652, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:1 w:1)

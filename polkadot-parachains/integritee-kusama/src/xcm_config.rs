@@ -30,7 +30,7 @@ use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
-	traits::{Contains, ContainsPair, Everything, Nothing, TransformOrigin},
+	traits::{Contains, ContainsPair, Disabled, Everything, Nothing, TransformOrigin},
 };
 use frame_system::EnsureRoot;
 use integritee_parachains_common::xcm_config::IsNativeConcrete;
@@ -40,7 +40,7 @@ use orml_traits::{
 };
 use pallet_xcm::XcmPassthrough;
 use parachains_common::{message_queue::ParaIdToSibling, AssetIdForTrustBackedAssets};
-use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
+use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
@@ -70,6 +70,7 @@ use xcm_transactor_primitives::*;
 #[derive(
 	Encode,
 	Decode,
+	DecodeWithMemTracking,
 	Eq,
 	PartialEq,
 	Copy,
@@ -406,6 +407,7 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type HrmpChannelAcceptedHandler = ();
 	type HrmpChannelClosingHandler = ();
 	type XcmRecorder = ();
+	type XcmEventEmitter = PolkadotXcm;
 }
 
 // Converts a Signed Local Origin into a Location
@@ -435,6 +437,7 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();
+	type AuthorizedAliasConsideration = Disabled;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {

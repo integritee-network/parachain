@@ -148,4 +148,8 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(7))
 	}
+
+	fn prevalidate_attests() -> Weight {
+		todo!()
+	}
 }
