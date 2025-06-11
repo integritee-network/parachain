@@ -16,6 +16,7 @@ path = "src/main.rs"
 [dependencies]
 async-trait = { workspace = true }
 clap = { workspace = true }
+docify = { workspace = true }
 futures = { workspace = true, features = ["std"] }
 hex-literal = { workspace = true }
 log = { workspace = true, features = ["std"] }
@@ -29,6 +30,9 @@ integritee-parachains-common = { path = "common" }
 integritee-polkadot-runtime = { path = "integritee-polkadot" }
 
 # Substrate dependencies
+polkadot-sdk = { workspace = true, features = ["substrate-build-script-utils"] }
+prometheus-endpoint.default-features = true
+prometheus-endpoint.workspace = true
 frame-benchmarking = { workspace = true, features = ["std"] }
 frame-benchmarking-cli = { workspace = true }
 sc-basic-authorship = { workspace = true }
@@ -63,7 +67,7 @@ sp-runtime = { workspace = true, features = ["std"] }
 sp-session = { workspace = true, features = ["std"] }
 sp-timestamp = { workspace = true, features = ["std"] }
 sp-transaction-pool = { workspace = true, features = ["std"] }
-substrate-prometheus-endpoint = { workspace = true }
+
 
 # RPC related dependencies
 jsonrpsee = { workspace = true }

@@ -1,9 +1,8 @@
-//! this file has no customizations for integritee runtimes. Upon upgrades of polkadot-sdk,
-//! just overwrite from parachain_template and replace template strings
-
+use polkadot_sdk::*;
 use std::path::PathBuf;
 
 /// Sub-commands supported by the collator.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
 	/// Build a chain specification.

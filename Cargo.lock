@@ -5133,6 +5133,7 @@ dependencies = [
  "cumulus-relay-chain-interface",
  "cumulus-relay-chain-minimal-node",
  "cumulus-relay-chain-rpc-interface",
+ "docify",
  "enum-as-inner 0.5.1",
  "frame-benchmarking",
  "frame-benchmarking-cli",
@@ -5149,6 +5150,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
+ "polkadot-sdk 2503.0.1",
  "polkadot-service",
  "sc-basic-authorship",
  "sc-chain-spec",
@@ -10078,6 +10080,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb819108697967452fa6d8d96ab4c0d48cbaa423b3156499dcb24f1cf95d6775"
 dependencies = [
  "sp-crypto-hashing",
+]
+
+[[package]]
+name = "polkadot-sdk"
+version = "2503.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb1fe16dffcf985e6054c16a20469c19398c54b10b2f444819b0a5fa90eb1e1b"
+dependencies = [
+ "substrate-build-script-utils",
 ]
 
 [[package]]
@@ -15032,7 +15043,7 @@ dependencies = [
  "impl-serde",
  "jsonrpsee",
  "parity-scale-codec",
- "polkadot-sdk",
+ "polkadot-sdk 0.7.0",
  "primitive-types 0.13.1",
  "scale-bits",
  "scale-decode 0.14.0",
@@ -15086,7 +15097,7 @@ dependencies = [
  "impl-serde",
  "keccak-hash",
  "parity-scale-codec",
- "polkadot-sdk",
+ "polkadot-sdk 0.7.0",
  "primitive-types 0.13.1",
  "scale-bits",
  "scale-decode 0.14.0",
@@ -15142,7 +15153,7 @@ dependencies = [
  "frame-metadata 17.0.0",
  "hashbrown 0.14.5",
  "parity-scale-codec",
- "polkadot-sdk",
+ "polkadot-sdk 0.7.0",
  "scale-info",
 ]
 
@@ -15162,7 +15173,7 @@ dependencies = [
  "keccak-hash",
  "parity-scale-codec",
  "pbkdf2",
- "polkadot-sdk",
+ "polkadot-sdk 0.7.0",
  "regex",
  "schnorrkel 0.11.4",
  "scrypt",

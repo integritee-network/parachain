@@ -13,6 +13,7 @@ panic = "unwind"
 [workspace.dependencies]
 async-trait = "0.1.73"
 clap = { version = "4.5.1", features = ["derive"] }
+docify = { version = "0.2.9" }
 parity-scale-codec = { version = "3.6.5", default-features = false, features = ["derive"] }
 color-print = "0.3.4"
 futures = "0.3.28"
@@ -38,6 +39,8 @@ xcm-primitives = { default-features = false, git = "https://github.com/integrite
 xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "ab/polkadot-stable2503-6" }
 
 # Polkadot-sdk and ecosystem crates [no_std]
+polkadot-sdk = { version = "2503.0.1", default-features = false }
+prometheus-endpoint = { version = "0.17.2", default-features = false, package = "substrate-prometheus-endpoint" }
 assets-common = { version = "0.21.0", default-features = false }
 cumulus-pallet-aura-ext = { version = "0.20.0", default-features = false }
 cumulus-pallet-dmp-queue = { version = "0.20.0", default-features = false }
@@ -152,7 +155,6 @@ sp-consensus = "0.42.0"
 sp-keyring = "41.0.0"
 sp-keystore = "0.42.0"
 sp-timestamp = "36.0.0"
-substrate-prometheus-endpoint = "0.17.2"
 
 # Temporary pin only
 # See https://github.com/bluejekyll/trust-dns/issues/1946 for more details.
