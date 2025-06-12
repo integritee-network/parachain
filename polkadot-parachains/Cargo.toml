@@ -30,11 +30,11 @@ integritee-parachains-common = { path = "common" }
 integritee-polkadot-runtime = { path = "integritee-polkadot" }
 
 # Substrate dependencies
+frame-benchmarking = { workspace = true, features = ["std"] }
+frame-benchmarking-cli = { workspace = true }
 polkadot-sdk = { workspace = true, features = ["substrate-build-script-utils"] }
 prometheus-endpoint.default-features = true
 prometheus-endpoint.workspace = true
-frame-benchmarking = { workspace = true, features = ["std"] }
-frame-benchmarking-cli = { workspace = true }
 sc-basic-authorship = { workspace = true }
 sc-chain-spec = { workspace = true }
 sc-cli = { workspace = true }
