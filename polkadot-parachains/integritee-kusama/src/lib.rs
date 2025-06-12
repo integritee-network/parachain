@@ -71,6 +71,7 @@ pub use integritee_parachains_common::{
 };
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
+use pallet_balances::WeightInfo;
 pub use pallet_claims;
 pub use pallet_collective;
 pub use pallet_enclave_bridge;
@@ -1131,7 +1132,17 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 
 /// Migrations to apply on runtime upgrade.
+parameter_types! {
+	/// Weight for balance unreservations
+	pub BalanceTransferAllowDeath: Weight = weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
+}
 pub type Migrations = (
+	pallet_session::migrations::v1::MigrateV0ToV1<
+		Runtime,
+		pallet_session::migrations::v1::InitOffenceSeverity<Runtime>,
+	>,
+	cumulus_pallet_aura_ext::migration::MigrateV0ToV1<Runtime>,
+	pallet_child_bounties::migration::MigrateV0ToV1<Runtime, BalanceTransferAllowDeath>,
 	// permanent
 	pallet_xcm::migration::MigrateToLatestXcmVersion<Runtime>,
 );
