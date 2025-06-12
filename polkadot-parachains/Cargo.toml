@@ -14,11 +14,9 @@ name = "integritee-collator"
 path = "src/main.rs"
 
 [dependencies]
-async-trait = { workspace = true }
 clap = { workspace = true }
 docify = { workspace = true }
 futures = { workspace = true, features = ["std"] }
-hex-literal = { workspace = true }
 log = { workspace = true, features = ["std"] }
 parity-scale-codec = { workspace = true, features = ["std"] }
 serde = { workspace = true }
@@ -32,7 +30,6 @@ integritee-polkadot-runtime = { path = "integritee-polkadot" }
 # Substrate dependencies
 frame-benchmarking = { workspace = true, features = ["std"] }
 frame-benchmarking-cli = { workspace = true }
-polkadot-sdk = { workspace = true, features = ["substrate-build-script-utils"] }
 prometheus-endpoint.default-features = true
 prometheus-endpoint.workspace = true
 sc-basic-authorship = { workspace = true }
@@ -40,13 +37,9 @@ sc-chain-spec = { workspace = true }
 sc-cli = { workspace = true }
 sc-client-api = { workspace = true }
 sc-consensus = { workspace = true }
-sc-consensus-grandpa = { workspace = true }
 sc-executor = { workspace = true }
 sc-network = { workspace = true }
-sc-network-common = { workspace = true }
-sc-network-sync = { workspace = true }
 sc-offchain = { workspace = true }
-sc-rpc = { workspace = true }
 sc-service = { workspace = true }
 sc-sysinfo = { workspace = true }
 sc-telemetry = { workspace = true }
@@ -55,19 +48,12 @@ sc-transaction-pool = { workspace = true }
 sp-api = { workspace = true, features = ["std"] }
 sp-block-builder = { workspace = true, features = ["std"] }
 sp-blockchain = { workspace = true }
-sp-consensus = { workspace = true }
 sp-consensus-aura = { workspace = true, features = ["std"] }
 sp-core = { workspace = true, features = ["std"] }
-sp-inherents = { workspace = true, features = ["std"] }
-sp-io = { workspace = true, features = ["std"] }
 sp-keyring = { workspace = true }
 sp-keystore = { workspace = true, features = ["std"] }
-sp-offchain = { workspace = true, features = ["std"] }
 sp-runtime = { workspace = true, features = ["std"] }
-sp-session = { workspace = true, features = ["std"] }
 sp-timestamp = { workspace = true, features = ["std"] }
-sp-transaction-pool = { workspace = true, features = ["std"] }
-
 
 # RPC related dependencies
 jsonrpsee = { workspace = true }
@@ -82,14 +68,9 @@ cumulus-client-collator = { workspace = true }
 cumulus-client-consensus-aura = { workspace = true }
 cumulus-client-consensus-common = { workspace = true }
 cumulus-client-consensus-proposer = { workspace = true }
-cumulus-client-network = { workspace = true }
 cumulus-client-service = { workspace = true }
 cumulus-primitives-core = { workspace = true, features = ["std"] }
-cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
-cumulus-relay-chain-inprocess-interface = { workspace = true }
 cumulus-relay-chain-interface = { workspace = true }
-cumulus-relay-chain-minimal-node = { workspace = true }
-cumulus-relay-chain-rpc-interface = { workspace = true }
 
 # Polkadot dependencies
 polkadot-cli = { workspace = true }
@@ -110,8 +91,6 @@ nix = { workspace = true }
 pallet-sudo = { workspace = true, features = ["std"] }
 polkadot-cli = { workspace = true, features = ["rococo-native"] } # purge_chain_works works with rococo-local and needs to allow this
 tempfile = { workspace = true }
-tokio = { workspace = true }
-wait-timeout = { workspace = true }
 
 [features]
 default = []

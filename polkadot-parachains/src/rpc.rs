@@ -9,8 +9,6 @@ use std::sync::Arc;
 
 use integritee_parachains_common::{opaque::Block, AccountId, Balance, Nonce};
 
-use polkadot_sdk::*;
-
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;

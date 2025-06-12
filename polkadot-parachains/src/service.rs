@@ -7,8 +7,6 @@ use std::{sync::Arc, time::Duration};
 use integritee_kusama_runtime::RuntimeApi;
 use integritee_parachains_common::opaque::{Block, Hash};
 
-use polkadot_sdk::*;
-
 // Cumulus Imports
 use cumulus_client_cli::CollatorOptions;
 use cumulus_client_collator::service::CollatorService;

@@ -101,9 +101,6 @@ frame-benchmarking = { workspace = true, optional = true }
 frame-system-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
-cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
-hex = { workspace = true }
-
 polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-runtime-parachains = { workspace = true, features = ["std"] }
 

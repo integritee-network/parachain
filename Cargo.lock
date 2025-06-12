@@ -5117,7 +5117,6 @@ name = "integritee-collator"
 version = "1.18.0"
 dependencies = [
  "assert_cmd",
- "async-trait",
  "clap",
  "color-print",
  "cumulus-client-cli",
@@ -5125,20 +5124,14 @@ dependencies = [
  "cumulus-client-consensus-aura",
  "cumulus-client-consensus-common",
  "cumulus-client-consensus-proposer",
- "cumulus-client-network",
  "cumulus-client-service",
  "cumulus-primitives-core",
- "cumulus-primitives-parachain-inherent",
- "cumulus-relay-chain-inprocess-interface",
  "cumulus-relay-chain-interface",
- "cumulus-relay-chain-minimal-node",
- "cumulus-relay-chain-rpc-interface",
  "docify",
  "enum-as-inner 0.5.1",
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures",
- "hex-literal",
  "integritee-kusama-runtime",
  "integritee-parachains-common",
  "integritee-polkadot-runtime",
@@ -5150,20 +5143,15 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
- "polkadot-sdk 2503.0.1",
  "polkadot-service",
  "sc-basic-authorship",
  "sc-chain-spec",
  "sc-cli",
  "sc-client-api",
  "sc-consensus",
- "sc-consensus-grandpa",
  "sc-executor",
  "sc-network",
- "sc-network-common",
- "sc-network-sync",
  "sc-offchain",
- "sc-rpc",
  "sc-service",
  "sc-sysinfo",
  "sc-telemetry",
@@ -5175,25 +5163,17 @@ dependencies = [
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
- "sp-consensus",
  "sp-consensus-aura",
  "sp-core",
- "sp-inherents",
- "sp-io",
  "sp-keyring",
  "sp-keystore",
- "sp-offchain",
  "sp-runtime",
- "sp-session",
  "sp-timestamp",
- "sp-transaction-pool",
  "staging-xcm",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
  "tempfile",
- "tokio",
- "wait-timeout",
 ]
 
 [[package]]
@@ -5209,7 +5189,6 @@ dependencies = [
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-aura",
  "cumulus-primitives-core",
- "cumulus-primitives-parachain-inherent",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
  "frame-benchmarking",
@@ -5220,7 +5199,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "hex",
  "hex-literal",
  "integritee-parachains-common",
  "log",
@@ -5329,7 +5307,6 @@ dependencies = [
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-aura",
  "cumulus-primitives-core",
- "cumulus-primitives-parachain-inherent",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
  "frame-benchmarking",
@@ -5340,7 +5317,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "hex",
  "hex-literal",
  "integritee-parachains-common",
  "log",
@@ -10080,15 +10056,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb819108697967452fa6d8d96ab4c0d48cbaa423b3156499dcb24f1cf95d6775"
 dependencies = [
  "sp-crypto-hashing",
-]
-
-[[package]]
-name = "polkadot-sdk"
-version = "2503.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb1fe16dffcf985e6054c16a20469c19398c54b10b2f444819b0a5fa90eb1e1b"
-dependencies = [
- "substrate-build-script-utils",
 ]
 
 [[package]]
@@ -15047,7 +15014,7 @@ dependencies = [
  "impl-serde",
  "jsonrpsee",
  "parity-scale-codec",
- "polkadot-sdk 0.7.0",
+ "polkadot-sdk",
  "primitive-types 0.13.1",
  "scale-bits",
  "scale-decode 0.14.0",
@@ -15101,7 +15068,7 @@ dependencies = [
  "impl-serde",
  "keccak-hash",
  "parity-scale-codec",
- "polkadot-sdk 0.7.0",
+ "polkadot-sdk",
  "primitive-types 0.13.1",
  "scale-bits",
  "scale-decode 0.14.0",
@@ -15157,7 +15124,7 @@ dependencies = [
  "frame-metadata 17.0.0",
  "hashbrown 0.14.5",
  "parity-scale-codec",
- "polkadot-sdk 0.7.0",
+ "polkadot-sdk",
  "scale-info",
 ]
 
@@ -15177,7 +15144,7 @@ dependencies = [
  "keccak-hash",
  "parity-scale-codec",
  "pbkdf2",
- "polkadot-sdk 0.7.0",
+ "polkadot-sdk",
  "regex",
  "schnorrkel 0.11.4",
  "scrypt",
