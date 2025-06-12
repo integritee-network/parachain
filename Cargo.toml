@@ -182,4 +182,4 @@ substrate-wasm-builder = "26.0.1"
 #xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
 
 [patch.crates-io]
-ring = { git = "https://github.com/betrusted-io/ring-xous", branch = "0.16.20-cleanup" }
+ring = { git = "https://github.com/integritee-network/ring-xous", branch = "0.16.20-hack1.84.1" }
