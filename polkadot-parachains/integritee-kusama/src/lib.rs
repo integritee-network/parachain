@@ -1131,11 +1131,12 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 
-/// Migrations to apply on runtime upgrade.
 parameter_types! {
 	/// Weight for balance unreservations
 	pub BalanceTransferAllowDeath: Weight = weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
 }
+
+/// Migrations to apply on runtime upgrade.
 pub type Migrations = (
 	pallet_session::migrations::v1::MigrateV0ToV1<
 		Runtime,
