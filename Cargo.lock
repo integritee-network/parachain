@@ -1486,7 +1486,6 @@ dependencies = [
 [[package]]
 name = "claims-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "parity-scale-codec",
  "rustc-hex",
@@ -1627,7 +1626,6 @@ checksum = "2382f75942f4b3be3690fe4f86365e9c853c1587d6ee58212cebf6e2a9ccd101"
 [[package]]
 name = "common-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "derive_more 0.99.17",
  "parity-scale-codec",
@@ -3220,7 +3218,6 @@ dependencies = [
 [[package]]
 name = "enclave-bridge-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "common-primitives",
  "log",
@@ -4099,7 +4096,7 @@ checksum = "a8f2f12607f92c69b12ed746fabf9ca4f5c482cba46679c1a75b874ed7c26adb"
 dependencies = [
  "futures-io",
  "rustls",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
 ]
 
 [[package]]
@@ -4733,7 +4730,7 @@ dependencies = [
  "log",
  "rustls",
  "rustls-native-certs 0.8.1",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "tokio",
  "tokio-rustls",
  "tower-service",
@@ -5567,7 +5564,7 @@ dependencies = [
  "jsonrpsee-core",
  "pin-project",
  "rustls",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "rustls-platform-verifier",
  "soketto 0.8.1",
  "thiserror 1.0.69",
@@ -7468,7 +7465,6 @@ dependencies = [
 [[package]]
 name = "pallet-asset-registry"
 version = "0.0.1"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7733,7 +7729,6 @@ dependencies = [
 [[package]]
 name = "pallet-claims"
 version = "0.9.12"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "claims-primitives",
  "frame-benchmarking",
@@ -7898,7 +7893,6 @@ dependencies = [
 [[package]]
 name = "pallet-enclave-bridge"
 version = "0.12.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "enclave-bridge-primitives",
  "frame-benchmarking",
@@ -8392,7 +8386,6 @@ dependencies = [
 [[package]]
 name = "pallet-sidechain"
 version = "0.11.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "enclave-bridge-primitives",
  "frame-benchmarking",
@@ -8514,7 +8507,6 @@ dependencies = [
 [[package]]
 name = "pallet-teeracle"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8540,7 +8532,6 @@ dependencies = [
 [[package]]
 name = "pallet-teerdays"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8562,7 +8553,6 @@ dependencies = [
 [[package]]
 name = "pallet-teerex"
 version = "0.10.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8574,7 +8564,7 @@ dependencies = [
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
- "rustls-webpki 0.102.8 (git+https://github.com/rustls/webpki?rev=5fedee2)",
+ "rustls-webpki 0.102.0-alpha.3",
  "scale-info",
  "serde",
  "sgx-verify",
@@ -8797,7 +8787,6 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-transactor"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "cumulus-primitives-core",
  "frame-benchmarking",
@@ -10829,7 +10818,7 @@ dependencies = [
  "ring 0.17.8",
  "rustc-hash 2.1.0",
  "rustls",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "slab",
  "thiserror 2.0.12",
  "tinyvec",
@@ -11167,35 +11156,34 @@ dependencies = [
 [[package]]
 name = "ring"
 version = "0.16.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3053cf52e236a3ed746dfc745aa9cacf1b791d846bdaf412f60a8d7d6e17c8fc"
+source = "git+https://github.com/betrusted-io/ring-xous?branch=0.16.20-cleanup#4296c2e7904898766cf7d8d589759a129794783b"
 dependencies = [
  "cc",
  "libc",
+ "log",
  "once_cell",
+ "rkyv",
  "spin 0.5.2",
  "untrusted 0.7.1",
- "web-sys",
  "winapi",
+ "xous",
+ "xous-api-names",
+ "xous-ipc",
 ]
 
 [[package]]
 name = "ring"
 version = "0.17.8"
-source = "git+https://github.com/integritee-network/ring-xous?branch=bump-0.17.8#a10d360fd3408e780905896f9a25ce225c962d94"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c17fa4cb658e3583423e915b9f3acc01cceaee1860e33d59ebae66adc3a2dc0d"
 dependencies = [
  "cc",
  "cfg-if",
  "getrandom 0.2.10",
  "libc",
- "log",
- "rkyv",
  "spin 0.9.8",
  "untrusted 0.9.0",
  "windows-sys 0.52.0",
- "xous",
- "xous-api-names",
- "xous-ipc",
 ]
 
 [[package]]
@@ -11505,8 +11493,8 @@ dependencies = [
  "log",
  "once_cell",
  "ring 0.17.8",
- "rustls-pki-types",
- "rustls-webpki 0.102.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustls-pki-types 1.11.0",
+ "rustls-webpki 0.102.8",
  "subtle 2.5.0",
  "zeroize",
 ]
@@ -11519,7 +11507,7 @@ checksum = "8f1fb85efa936c42c6d5fc28d2629bb51e4b2f4b8a5211e297d599cc5a093792"
 dependencies = [
  "openssl-probe",
  "rustls-pemfile",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "schannel",
  "security-framework 2.10.0",
 ]
@@ -11531,7 +11519,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcff2dd52b58a8d98a70243663a0d234c4e2b79235637849d15913394a247d3"
 dependencies = [
  "openssl-probe",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "schannel",
  "security-framework 3.2.0",
 ]
@@ -11543,8 +11531,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f48172685e6ff52a556baa527774f61fcaa884f59daf3375c62a3f1cd2549dab"
 dependencies = [
  "base64 0.21.2",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
 ]
+
+[[package]]
+name = "rustls-pki-types"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a47003264dea418db67060fa420ad16d0d2f8f0a0360d825c00e177ac52cb5d8"
 
 [[package]]
 name = "rustls-pki-types"
@@ -11569,7 +11563,7 @@ dependencies = [
  "rustls",
  "rustls-native-certs 0.7.0",
  "rustls-platform-verifier-android",
- "rustls-webpki 0.102.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustls-webpki 0.102.8",
  "security-framework 2.10.0",
  "security-framework-sys",
  "webpki-roots 0.26.8",
@@ -11594,22 +11588,22 @@ dependencies = [
 
 [[package]]
 name = "rustls-webpki"
-version = "0.102.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64ca1bc8749bd4cf37b5ce386cc146580777b4e8572c7b97baf22c83f444bee9"
+version = "0.102.0-alpha.3"
+source = "git+https://github.com/rustls/webpki?rev=da923ed#da923edaab56f599971e58773617fb574cd019dc"
 dependencies = [
- "ring 0.17.8",
- "rustls-pki-types",
+ "ring 0.16.20",
+ "rustls-pki-types 0.2.1",
  "untrusted 0.9.0",
 ]
 
 [[package]]
 name = "rustls-webpki"
 version = "0.102.8"
-source = "git+https://github.com/rustls/webpki?rev=5fedee2#5fedee2d5410a1c1d7e033ee7d35b3aecd756f27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64ca1bc8749bd4cf37b5ce386cc146580777b4e8572c7b97baf22c83f444bee9"
 dependencies = [
  "ring 0.17.8",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "untrusted 0.9.0",
 ]
 
@@ -13369,19 +13363,17 @@ dependencies = [
 [[package]]
 name = "sgx-verify"
 version = "0.1.4"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "base64 0.13.1",
  "chrono",
  "der 0.6.1",
  "frame-support",
- "getrandom 0.2.10",
  "hex",
  "hex-literal",
  "log",
  "parity-scale-codec",
- "ring 0.17.8",
- "rustls-webpki 0.102.8 (git+https://github.com/rustls/webpki?rev=5fedee2)",
+ "ring 0.16.20",
+ "rustls-webpki 0.102.0-alpha.3",
  "scale-info",
  "serde",
  "serde_json",
@@ -13468,7 +13460,6 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 [[package]]
 name = "sidechain-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -15284,7 +15275,6 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 [[package]]
 name = "teeracle-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "common-primitives",
  "sp-std",
@@ -15294,7 +15284,6 @@ dependencies = [
 [[package]]
 name = "teerdays-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -15306,7 +15295,6 @@ dependencies = [
 [[package]]
 name = "teerex-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "common-primitives",
  "derive_more 0.99.17",
@@ -15360,7 +15348,6 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 [[package]]
 name = "test-utils"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "log",
  "sgx-verify",
@@ -15599,7 +15586,7 @@ dependencies = [
  "log",
  "rustls",
  "rustls-native-certs 0.8.1",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "tokio",
  "tokio-rustls",
  "tungstenite",
@@ -15873,7 +15860,7 @@ dependencies = [
  "log",
  "rand 0.9.1",
  "rustls",
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
  "sha1",
  "thiserror 2.0.12",
  "url",
@@ -16663,7 +16650,7 @@ version = "0.26.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2210b291f7ea53617fbafcc4939f10914214ec15aace5ba62293a668f322c5c9"
 dependencies = [
- "rustls-pki-types",
+ "rustls-pki-types 1.11.0",
 ]
 
 [[package]]
@@ -17322,7 +17309,6 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.0.1"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "frame-support",
  "sp-runtime",
@@ -17361,7 +17347,6 @@ dependencies = [
 [[package]]
 name = "xcm-transactor-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=ab/polkadot-stable2503-6#4d0f133afd8f788d1fa32ccfd2cf0ddbf66b6588"
 dependencies = [
  "common-primitives",
  "cumulus-primitives-core",
