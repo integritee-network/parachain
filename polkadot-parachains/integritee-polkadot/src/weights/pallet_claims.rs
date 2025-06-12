@@ -148,7 +148,7 @@ impl<T: frame_system::Config> pallet_claims::WeightInfo for WeightInfo<T> {
 	}
 
 	fn prevalidate_attests() -> Weight {
-		/// fake
+		// fake
 		Weight::from_parts(101_523_000, 0)
 			.saturating_add(Weight::from_parts(0, 4764))
 			.saturating_add(T::DbWeight::get().reads(9))
