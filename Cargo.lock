@@ -5111,7 +5111,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.16.2"
+version = "1.18.0"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -5195,7 +5195,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-kusama-runtime"
-version = "1.16.553"
+version = "1.18.553"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -5315,7 +5315,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-polkadot-runtime"
-version = "1.16.553"
+version = "1.18.553"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
