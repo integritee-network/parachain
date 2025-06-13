@@ -1,0 +1,87 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 46653fc..62db41b 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -5226,6 +5226,7 @@ dependencies = [
+  "pallet-scheduler",
+  "pallet-session",
+  "pallet-sidechain",
++ "pallet-sudo",
+  "pallet-teeracle",
+  "pallet-teerdays",
+  "pallet-teerex",
+diff --git a/polkadot-parachains/integritee-kusama/Cargo.toml b/polkadot-parachains/integritee-kusama/Cargo.toml
+index 1de920f..ec4db7a 100644
+--- a/polkadot-parachains/integritee-kusama/Cargo.toml
++++ b/polkadot-parachains/integritee-kusama/Cargo.toml
+@@ -60,6 +60,7 @@ pallet-proxy = { workspace = true }
+ pallet-scheduler = { workspace = true }
+ pallet-session = { workspace = true }
+ pallet-sidechain = { workspace = true }
++pallet-sudo = { workspace = true }
+ pallet-teeracle = { workspace = true }
+ pallet-teerdays = { workspace = true }
+ pallet-teerex = { workspace = true }
+@@ -155,6 +156,7 @@ std = [
+     "pallet-scheduler/std",
+     "pallet-session/std",
+     "pallet-sidechain/std",
++    "pallet-sudo/std",
+     "pallet-teeracle/std",
+     "pallet-teerdays/std",
+     "pallet-teerex/std",
+@@ -223,6 +225,7 @@ runtime-benchmarks = [
+     "pallet-proxy/runtime-benchmarks",
+     "pallet-scheduler/runtime-benchmarks",
+     "pallet-sidechain/runtime-benchmarks",
++    "pallet-sudo/runtime-benchmarks",
+     "pallet-teeracle/runtime-benchmarks",
+     "pallet-teerdays/runtime-benchmarks",
+     "pallet-teerex/runtime-benchmarks",
+@@ -277,6 +280,7 @@ try-runtime = [
+     "pallet-scheduler/try-runtime",
+     "pallet-session/try-runtime",
+     "pallet-sidechain/try-runtime",
++    "pallet-sudo/try-runtime",
+     "pallet-teeracle/try-runtime",
+     "pallet-teerdays/try-runtime",
+     "pallet-teerex/try-runtime",
+diff --git a/polkadot-parachains/integritee-kusama/src/lib.rs b/polkadot-parachains/integritee-kusama/src/lib.rs
+index 4c4cce1..ed5b3ff 100644
+--- a/polkadot-parachains/integritee-kusama/src/lib.rs
++++ b/polkadot-parachains/integritee-kusama/src/lib.rs
+@@ -1045,6 +1045,11 @@ impl pallet_collator_selection::Config for Runtime {
+ 	type ValidatorRegistration = Session;
+ 	type WeightInfo = weights::pallet_collator_selection::WeightInfo<Runtime>;
+ }
++impl pallet_sudo::Config for Runtime {
++	type RuntimeCall = RuntimeCall;
++	type RuntimeEvent = RuntimeEvent;
++	type WeightInfo = ();
++}
+ 
+ construct_runtime!(
+ 	pub enum Runtime
+@@ -1066,6 +1071,8 @@ construct_runtime!(
+ 		TransactionPayment: pallet_transaction_payment = 11,
+ 		Vesting: pallet_vesting = 12,
+ 
++		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
++
+ 		// Governance.
+ 		Treasury: pallet_treasury = 13,
+ 		Democracy: pallet_democracy = 14,
+diff --git a/polkadot-parachains/src/chain_spec.rs b/polkadot-parachains/src/chain_spec.rs
+index 9632815..b70975e 100644
+--- a/polkadot-parachains/src/chain_spec.rs
++++ b/polkadot-parachains/src/chain_spec.rs
+@@ -216,6 +216,9 @@ fn integritee_genesis_config(
+ 		"technicalCommittee": {
+ 			"members": vec![root_key.clone()]
+ 		},
++		"sudo": {
++			"key": root_key.clone()
++		},
+ 	})
+ }
+ 
