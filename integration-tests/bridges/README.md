@@ -13,25 +13,34 @@ wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stabl
 wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-prepare-worker
 wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-parachain
 wget https://github.com/paritytech/zombienet/releases/download/v1.3.128/zombienet-linux-x64 -O zombienet
-wget https://github.com/integritee-network/parachain/releases/download/1.18.0/integritee-collator
 chmod +x polkadot*
 chmod +x zombienet
 chmod +x integritee-collator
 
 yarn global add @polkadot/api-cli
 
-# in another folder of your choice
+# in another folder of your choice, build the relay
 cd
 git clone https://github.com/paritytech/parity-bridges-common.git
 cd parity-bridges-common
 cargo +nightly build -p substrate-relay --release
 cp ./target/release/substrate-relay ~/local_bridge_testing/bin/
 
-# in runtimes repo:
+# in runtimes repo, build chainspec generator with sudo:
+cd 
+git clone https://github.com/polkadot-fellows/runtimes.git
+cd runtimes
 git checkout v1.5.1
 git apply ./integration-tests/bridges/sudo-relay.patch
 cargo +nightly build --release -p chain-spec-generator --no-default-features --features fast-runtime,polkadot,kusama,bridge-hub-kusama,bridge-hub-polkadot,asset-hub-kusama,asset-hub-polkadot
 
+# in another folder of your choice, build the integritee-collator with sudo
+cd
+git clone https://github.com/integritee-network/parachain.git
+cd parachain
+git apply ./integration-tests/bridges/sudo-integritee.patch
+cargo build --release
+cp ./target/release/integritee-collator ~/local_bridge_testing/bin/
 ```
 
 ## automated testing (manually triggered)
