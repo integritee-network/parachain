@@ -309,7 +309,7 @@ case "$1" in
           "ws://127.0.0.1:9910" \
           "//Alice" \
           "$INTEGRITEE_POLKADOT_SIBLING_ACCOUNT" \
-          $((25 * $KSM))
+          $((25 * $DOT))
       # HRMP
       open_hrmp_channels \
           "ws://127.0.0.1:9942" \
@@ -453,14 +453,53 @@ case "$1" in
           "//Alice" \
           "$ASSET_HUB_KUSAMA_SOVEREIGN_ACCOUNT_AT_BRIDGE_HUB_KUSAMA" \
           $((25 * $TEER))
-      # set XCM version of remote IntegriteePolkadot
+      # set XCM version of remote IntegriteePolkadot for relay and AH
       force_xcm_version \
           "ws://127.0.0.1:9945" \
           "//Alice" \
           2015 \
-          "ws://127.0.0.1:9144" \
+          "ws://127.0.0.1:9010" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Polkadot" }, { "Parachain": 2039 } ] } }')" \
           $XCM_VERSION
+
+      # above call has no authority over integritee. need to do it locally
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.polkadotXcm.forceXcmVersion \
+              "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Polkadot" }, { "Parachain": 2039 } ] } }')" \
+              $XCM_VERSION
+      echo "Creating asset for KSM token on IntegriteeKusama"
+      # create asset for KSM token
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.assets.forceCreate \
+              "0" \
+              "2L44Bkyt9uJDvu1HE71So8DiJcZxLzG6euhLBApX6TQK71kZ" \
+              "false" \
+              "$AHP_KSM_ED" \
+      # force metadata KSM token
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.assets.forceSetMetadata \
+              "0" \
+              "Kusama KSM" \
+              "KSM" \
+              "12" \
+              "false" \
+      # register location for KSM token
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.assetRegistry.registerReserveAsset \
+              "0" \
+              "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
       ;;
 
 init-integritee-polkadot-local)
@@ -470,14 +509,54 @@ init-integritee-polkadot-local)
           "//Alice" \
           "$ASSET_HUB_POLKADOT_SOVEREIGN_ACCOUNT_AT_BRIDGE_HUB_POLKADOT" \
           $((25 * $TEER))
-      # set XCM version of remote IntegriteeKusama
+      # set XCM version of remote IntegriteeKusama for relay and AH
       force_xcm_version \
           "ws://127.0.0.1:9942" \
           "//Alice" \
           2039 \
-          "ws://127.0.0.1:9244" \
+          "ws://127.0.0.1:9910" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 2015 } ] } }')" \
           $XCM_VERSION
+
+      # above call has no authority over integritee. need to do it locally
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.polkadotXcm.forceXcmVersion \
+              "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 2015 } ] } }')" \
+              $XCM_VERSION
+      echo "Creating asset for DOT token on IntegriteePolkadot"
+      # create asset for DOT token
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.assets.forceCreate \
+              "0" \
+              "2Li4fsP2bHBbSwpa2rgaswP22Kpqpr4uLyzbuym2Kc82v6oG" \
+              "false" \
+              "$AHK_DOT_ED" \
+      # force metadata DOT token
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.assets.forceSetMetadata \
+              "0" \
+              "Polkadot DOT" \
+              "DOT" \
+              "10" \
+              "false" \
+      # register location for DOT token
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.assetRegistry.registerReserveAsset \
+              "0" \
+              "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+
       ;;
 
   reserve-transfer-assets-from-asset-hub-polkadot-local)

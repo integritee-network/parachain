@@ -67,7 +67,7 @@ args = [
 ]
 
 [[parachains]]
-id = 2015
+id = 2039
 addToGenesis = true
 cumulus_based = true
 chain = "integritee-polkadot-local-dev"

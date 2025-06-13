@@ -72,3 +72,5 @@ XCMv5
 
 * send 1 KSM from KAH to IK(
   Alice): https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9010#/extrinsics/decode/0x1f0b050101007d1f0500010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0504010000070010a5d4e80000000000
+* send 1 DOT from PAH to IP(
+  Alice) https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9910#/extrinsics/decode/0x1f0b05010100dd1f0500010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d05040100000700e40b54020000000000
