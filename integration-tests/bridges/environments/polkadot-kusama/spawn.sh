@@ -51,6 +51,12 @@ if [[ $init -eq 1 ]]; then
   kusama_init_pid=$!
   wait -n $polkadot_init_pid $kusama_init_pid
 
+  $helper_script init-integritee-polkadot-local >> $polkadot_init_log 2>&1 &
+  polkadot_init_pid=$!
+  $helper_script init-integritee-kusama-local >> $kusama_init_log 2>&1 &
+  kusama_init_pid=$!
+  wait -n $polkadot_init_pid $kusama_init_pid
+
   run_zndsl ${BASH_SOURCE%/*}/polkadot-init.zndsl $polkadot_dir
   run_zndsl ${BASH_SOURCE%/*}/kusama-init.zndsl $kusama_dir
 fi

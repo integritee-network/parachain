@@ -3,38 +3,63 @@
 This folder contains zombienet based integration test for both onchain and offchain bridges code.
 The tests are designed to be run manually.
 
-To start a test, you need to:
+## setup
 
-- download latest [zombienet release](https://github.com/paritytech/zombienet/releases) to  `~/local_bridge_testing/bin/zombienet`.
-- build Polkadot binaries by running commands in the [`polkadot-sdk`](https://github.com/paritytech/polkadot-sdk) repository clone:
-  ```
-  cargo build -p polkadot --release
-  cargo build --bin polkadot-prepare-worker --release
-  cargo build --bin polkadot-execute-worker --release
-  ```
-  Copy the binaries to:
-  ```
-  ~/local_bridge_testing/bin/polkadot
-  ~/local_bridge_testing/bin/polkadot-prepare-worker
-  ~/local_bridge_testing/bin/polkadot-execute-worker
-  ```
-- build Polkadot Parachain binary by running `cargo build -p polkadot-parachain-bin --release` command in the
-[`polkadot-sdk`](https://github.com/paritytech/polkadot-sdk) repository clone. Copy the binary to `~/local_bridge_testing/bin/polkadot-parachain`.
-- ensure that you have [`node`](https://nodejs.org/en) installed. Additionally, we'll need globally installed
-`polkadot/api-cli` / `polkadot/api` packages (use `yarn global add @polkadot/api-cli` to install it).
-- build Substrate relay by running `cargo build -p substrate-relay --release` command in the
-[`parity-bridges-common`](https://github.com/paritytech/parity-bridges-common) repository clone. Copy the binary to `~/local_bridge_testing/bin/substrate-relay`. 
-- build chain spec generator:
-  - (you can use the current branch, or you can build generators from different branches, such as from specific tags or releases)
-  - add the `sudo` pallet to the Polkadot and Kusama runtimes and give sudo rights to Alice, e.g. by running `git apply ./integration-tests/bridges/sudo-relay.patch` from the fellows root dir.
-  - with this change build the chain spec generator by running `cargo build --release -p chain-spec-generator --no-default-features --features fast-runtime,polkadot,kusama,bridge-hub-kusama,bridge-hub-polkadot,asset-hub-kusama,asset-hub-polkadot`
-command.
-    - Copy the binary to `~/local_bridge_testing/bin/chain-spec-generator-kusama`.
-    - Copy the binary to `~/local_bridge_testing/bin/chain-spec-generator-polkadot`.
-- check/change the `POLKADOT_BINARY` and `POLKADOT_PARACHAIN_BINARY` paths (and ensure that the nearby variables
-have correct values) in the `./run-test.sh`.
+```
+mkdir -p ~/local_bridge_testing/bin
+cd ~/local_bridge_testing/bin
+wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot
+wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-execute-worker
+wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-prepare-worker
+wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-parachain
+wget https://github.com/paritytech/zombienet/releases/download/v1.3.128/zombienet-linux-x64 -O zombienet
+wget https://github.com/integritee-network/parachain/releases/download/1.18.0/integritee-collator
+chmod +x polkadot*
+chmod +x zombienet
+chmod +x integritee-collator
 
-After that, you can run `./run-tests.sh <test_name>` command.
+yarn global add @polkadot/api-cli
+
+# in another folder of your choice
+cd
+git clone https://github.com/paritytech/parity-bridges-common.git
+cd parity-bridges-common
+cargo +nightly build -p substrate-relay --release
+cp ./target/release/substrate-relay ~/local_bridge_testing/bin/
+
+# in runtimes repo:
+git checkout v1.5.1
+git apply ./integration-tests/bridges/sudo-relay.patch
+cargo +nightly build --release -p chain-spec-generator --no-default-features --features fast-runtime,polkadot,kusama,bridge-hub-kusama,bridge-hub-polkadot,asset-hub-kusama,asset-hub-polkadot
+
+```
+
+## automated testing (manually triggered)
+
+After that, you can run `./run-tests.sh <test_name>` command in `runtimes/integration-tests/bridges`
+.
 E.g. `./run-test.sh 0001-polkadot-kusama-asset-transfer`.
 or
 E.g. `FRAMEWORK_REPO_PATH=/home/username/polkadot-sdk ./run-test.sh 0001-polkadot-kusama-asset-transfer`.
+
+## manual testing
+
+If you'd like to interact with the local test networks, run this instead
+
+```
+./run-test.sh 0000-manual
+``` 
+
+then you can point your browser to
+
+* Integritee Network (Kusama) https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9144#
+* Integritee Network (Polkadot) https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9244#
+* Asset Hub Kusama https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9010#
+* Asset Hub Polkadot https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9910#
+
+### a few calls to try
+
+XCMv5
+
+* send 1 KSM from KAH to IK(
+  Alice): https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9010#/extrinsics/decode/0x1f0b050101007d1f0500010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0504010000070010a5d4e80000000000
