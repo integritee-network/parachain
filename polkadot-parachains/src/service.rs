@@ -3,13 +3,14 @@
 // std
 use std::{sync::Arc, time::Duration};
 
-use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
 use integritee_kusama_runtime::RuntimeApi;
 use integritee_parachains_common::opaque::{Block, Hash};
 
 // Cumulus Imports
+use cumulus_client_cli::CollatorOptions;
 use cumulus_client_collator::service::CollatorService;
+#[docify::export(lookahead_collator)]
 use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
 use cumulus_client_consensus_common::ParachainBlockImport as TParachainBlockImport;
 use cumulus_client_consensus_proposer::Proposer;
@@ -18,6 +19,7 @@ use cumulus_client_service::{
 	BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
 	StartRelayChainTasksParams,
 };
+#[docify::export(cumulus_primitives)]
 use cumulus_primitives_core::{
 	relay_chain::{CollatorPair, ValidationCode},
 	ParaId,
@@ -26,6 +28,7 @@ use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 
 // Substrate Imports
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
+use prometheus_endpoint::Registry;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{HeapAllocStrategy, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY};
@@ -34,8 +37,8 @@ use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, Ta
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_keystore::KeystorePtr;
-use substrate_prometheus_endpoint::Registry;
 
+#[docify::export(wasm_executor)]
 type ParachainExecutor = WasmExecutor<ParachainHostFunctions>;
 
 type ParachainClient = TFullClient<Block, RuntimeApi, ParachainExecutor>;
@@ -50,7 +53,7 @@ pub type Service = PartialComponents<
 	ParachainBackend,
 	(),
 	sc_consensus::DefaultImportQueue<Block>,
-	sc_transaction_pool::FullPool<Block, ParachainClient>,
+	sc_transaction_pool::TransactionPoolHandle<Block, ParachainClient>,
 	(ParachainBlockImport, Option<Telemetry>, Option<TelemetryWorkerHandle>),
 >;
 
@@ -58,6 +61,7 @@ pub type Service = PartialComponents<
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
 /// be able to perform chain operations.
+#[docify::export(component_instantiation)]
 pub fn new_partial(config: &Configuration) -> Result<Service, sc_service::Error> {
 	let telemetry = config
 		.telemetry_endpoints
@@ -99,12 +103,15 @@ pub fn new_partial(config: &Configuration) -> Result<Service, sc_service::Error>
 		telemetry
 	});
 
-	let transaction_pool = sc_transaction_pool::BasicPool::new_full(
-		config.transaction_pool.clone(),
-		config.role.is_authority().into(),
-		config.prometheus_registry(),
-		task_manager.spawn_essential_handle(),
-		client.clone(),
+	let transaction_pool = Arc::from(
+		sc_transaction_pool::Builder::new(
+			task_manager.spawn_essential_handle(),
+			client.clone(),
+			config.role.is_authority().into(),
+		)
+		.with_options(config.transaction_pool.clone())
+		.with_prometheus(config.prometheus_registry())
+		.build(),
 	);
 
 	let block_import = ParachainBlockImport::new(client.clone(), backend.clone());
@@ -165,7 +172,7 @@ fn start_consensus(
 	telemetry: Option<TelemetryHandle>,
 	task_manager: &TaskManager,
 	relay_chain_interface: Arc<dyn RelayChainInterface>,
-	transaction_pool: Arc<sc_transaction_pool::FullPool<Block, ParachainClient>>,
+	transaction_pool: Arc<sc_transaction_pool::TransactionPoolHandle<Block, ParachainClient>>,
 	keystore: KeystorePtr,
 	relay_chain_slot_duration: Duration,
 	para_id: ParaId,
@@ -208,6 +215,7 @@ fn start_consensus(
 		collator_service,
 		authoring_duration: Duration::from_millis(2000),
 		reinitialize: false,
+		max_pov_percentage: None,
 	};
 	let fut = aura::run::<Block, sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _, _, _>(
 		params,
@@ -259,7 +267,7 @@ pub async fn start_parachain_node(
 
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
-	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
+	let (network, system_rpc_tx, tx_handler_controller, sync_service) =
 		build_network(BuildNetworkParams {
 			parachain_config: &parachain_config,
 			net_config,
@@ -276,9 +284,7 @@ pub async fn start_parachain_node(
 	if parachain_config.offchain_worker.enabled {
 		use futures::FutureExt;
 
-		task_manager.spawn_handle().spawn(
-			"offchain-workers-runner",
-			"offchain-work",
+		let offchain_workers =
 			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
 				runtime_api_provider: client.clone(),
 				keystore: Some(params.keystore_container.keystore()),
@@ -290,9 +296,11 @@ pub async fn start_parachain_node(
 				is_validator: parachain_config.role.is_authority(),
 				enable_http_requests: false,
 				custom_extensions: move |_| vec![],
-			})
-			.run(client.clone(), task_manager.spawn_handle())
-			.boxed(),
+			})?;
+		task_manager.spawn_handle().spawn(
+			"offchain-workers-runner",
+			"offchain-work",
+			offchain_workers.run(client.clone(), task_manager.spawn_handle()).boxed(),
 		);
 	}
 
@@ -394,8 +402,6 @@ pub async fn start_parachain_node(
 			announce_block,
 		)?;
 	}
-
-	start_network.start_network();
 
 	Ok((task_manager, client))
 }
