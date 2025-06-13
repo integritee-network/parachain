@@ -1,5 +1,13 @@
-//!
-//! this file DOES HAVE CUSTOMIZATIONS for integritee runtimes. Upon upgrades of polkadot-sdk,
+use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
+use cumulus_primitives_core::ParaId;
+use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
+use integritee_kusama_runtime::Block;
+use log::info;
+use sc_cli::{
+	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
+	NetworkParams, Result, RpcEndpoint, SharedParams, SubstrateCli,
+};
+use sc_service::config::{BasePath, PrometheusConfig};
 
 use crate::{
 	chain_spec,
@@ -11,17 +19,6 @@ use crate::{
 	cli::{Cli, RelayChainCli, Subcommand},
 	service::new_partial,
 };
-use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
-use cumulus_primitives_core::ParaId;
-use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
-use integritee_kusama_runtime::Block;
-use log::info;
-use sc_cli::{
-	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, RpcEndpoint, SharedParams, SubstrateCli,
-};
-use sc_service::config::{BasePath, PrometheusConfig};
-use sp_runtime::traits::AccountIdConversion;
 
 const LOCAL_PARA_ID: u32 = 2015;
 const ROCOCO_PARA_ID: u32 = 2015;
@@ -128,7 +125,7 @@ impl SubstrateCli for Cli {
 		2019
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		load_spec(id)
 	}
 }
@@ -172,17 +169,11 @@ impl SubstrateCli for RelayChainCli {
 macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
-		if runner.config().chain_spec.is_shell() {
-			unimplemented!()
-		} else {
-			runner.async_run(|$config| {
-			let $components = crate::service::new_partial(
-				&$config,
-			)?;
+		runner.async_run(|$config| {
+			let $components = new_partial(&$config)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
 		})
-		}
 	}}
 }
 
@@ -297,13 +288,15 @@ pub fn run() -> Result<()> {
 
 			runner.run_node_until_exit(|config| async move {
 				let hwbench = (!cli.no_hardware_benchmarks)
-					.then_some(config.database.path().map(|database_path| {
-						let _ = std::fs::create_dir_all(database_path);
-						sc_sysinfo::gather_hwbench(
-							Some(database_path),
-							&SUBSTRATE_REFERENCE_HARDWARE,
-						)
-					}))
+					.then(|| {
+						config.database.path().map(|database_path| {
+							let _ = std::fs::create_dir_all(database_path);
+							sc_sysinfo::gather_hwbench(
+								Some(database_path),
+								&SUBSTRATE_REFERENCE_HARDWARE,
+							)
+						})
+					})
 					.flatten();
 
 				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
@@ -317,17 +310,11 @@ pub fn run() -> Result<()> {
 
 				let id = ParaId::from(para_id);
 
-				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(
-						&id,
-					);
-
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				info!("Parachain Account: {parachain_account}");
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				if config.chain_spec.is_shell() {
