@@ -74,15 +74,15 @@ const KSM_FROM_POLKADOT_PARACHAINS = {
     interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama)),
 };
 
-// Alice's SS58 account for Polkadot.
-const ACCOUNT = "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5";
+// Setup clients...
+const kahClient = createClient(
+    withPolkadotSdkCompat(getWsProvider(KAH_WS_URL)),
+);
+const kahApi = kahClient.getTypedApi(kah);
 
-// Setup client...
 const pahClient = createClient(
     withPolkadotSdkCompat(getWsProvider(PAH_WS_URL)),
 );
-
-// ...and typed api.
 const pahApi = pahClient.getTypedApi(pah);
 
 // The whole execution of the script.
@@ -121,6 +121,7 @@ async function main() {
         console.log("Final XCM (won't be executed)", xcm)
     }
     await pahClient.destroy();
+    await kahClient.destroy();
 }
 
 // Helper function to convert bigints to strings and binaries to hex strings in objects.
@@ -243,12 +244,6 @@ async function estimateFees(
     )!;
     // Found it.
     const messageToPah = messages[0];
-    // Now that we know the XCM that will be executed on the people chain,
-    // we need to connect to it so we can estimate the fees.
-    const peopleClient = createClient(
-        withPolkadotSdkCompat(getWsProvider(KAH_WS_URL)),
-    );
-    const peopleApi = peopleClient.getTypedApi(ppeople);
 
     // We're only dealing with version 4.
     if (messageToPah.type !== "V5") {
@@ -257,7 +252,7 @@ async function estimateFees(
     }
 
     // We get the delivery fees using the size of the forwarded xcm.
-    const deliveryFees = await pahApi.apis.XcmPaymentApi.query_delivery_fees(
+    const deliveryFees = await kahApi.apis.XcmPaymentApi.query_delivery_fees(
         XcmVersionedLocation.V5(PAH_FROM_KAH),
         messageToPah,
     );
@@ -276,7 +271,7 @@ async function estimateFees(
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
 
     // Now we dry run on the destination.
-    const remoteDryRunResult = await peopleApi.apis.DryRunApi.dry_run_xcm(
+    const remoteDryRunResult = await pahApi.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
@@ -293,7 +288,7 @@ async function estimateFees(
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await peopleApi.apis.XcmPaymentApi.query_xcm_weight(messageToPah);
+        await pahApi.apis.XcmPaymentApi.queryXcmWeight(messageToPah);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;
@@ -302,7 +297,7 @@ async function estimateFees(
 
     // Remote fees are only execution.
     const remoteFeesInDot =
-        await peopleApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+        await pahApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             remoteWeight.value,
             XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );
@@ -312,7 +307,6 @@ async function estimateFees(
         return;
     }
     console.log("remoteFeesInDot: ", remoteFeesInDot);
-    peopleClient.destroy()
     return [localFees, remoteFeesInDot.value];
 }
 
