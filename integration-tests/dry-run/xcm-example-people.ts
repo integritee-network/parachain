@@ -1,3 +1,10 @@
+// Example by Francisco Aguirre
+//
+// We'll teleport DOT from Asset Hub to People using XCMv4
+// .
+// https://hackmd.io/@n9QBuDYOQXG-nWCBrwx8YQ/rkRNb5m71e
+// https://gist.github.com/franciscoaguirre/c1b2a9480744bbe698bfd74f9a0c0e26
+
 // `pah` and 'ppeople' are the names we gave to `bun papi add`.
 import {
     pah,
@@ -199,6 +206,7 @@ async function estimateFees(
         console.error("xcmWeight failed: ", xcmWeight);
         return;
     }
+    console.log("xcmWeight: ", xcmWeight.value);
 
     // Execution fees are purely a function of the weight.
     const executionFees =
@@ -210,6 +218,7 @@ async function estimateFees(
         console.error("executionFees failed: ", executionFees);
         return;
     }
+    console.log("executionFees: ", executionFees.value);
 
     const tx = ahApi.tx.PolkadotXcm.execute({
         message: xcm,
@@ -225,6 +234,7 @@ async function estimateFees(
         console.error("dryRunResult failed: ", dryRunResult);
         return;
     }
+    console.log("dryRunResult: ", dryRunResult.value);
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
@@ -265,6 +275,7 @@ async function estimateFees(
         console.error("deliveryFees failed: ", deliveryFees);
         return;
     }
+    console.log("deliveryFees: ", deliveryFees.value.value);
 
     // Local fees are execution + delivery.
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
@@ -284,6 +295,7 @@ async function estimateFees(
         console.error("remoteDryRunResult failed: ", remoteDryRunResult);
         return;
     }
+    console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
         await peopleApi.apis.XcmPaymentApi.query_xcm_weight(messageToPeople);
@@ -291,6 +303,7 @@ async function estimateFees(
         console.error("remoteWeight failed: ", remoteWeight);
         return;
     }
+    console.log("remoteWeight: ", remoteWeight.value);
 
     // Remote fees are only execution.
     const remoteFeesInDot =
@@ -303,6 +316,7 @@ async function estimateFees(
         console.error("remoteFeesInDot failed: ", remoteFeesInDot);
         return;
     }
+    console.log("remoteFeesInDot: ", remoteFeesInDot);
 
     return [localFees, remoteFeesInDot.value];
 }

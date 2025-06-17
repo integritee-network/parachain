@@ -556,7 +556,6 @@ init-integritee-polkadot-local)
           tx.assetRegistry.registerReserveAsset \
               "0" \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
-
       ;;
 
   reserve-transfer-assets-from-asset-hub-polkadot-local)
