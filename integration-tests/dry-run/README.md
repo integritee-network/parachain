@@ -22,3 +22,10 @@ bun papi add ppeople -n polkadot_people
 bun papi add ik -w wss://kusama.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-kusama.json
 bun papi add ip -w wss://polkadot.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-polkadot.json 
 ```
+
+# run tests
+
+```
+bun xcm-example-people.ts 
+```
+
