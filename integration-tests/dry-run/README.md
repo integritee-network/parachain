@@ -20,7 +20,7 @@ bun papi add kah -n ksmcc3_asset_hub
 bun papi add pah -n polkadot_asset_hub
 bun papi add ppeople -n polkadot_people
 # bun papi add ik -w wss://kusama.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-kusama.json
-bun papi add ik -w ws://localhost:9144 -c ../../polkadot-parachains/chain-specs/integritee-kusama.jso
+bun papi add ik -w ws://localhost:9144 -c ../../polkadot-parachains/chain-specs/integritee-kusama.json
 # bun papi add ip -w wss://polkadot.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-polkadot.json 
 bun papi add ip -w ws://localhost:9244 -c ../../polkadot-parachains/chain-specs/integritee-polkadot.json
 ```

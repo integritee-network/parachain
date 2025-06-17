@@ -18,7 +18,7 @@ import {
     XcmV5Instruction,
     XcmVersionedAssetId,
     XcmVersionedLocation,
-    XcmVersionedXcm,
+    XcmVersionedXcm, XcmV2OriginKind,
 } from "@polkadot-api/descriptors";
 import {
     createClient,
@@ -175,11 +175,13 @@ function createXcm(
             asset: teerForLocalFees,
         }),
         XcmV5Instruction.InitiateTransfer({
-            dest: IK_FROM_KAH,
+            destination: IK_FROM_KAH,
             preserve_origin: true,
             remote_fees: ksmForRemoteFees,
+            assets: [],
             remote_xcm: [
                 XcmV5Instruction.Transact({
+                    origin_type: XcmV2OriginKind.SovereignAccount,
                     call: executeOnPah,
                     require_weight_at_most: 1_000_000_000n,
                 }),
