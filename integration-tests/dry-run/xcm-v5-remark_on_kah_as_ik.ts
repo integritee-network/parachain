@@ -12,13 +12,11 @@ import {
     XcmV5Junctions,
     XcmV5NetworkId,
     XcmV3MultiassetFungibility,
-    XcmV3WeightLimit,
-    XcmV5AssetFilter,
-    XcmV5WildAsset,
     XcmV5Instruction,
     XcmVersionedAssetId,
     XcmVersionedLocation,
-    XcmVersionedXcm, XcmV2OriginKind,
+    XcmVersionedXcm,
+    XcmV2OriginKind,
 } from "@polkadot-api/descriptors";
 import {
     createClient,
@@ -50,6 +48,10 @@ const IK_WS_URL = "ws://localhost:9144";
 const IK_FROM_KAH = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
+};
+const KAH_FROM_IK = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
 };
 // XCM.
 const XCM_VERSION = 5;
@@ -175,15 +177,14 @@ function createXcm(
             asset: teerForLocalFees,
         }),
         XcmV5Instruction.InitiateTransfer({
-            destination: IK_FROM_KAH,
+            destination: KAH_FROM_IK,
             preserve_origin: true,
             remote_fees: ksmForRemoteFees,
             assets: [],
             remote_xcm: [
                 XcmV5Instruction.Transact({
-                    origin_type: XcmV2OriginKind.SovereignAccount,
+                    origin_kind: XcmV2OriginKind.SovereignAccount,
                     call: executeOnPah,
-                    require_weight_at_most: 1_000_000_000n,
                 }),
                 XcmV5Instruction.RefundSurplus(),
             ],
