@@ -116,6 +116,7 @@ async function main() {
         const result = await tx.signAndSubmit(signer);
         console.dir(stringify(result));
     }
+    await ahClient.destroy();
 }
 
 // Helper function to convert bigints to strings and binaries to hex strings in objects.
@@ -318,7 +319,7 @@ async function estimateFees(
         return;
     }
     console.log("remoteFeesInDot: ", remoteFeesInDot);
-
+    peopleClient.destroy()
     return [localFees, remoteFeesInDot.value];
 }
 

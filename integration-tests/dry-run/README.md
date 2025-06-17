@@ -25,7 +25,7 @@ bun papi add ip -w wss://polkadot.api.integritee.network -c ../../polkadot-parac
 
 # run tests
 
-In another terminal, run
+In another terminal, run chopsticks
 
 ```
 nvm use 22
@@ -35,6 +35,6 @@ npx @acala-network/chopsticks@latest xcm --p=polkadot-asset-hub --p=polkadot-peo
 then run any of the xcm scripts with
 
 ```
-bun xcm-example-people.ts 
+bun xcm-v4-example-teleport-dot-from-pah-to-people.ts 
 ```
 
