@@ -32,6 +32,13 @@ nvm use 22
 npx @acala-network/chopsticks@latest xcm --p=polkadot-asset-hub --p=polkadot-people
 ```
 
+or run bridging tests with zombienet
+
+```
+cd ../bridges
+./run-test.sh 0000-manual
+```
+
 then run any of the xcm scripts with
 
 ```

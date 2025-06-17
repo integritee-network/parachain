@@ -1,17 +1,16 @@
-// Example by Francisco Aguirre
+// reuires a running bridge-zombienet. See ../bridges
 //
-// We'll teleport DOT from Asset Hub to People using XCMv4
+// As KAH sovereign, we will send a xcm to PAH to transact/execute a system.remark
 // .
-// https://hackmd.io/@n9QBuDYOQXG-nWCBrwx8YQ/rkRNb5m71e
-// https://gist.github.com/franciscoaguirre/c1b2a9480744bbe698bfd74f9a0c0e26
 
-// `pah` and 'ppeople' are the names we gave to `bun papi add`.
+// `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
     pah,
+    kah,
     DispatchRawOrigin,
-    ppeople,
     XcmV5Junction,
     XcmV5Junctions,
+    XcmV5NetworkId,
     XcmV3MultiassetFungibility,
     XcmV3WeightLimit,
     XcmV5AssetFilter,
@@ -40,53 +39,65 @@ import {
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 
 // Useful constants.
-// People.
-const PEOPLE_PARA_ID = 1004;
+const KAH_PARA_ID = 1000;
+const PAH_PARA_ID = 1000;
+
 // We're using localhost here since this was tested with chopsticks.
 // For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
-const PEOPLE_WS_URL = "ws://localhost:8001";
-// Asset Hub.
-const ASSET_HUB_PARA_ID = 1000;
-// We're using localhost here since this was tested with chopsticks.
-// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-asset-hub-rpc.polkadot.io".
-const ASSET_HUB_WS_URL = "ws://localhost:8000";
+const KAH_WS_URL = "ws://localhost:9010";
+const PAH_WS_URL = "ws://localhost:9910";
 // How to get to People from the perspective of Asset Hub.
-const PEOPLE_FROM_AH = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PEOPLE_PARA_ID)),
+
+const PAH_FROM_KAH = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot), XcmV5Junction.Parachain(PAH_PARA_ID)]),
+};
+const KAH_FROM_PAH = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama), XcmV5Junction.Parachain(KAH_PARA_ID)]),
 };
 // XCM.
 const XCM_VERSION = 5;
 // DOT.
-const DOT_UNITS = 10_000_000_000n;
-const DOT_FROM_PARACHAINS = {
+const KSM_UNITS = 1_000_000_000_000n;
+
+const KSM_FROM_KUSAMA_PARACHAINS = {
     parents: 1,
     interior: XcmV5Junctions.Here(),
 };
+const DOT_FROM_POLKADOT_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.Here(),
+};
+const KSM_FROM_POLKADOT_PARACHAINS = {
+    parents: 2,
+    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama)),
+};
+
 // Alice's SS58 account for Polkadot.
 const ACCOUNT = "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5";
 
 // Setup client...
-const ahClient = createClient(
-    withPolkadotSdkCompat(getWsProvider(ASSET_HUB_WS_URL)),
+const pahClient = createClient(
+    withPolkadotSdkCompat(getWsProvider(PAH_WS_URL)),
 );
 
 // ...and typed api.
-const ahApi = ahClient.getTypedApi(pah);
+const pahApi = pahClient.getTypedApi(pah);
 
 // The whole execution of the script.
 await main();
 
-// We'll teleport DOT from Asset Hub to People.
+// We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
-    // The amount of DOT we wish to teleport.
-    const transferAmount = 10n * DOT_UNITS;
+    // The amount of KSM we wish to teleport.
+    const transferAmount = 10n * KSM_UNITS;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 1n * DOT_UNITS;
-    const remoteFeesHighEstimate = 1n * DOT_UNITS;
+    const localFeesHighEstimate = 1n * KSM_UNITS;
+    const remoteFeesHighEstimate = 1n * KSM_UNITS;
     // We create a tentative XCM, one with the high estimates for fees.
-    const tentativeXcm = createTeleport(
+    const tentativeXcm = createBridgeTransfer(
         transferAmount,
         localFeesHighEstimate,
         remoteFeesHighEstimate,
@@ -98,25 +109,18 @@ async function main() {
         (await estimateFees(tentativeXcm))!;
 
     // With these estimates, we can create the final XCM to execute.
-    const xcm = createTeleport(
+    const xcm = createBridgeTransfer(
         transferAmount,
         localFeesEstimate,
         remoteFeesEstimate,
     );
+    const weightResult = await pahApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
 
     // We get the weight and we execute.
-    console.log("Executing XCM now....")
-    const weightResult = await ahApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (weightResult.success) {
-        const tx = ahApi.tx.PolkadotXcm.execute({
-            message: xcm,
-            max_weight: weightResult.value,
-        });
-        const signer = getAliceSigner();
-        const result = await tx.signAndSubmit(signer);
-        console.dir(stringify(result));
+        console.log("Final XCM (won't be executed)", xcm)
     }
-    await ahClient.destroy();
+    await pahClient.destroy();
 }
 
 // Helper function to convert bigints to strings and binaries to hex strings in objects.
@@ -135,60 +139,49 @@ function stringify(obj: any): string {
     return JSON.stringify(obj, converter, 2);
 }
 
-// Creates an XCM that will teleport DOT from Asset Hub to People.
+// Creates an XCM that will bridge KSM from KAH to PAH.
 //
-// Takes in the amount of DOT wanting to be transferred, as well as the
-// amount of DOT willing to be used for local and remote fees.
-function createTeleport(
+// Takes in the amount of KSM wanting to be transferred, as well as the
+// amount of KSM willing to be used for local and remote fees.
+function createBridgeTransfer(
     transferAmount: bigint,
     localFees: bigint,
     remoteFees: bigint,
 ): XcmVersionedXcm {
-    const beneficiary = {
-        parents: 0,
-        interior: XcmV5Junctions.X1(
-            XcmV5Junction.AccountId32({
-                id: FixedSizeBinary.fromAccountId32(ACCOUNT),
-            }),
-        ),
-    };
-    const dotToWithdraw = {
-        id: DOT_FROM_PARACHAINS,
+    const executeOnPah = pahApi.tx.System.remark("Hello Polkadot")
+    const ksmToWithdraw = {
+        id: KSM_FROM_KUSAMA_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(
             transferAmount + localFees + remoteFees,
         ),
     };
-    const dotForLocalFees = {
-        id: DOT_FROM_PARACHAINS,
+    const ksmForLocalFees = {
+        id: KSM_FROM_KUSAMA_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(localFees),
     };
     const dotForRemoteFees = {
-        id: DOT_FROM_PARACHAINS,
+        id: DOT_FROM_POLKADOT_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(remoteFees),
     };
     const xcm = XcmVersionedXcm.V5([
-        XcmV5Instruction.WithdrawAsset([dotToWithdraw]),
-        XcmV5Instruction.BuyExecution({
-            fees: dotForLocalFees,
-            // We allow maximum weight bought with the specified fees.
-            weight_limit: XcmV3WeightLimit.Unlimited(),
+        XcmV5Instruction.WithdrawAsset([ksmToWithdraw]),
+        XcmV5Instruction.PayFees({
+            asset: ksmForLocalFees,
         }),
-        XcmV5Instruction.InitiateTeleport({
-            dest: PEOPLE_FROM_AH,
-            assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.AllCounted(1)),
-            xcm: [
-                XcmV5Instruction.BuyExecution({
-                    fees: dotForRemoteFees,
-                    weight_limit: XcmV3WeightLimit.Unlimited(),
+        XcmV5Instruction.InitiateTransfer({
+            dest: PAH_FROM_KAH,
+            preserve_origin: true,
+            remote_fees: dotForRemoteFees,
+            remote_xcm: [
+                XcmV5Instruction.Transact({
+                    call: executeOnPah,
+                    require_weight_at_most: 1_000_000_000n,
                 }),
-                XcmV5Instruction.DepositAsset({
-                    assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.AllCounted(1)),
-                    beneficiary,
-                }),
+                XcmV5Instruction.RefundSurplus(),
             ],
         }),
+        XcmV5Instruction.RefundSurplus(),
     ]);
-
     return xcm;
 }
 
@@ -203,7 +196,7 @@ function createTeleport(
 async function estimateFees(
     xcm: XcmVersionedXcm,
 ): Promise<[bigint, bigint] | undefined> {
-    const xcmWeight = await ahApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
+    const xcmWeight = await pahApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (!xcmWeight.success) {
         console.error("xcmWeight failed: ", xcmWeight);
         return;
@@ -212,9 +205,9 @@ async function estimateFees(
 
     // Execution fees are purely a function of the weight.
     const executionFees =
-        await ahApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+        await pahApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             xcmWeight.value,
-            XcmVersionedAssetId.V5(DOT_FROM_PARACHAINS),
+            XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );
     if (!executionFees.success) {
         console.error("executionFees failed: ", executionFees);
@@ -222,13 +215,13 @@ async function estimateFees(
     }
     console.log("executionFees: ", executionFees.value);
 
-    const tx = ahApi.tx.PolkadotXcm.execute({
+    const tx = pahApi.tx.PolkadotXcm.execute({
         message: xcm,
         max_weight: xcmWeight.value,
     });
 
-    const dryRunResult = await ahApi.apis.DryRunApi.dry_run_call(
-        Enum("system", DispatchRawOrigin.Signed(ACCOUNT)),
+    const dryRunResult = await pahApi.apis.DryRunApi.dry_run_call(
+        Enum("system", DispatchRawOrigin.Root),
         tx.decodedCall,
         XCM_VERSION,
     );
@@ -246,29 +239,29 @@ async function estimateFees(
             location.value.parents === 1 &&
             location.value.interior.type === "X1" &&
             location.value.interior.value.type === "Parachain" &&
-            location.value.interior.value.value === PEOPLE_PARA_ID,
+            location.value.interior.value.value === KAH_PARA_ID,
     )!;
     // Found it.
-    const messageToPeople = messages[0];
+    const messageToPah = messages[0];
     // Now that we know the XCM that will be executed on the people chain,
     // we need to connect to it so we can estimate the fees.
     const peopleClient = createClient(
-        withPolkadotSdkCompat(getWsProvider(PEOPLE_WS_URL)),
+        withPolkadotSdkCompat(getWsProvider(KAH_WS_URL)),
     );
     const peopleApi = peopleClient.getTypedApi(ppeople);
 
     // We're only dealing with version 4.
-    if (messageToPeople.type !== "V5") {
-        console.error("messageToPeople failed: expected XCMv5");
+    if (messageToPah.type !== "V5") {
+        console.error("messageToPah failed: expected XCMv5");
         return;
     }
 
     // We get the delivery fees using the size of the forwarded xcm.
-    const deliveryFees = await ahApi.apis.XcmPaymentApi.query_delivery_fees(
-        XcmVersionedLocation.V5(PEOPLE_FROM_AH),
-        messageToPeople,
+    const deliveryFees = await pahApi.apis.XcmPaymentApi.query_delivery_fees(
+        XcmVersionedLocation.V5(PAH_FROM_KAH),
+        messageToPah,
     );
-    // Fees should be of the version we expect and fungible tokens, in particular, DOT.
+    // Fees should be of the version we expect and fungible tokens, in particular, KSM.
     if (
         !deliveryFees.success ||
         deliveryFees.value.type !== "V5" ||
@@ -286,9 +279,9 @@ async function estimateFees(
     const remoteDryRunResult = await peopleApi.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
-            interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(ASSET_HUB_PARA_ID)),
+            interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
         }),
-        messageToPeople,
+        messageToPah,
     );
     if (
         !remoteDryRunResult.success ||
@@ -300,7 +293,7 @@ async function estimateFees(
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await peopleApi.apis.XcmPaymentApi.query_xcm_weight(messageToPeople);
+        await peopleApi.apis.XcmPaymentApi.query_xcm_weight(messageToPah);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;
@@ -311,7 +304,7 @@ async function estimateFees(
     const remoteFeesInDot =
         await peopleApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             remoteWeight.value,
-            XcmVersionedAssetId.V5(DOT_FROM_PARACHAINS),
+            XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );
 
     if (!remoteFeesInDot.success) {
