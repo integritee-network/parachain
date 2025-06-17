@@ -1,0 +1,17 @@
+{
+  "name": "dry-run",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-labs/hdkd": "^0.0.17",
+    "@polkadot-labs/hdkd-helpers": "^0.0.17"
+  }
+}

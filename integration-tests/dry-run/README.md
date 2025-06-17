@@ -1,0 +1,24 @@
+# dev setup
+
+Install PAPI and bun
+
+```
+npm i -g polkadot-api
+npm install -g bun
+```
+
+# setup of this dir
+
+If you want to start from scratch
+
+```
+bun init -y
+bun add @polkadot-labs/hdkd  @polkadot-labs/hdkd-helpers
+bun papi add dot -n polkadot
+bun papi add ksm -n ksmcc3
+bun papi add kah -n ksmcc3_asset_hub
+bun papi add pah -n polkadot_asset_hub
+bun papi add ppeople -n polkadot_people
+bun papi add ik -w wss://kusama.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-kusama.json
+bun papi add ip -w wss://polkadot.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-polkadot.json 
+```
