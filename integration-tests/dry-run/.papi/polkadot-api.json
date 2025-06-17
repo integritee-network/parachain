@@ -19,12 +19,16 @@
       "metadata": ".papi/metadata/pah.scale"
     },
     "ik": {
-      "wsUrl": "wss://kusama.api.integritee.network",
-      "metadata": ".papi/metadata/ik.scale"
+      "wsUrl": "ws://localhost:9144",
+      "metadata": ".papi/metadata/ik.scale",
+      "genesis": "0xd94462a00e879c6e457c7ac25de20ddc9ebf5667d2a380c046dd41a645e2ffd9",
+      "codeHash": "0x4400510617b965238bd7c26e7d5301d48b74543a79f8c1728718471a2fa86924"
     },
     "ip": {
-      "wsUrl": "wss://polkadot.api.integritee.network",
-      "metadata": ".papi/metadata/ip.scale"
+      "wsUrl": "ws://localhost:9244",
+      "metadata": ".papi/metadata/ip.scale",
+      "genesis": "0x7c71222371c3d2b2dec1f4d541604f75c24f8bda7e10be0f759a40166387cb35",
+      "codeHash": "0xc9c1e33ff5ccc68df0d8ed8036738bbf86db930f954a4fbd3ea8b4c45ece6548"
     },
     "ppeople": {
       "chain": "polkadot_people",

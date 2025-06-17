@@ -12,7 +12,7 @@ wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stabl
 wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-execute-worker
 wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-prepare-worker
 wget https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2412/polkadot-parachain
-wget https://github.com/paritytech/zombienet/releases/download/v1.3.128/zombienet-linux-x64 -O zombienet
+wget https://github.com/paritytech/zombienet/releases/download/v1.3.133/zombienet-linux-x64 -O zombienet
 chmod +x polkadot*
 chmod +x zombienet
 chmod +x integritee-collator
