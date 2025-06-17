@@ -43,13 +43,13 @@ import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 // People.
 const PEOPLE_PARA_ID = 1004;
 // We're using localhost here since this was tested with chopsticks.
-// For production, use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
-const PEOPLE_WS_URL = "wss://polkadot-people-rpc.polkadot.io";
+// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
+const PEOPLE_WS_URL = "ws://localhost:8001";
 // Asset Hub.
 const ASSET_HUB_PARA_ID = 1000;
 // We're using localhost here since this was tested with chopsticks.
-// For production, use a public rpc, for example: "wss://polkadot-asset-hub-rpc.polkadot.io".
-const ASSET_HUB_WS_URL = "wss://polkadot-asset-hub-rpc.polkadot.io";
+// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-asset-hub-rpc.polkadot.io".
+const ASSET_HUB_WS_URL = "ws://localhost:8000";
 // How to get to People from the perspective of Asset Hub.
 const PEOPLE_FROM_AH = {
     parents: 1,
@@ -105,6 +105,7 @@ async function main() {
     );
 
     // We get the weight and we execute.
+    console.log("Executing XCM now....")
     const weightResult = await ahApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (weightResult.success) {
         const tx = ahApi.tx.PolkadotXcm.execute({

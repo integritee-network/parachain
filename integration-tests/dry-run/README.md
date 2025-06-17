@@ -25,6 +25,15 @@ bun papi add ip -w wss://polkadot.api.integritee.network -c ../../polkadot-parac
 
 # run tests
 
+In another terminal, run
+
+```
+nvm use 22
+npx @acala-network/chopsticks@latest xcm --p=polkadot-asset-hub --p=polkadot-people
+```
+
+then run any of the xcm scripts with
+
 ```
 bun xcm-example-people.ts 
 ```
