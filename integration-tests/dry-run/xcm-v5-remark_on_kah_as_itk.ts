@@ -5,7 +5,7 @@
 
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
-    ik,
+    itk,
     kah,
     DispatchRawOrigin,
     XcmV5Junction,
@@ -22,7 +22,6 @@ import {
     createClient,
     Enum,
     Binary,
-    FixedSizeBinary,
     type PolkadotSigner,
 } from "polkadot-api";
 // import from "polkadot-api/ws-provider/node"
@@ -85,10 +84,10 @@ const kahClient = createClient(
 );
 const kahApi = kahClient.getTypedApi(kah);
 
-const ikClient = createClient(
+const itkClient = createClient(
     withPolkadotSdkCompat(getWsProvider(IK_WS_URL)),
 );
-const ikApi = ikClient.getTypedApi(ik);
+const itkApi = itkClient.getTypedApi(itk);
 
 // The whole execution of the script.
 await main();
@@ -108,6 +107,15 @@ async function main() {
         remoteFeesHighEstimate,
     );
     console.dir(stringify(tentativeXcm));
+    const weightRes = await itkApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
+    console.log(weightRes);
+    const tentativeTx = itkApi.tx.PolkadotXcm.execute({
+        message: tentativeXcm,
+        max_weight: weightRes.value, // Arbitrary weight, we will adjust it later.
+    });
+    console.log(tentativeTx)
+    const tentativeTxSudo = itkApi.tx.Sudo.sudo({call: tentativeTx.decodedCall});
+    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
     const [localFeesEstimate, remoteFeesEstimate] =
@@ -121,18 +129,18 @@ async function main() {
     );
     // We get the weight and we execute.
     console.log("Executing XCM now....")
-    const weightResult = await ikApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
+    const weightResult = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (weightResult.success) {
-        const tx = ikApi.tx.PolkadotXcm.execute({
+        const tx = itkApi.tx.PolkadotXcm.execute({
             message: xcm,
             max_weight: weightResult.value,
         });
-        const stx = await ikApi.tx.sudo.sudo(tx)
+        const stx = await itkApi.tx.sudo.sudo(tx)
         const signer = getAliceSigner();
         const result = await stx.signAndSubmit(signer);
         console.dir(stringify(result));
     }
-    await ikClient.destroy();
+    await itkClient.destroy();
     await kahClient.destroy();
 }
 
@@ -186,11 +194,11 @@ function createXcm(
                 XcmV5Instruction.PayFees({
                     asset: ksmForRemoteFees,
                 }),
-                XcmV5Instruction.Transact({
-                    origin_kind: XcmV2OriginKind.SovereignAccount,
-                    call: Binary.fromHex("0x00003848656c6c6f20506f6c6b61646f74"),
-                    //call: executeOnPah,
-                }),
+                // XcmV5Instruction.Transact({
+                //     origin_kind: XcmV2OriginKind.SovereignAccount,
+                //     call: Binary.fromHex("0x00003848656c6c6f20506f6c6b61646f74"),
+                //     //call: executeOnPah.decodedCall,
+                // }),
                 XcmV5Instruction.RefundSurplus(),
             ],
         }),
@@ -210,7 +218,7 @@ function createXcm(
 async function estimateFees(
     xcm: XcmVersionedXcm,
 ): Promise<[bigint, bigint] | undefined> {
-    const xcmWeight = await ikApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
+    const xcmWeight = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (!xcmWeight.success) {
         console.error("xcmWeight failed: ", xcmWeight);
         return;
@@ -219,7 +227,7 @@ async function estimateFees(
 
     // Execution fees are purely a function of the weight.
     const executionFees =
-        await ikApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+        await itkApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             xcmWeight.value,
             XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );
@@ -229,12 +237,12 @@ async function estimateFees(
     }
     console.log("executionFees: ", executionFees.value);
 
-    const tx = ikApi.tx.PolkadotXcm.execute({
+    const tx = itkApi.tx.PolkadotXcm.execute({
         message: xcm,
         max_weight: xcmWeight.value,
     });
 
-    const dryRunResult = await ikApi.apis.DryRunApi.dry_run_call(
+    const dryRunResult = await itkApi.apis.DryRunApi.dry_run_call(
         Enum("system", DispatchRawOrigin.Root),
         tx.decodedCall,
         XCM_VERSION,
@@ -284,7 +292,7 @@ async function estimateFees(
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
 
     // Now we dry run on the destination.
-    const remoteDryRunResult = await ikApi.apis.DryRunApi.dry_run_xcm(
+    const remoteDryRunResult = await itkApi.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
@@ -301,7 +309,7 @@ async function estimateFees(
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await ikApi.apis.XcmPaymentApi.queryXcmWeight(messageToPah);
+        await itkApi.apis.XcmPaymentApi.queryXcmWeight(messageToPah);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;
@@ -310,7 +318,7 @@ async function estimateFees(
 
     // Remote fees are only execution.
     const remoteFeesInDot =
-        await ikApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+        await itkApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             remoteWeight.value,
             XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );

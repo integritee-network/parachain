@@ -16,24 +16,26 @@ If you want to start from scratch
 
 ```
 bun init -y
-bun add @polkadot-labs/hdkd  @polkadot-labs/hdkd-helpers
-bun papi add dot -n polkadot
-bun papi add ksm -n ksmcc3
-bun papi add kah -n ksmcc3_asset_hub
-bun papi add kbh -n ksmcc3_bridge_hub
-bun papi add pah -n polkadot_asset_hub
-bun papi add pbh -n polkadot_bridge_hub
-bun papi add ppeople -n polkadot_people
-# bun papi add ik -w wss://kusama.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-kusama.json
-bun papi add ik -w ws://localhost:9144 -c /tmp/bridges-tests-run-alwjO/bridge_hub_kusama_local_network/integritee-kusama-local-dev-2015-plain.json
-# bun papi add ip -w wss://polkadot.api.integritee.network -c ../../polkadot-parachains/chain-specs/integritee-polkadot.json 
-bun papi add ip -w ws://localhost:9244 -c /tmp/bridges-tests-run-alwjO/bridge_hub_polkadot_local_network/integritee-polkadot-local-dev-2039-plain.json
+bun i polkadot-api @polkadot-labs/hdkd  @polkadot-labs/hdkd-helpers
+# zombienet uses more recent runtimes, so get descriptors from there
+bun papi add dot -w ws://localhost:9942
+bun papi add ksm -w ws://localhost:9945
+bun papi add kah -w ws://localhost:9010
+bun papi add kbh -w ws://localhost:8945
+bun papi add pah -w ws://localhost:9910
+bun papi add pbh -w ws://localhost:8943
+# bun papi add ppeople -n polkadot_people
+bun papi add itk -w ws://localhost:9144
+bun papi add itp -w ws://localhost:9244
 ```
 
-and in the end, do not forget to generate types
+and in the end, do not forget to generate types and properly install deps
 
 ```
-npx papi
+# update all metadata and descriptors
+bun papi
+# run this to update deps from .papi
+bun install
 ```
 
 # run tests

@@ -3,52 +3,56 @@
   "descriptorPath": ".papi/descriptors",
   "entries": {
     "dot": {
-      "chain": "polkadot",
-      "metadata": ".papi/metadata/dot.scale"
+      "wsUrl": "ws://localhost:9942",
+      "metadata": ".papi/metadata/dot.scale",
+      "genesis": "0x5323f62f5d1406dc3a23a46a7afc38d4eb4ea0288a14f580dbc9dbeb8549bbb8",
+      "codeHash": "0x2705b8a8fc608fd44912d23ebea8c4fbb3a9817c5bfc38bd4c89ae2126a29d82"
     },
     "ksm": {
-      "chain": "ksmcc3",
-      "metadata": ".papi/metadata/ksm.scale"
+      "wsUrl": "ws://localhost:9945",
+      "metadata": ".papi/metadata/ksm.scale",
+      "genesis": "0x4f72b7848b2d44cb8f64beb990e801f4be47cff8573872e1a9821d6693135d5b",
+      "codeHash": "0x4df2db32490f85e6ec69d135faa8d96e6fa8e7087a39deed70710af62bdfebac"
     },
     "kah": {
-      "chain": "ksmcc3_asset_hub",
-      "metadata": ".papi/metadata/kah.scale"
+      "wsUrl": "ws://localhost:9910",
+      "metadata": ".papi/metadata/kah.scale",
+      "genesis": "0x0c231e1dd46a096629b50072f965dfb4c2a0c62568def5da97e423d5dedb50c6",
+      "codeHash": "0xb5b3386c0e8170b20e186646c0ff0d46f5e4b45ae3203c5ebe045c084714eb35"
+    },
+    "kbh": {
+      "wsUrl": "ws://localhost:8945",
+      "metadata": ".papi/metadata/kbh.scale",
+      "genesis": "0xcb80982f5b6756fc971d1ab6ea51011a57088452755ac6d7fb60ffc418b2bcfc",
+      "codeHash": "0xd5c30bef2c87523c97c7001fb90621cf85b5405389533a161138ae64378d0068"
     },
     "pah": {
-      "chain": "polkadot_asset_hub",
+      "wsUrl": "ws://localhost:9910",
       "metadata": ".papi/metadata/pah.scale",
-      "genesis": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
-      "codeHash": "0x6e20bc52aaaafd1de82ba7d2a3c0fa39193787e240b93608489cf72a4c46a584"
+      "genesis": "0x0c231e1dd46a096629b50072f965dfb4c2a0c62568def5da97e423d5dedb50c6",
+      "codeHash": "0xb5b3386c0e8170b20e186646c0ff0d46f5e4b45ae3203c5ebe045c084714eb35"
     },
-    "ik": {
-      "wsUrl": "ws://localhost:9144",
-      "metadata": ".papi/metadata/ik.scale",
-      "genesis": "0xd94462a00e879c6e457c7ac25de20ddc9ebf5667d2a380c046dd41a645e2ffd9",
-      "codeHash": "0x4400510617b965238bd7c26e7d5301d48b74543a79f8c1728718471a2fa86924"
-    },
-    "ip": {
-      "wsUrl": "ws://localhost:9244",
-      "metadata": ".papi/metadata/ip.scale",
-      "genesis": "0x7c71222371c3d2b2dec1f4d541604f75c24f8bda7e10be0f759a40166387cb35",
-      "codeHash": "0xc9c1e33ff5ccc68df0d8ed8036738bbf86db930f954a4fbd3ea8b4c45ece6548"
+    "pbh": {
+      "wsUrl": "ws://localhost:8943",
+      "metadata": ".papi/metadata/pbh.scale",
+      "genesis": "0x29ff5fc579dbf43266b9ed1461d4d5f27f099beaea4060948fffd1c9ba1553eb",
+      "codeHash": "0xa5a334094175d2ce1a3efc7bbd4a49ca86cc44cc143c93e6319c04d8cc0c93c8"
     },
     "ppeople": {
       "chain": "polkadot_people",
-      "metadata": ".papi/metadata/ppeople.scale",
-      "genesis": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
-      "codeHash": "0x5ad90a21b395a16a6d720983bb9fdd096577710beea33c7882bb61a7518dbb79"
+      "metadata": ".papi/metadata/ppeople.scale"
     },
-    "pbh": {
-      "chain": "polkadot_bridge_hub",
-      "metadata": ".papi/metadata/pbh.scale",
-      "genesis": "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
-      "codeHash": "0x0ba938eae116b7bda8476f66d9e26166a8fed34e23daf7676fe708f947e0e513"
+    "itk": {
+      "wsUrl": "ws://localhost:9144",
+      "metadata": ".papi/metadata/itk.scale",
+      "genesis": "0xd94462a00e879c6e457c7ac25de20ddc9ebf5667d2a380c046dd41a645e2ffd9",
+      "codeHash": "0x4400510617b965238bd7c26e7d5301d48b74543a79f8c1728718471a2fa86924"
     },
-    "kbh": {
-      "chain": "ksmcc3_bridge_hub",
-      "metadata": ".papi/metadata/kbh.scale",
-      "genesis": "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
-      "codeHash": "0xdc2d4392b01f80be325c8bf09a111ab8c2c4e279b3fa66d206923904225a09ed"
+    "itp": {
+      "wsUrl": "ws://localhost:9244",
+      "metadata": ".papi/metadata/itp.scale",
+      "genesis": "0x7c71222371c3d2b2dec1f4d541604f75c24f8bda7e10be0f759a40166387cb35",
+      "codeHash": "0xc9c1e33ff5ccc68df0d8ed8036738bbf86db930f954a4fbd3ea8b4c45ece6548"
     }
   }
 }

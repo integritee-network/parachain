@@ -255,10 +255,10 @@ async function estimateFees(
     const messageToPbh = messages[0];
     // Now that we know the XCM that will be executed on the pbh chain,
     // we need to connect to it so we can estimate the fees.
-    const pbhClient = createClient(
-        withPolkadotSdkCompat(getWsProvider(PBH_WS_URL)),
-    );
-    const pbhApi = pbhClient.getTypedApi(pbh);
+    // const pbhClient = createClient(
+    //     withPolkadotSdkCompat(getWsProvider(PBH_WS_URL)),
+    // );
+    // const pbhApi = pbhClient.getTypedApi(pbh);
 
     // We're only dealing with version 5.
     if (messageToPbh.type !== "V5") {
@@ -286,24 +286,24 @@ async function estimateFees(
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
 
     // Now we dry run on the destination.
-    const remoteDryRunResult = await pbhApi.apis.DryRunApi.dry_run_xcm(
-        XcmVersionedLocation.V5({
-            parents: 1,
-            interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(ASSET_HUB_PARA_ID)),
-        }),
-        messageToPbh,
-    );
-    if (
-        !remoteDryRunResult.success ||
-        remoteDryRunResult.value.execution_result.type !== "Complete"
-    ) {
-        console.error("remoteDryRunResult failed: ", remoteDryRunResult);
-        return;
-    }
-    console.log("remoteDryRunResult: ", remoteDryRunResult.value);
+    // const remoteDryRunResult = await pbhApi.apis.DryRunApi.dry_run_xcm(
+    //     XcmVersionedLocation.V5({
+    //         parents: 1,
+    //         interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(ASSET_HUB_PARA_ID)),
+    //     }),
+    //     messageToPbh,
+    // );
+    // if (
+    //     !remoteDryRunResult.success ||
+    //     remoteDryRunResult.value.execution_result.type !== "Complete"
+    // ) {
+    //     console.error("remoteDryRunResult failed: ", remoteDryRunResult);
+    //     return;
+    // }
+    // console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await pbhApi.apis.XcmPaymentApi.query_xcm_weight(messageToPbh);
+        await ahApi.apis.XcmPaymentApi.query_xcm_weight(messageToPbh);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;
@@ -312,7 +312,7 @@ async function estimateFees(
 
     // Remote fees are only execution.
     const remoteFeesInDot =
-        await pbhApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+        await ahApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             remoteWeight.value,
             XcmVersionedAssetId.V5(DOT_FROM_PARACHAINS),
         );
@@ -322,7 +322,7 @@ async function estimateFees(
         return;
     }
     console.log("remoteFeesInDot: ", remoteFeesInDot);
-    pbhClient.destroy()
+    //pbhClient.destroy()
     return [localFees, remoteFeesInDot.value];
 }
 
