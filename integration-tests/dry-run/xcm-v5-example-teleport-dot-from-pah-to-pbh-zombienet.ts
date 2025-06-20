@@ -1,15 +1,15 @@
 // Example by Francisco Aguirre
 //
-// We'll teleport DOT from Asset Hub to People using XCMv5
+// We'll teleport DOT from Asset Hub to Bridge Hub using XCMv5
 // .
 // https://hackmd.io/@n9QBuDYOQXG-nWCBrwx8YQ/rkRNb5m71e
 // https://gist.github.com/franciscoaguirre/c1b2a9480744bbe698bfd74f9a0c0e26
 
-// `pah` and 'ppeople' are the names we gave to `bun papi add`.
+// `pah` and 'pbh' are the names we gave to `bun papi add`.
 import {
     pah,
     DispatchRawOrigin,
-    ppeople,
+    pbh,
     XcmV5Junction,
     XcmV5Junctions,
     XcmV3MultiassetFungibility,
@@ -25,6 +25,8 @@ import {
     createClient,
     Enum,
     FixedSizeBinary,
+    getTypedCodecs,
+    Binary,
     type PolkadotSigner,
 } from "polkadot-api";
 // import from "polkadot-api/ws-provider/node"
@@ -32,6 +34,7 @@ import {
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
 import {getPolkadotSigner} from "polkadot-api/signer";
+
 import {
     DEV_PHRASE,
     entropyToMiniSecret,
@@ -40,20 +43,15 @@ import {
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 
 // Useful constants.
-// People.
-const PEOPLE_PARA_ID = 1004;
-// We're using localhost here since this was tested with chopsticks.
-// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
-const PEOPLE_WS_URL = "ws://localhost:8001";
-// Asset Hub.
+// Pbh.
+const PBH_PARA_ID = 1002;
+const PBH_WS_URL = "ws://localhost:8943";
 const ASSET_HUB_PARA_ID = 1000;
-// We're using localhost here since this was tested with chopsticks.
-// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-asset-hub-rpc.polkadot.io".
-const ASSET_HUB_WS_URL = "ws://localhost:8000";
-// How to get to People from the perspective of Asset Hub.
-const PEOPLE_FROM_AH = {
+const ASSET_HUB_WS_URL = "ws://localhost:9910";
+// How to get to Pbh from the perspective of Asset Hub.
+const PBH_FROM_AH = {
     parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PEOPLE_PARA_ID)),
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PBH_PARA_ID)),
 };
 // XCM.
 const XCM_VERSION = 5;
@@ -77,7 +75,7 @@ const ahApi = ahClient.getTypedApi(pah);
 // The whole execution of the script.
 await main();
 
-// We'll teleport DOT from Asset Hub to People.
+// We'll teleport DOT from Asset Hub to Pbh.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
     // The amount of DOT we wish to teleport.
@@ -91,8 +89,13 @@ async function main() {
         localFeesHighEstimate,
         remoteFeesHighEstimate,
     );
-    console.dir(stringify(tentativeXcm));
-
+    const weightRes = await ahApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
+    // console.dir(stringify(tentativeXcm));
+    const tentativeTx = ahApi.tx.PolkadotXcm.execute({
+        message: tentativeXcm,
+        max_weight: weightRes.value, // Arbitrary weight, we will adjust it later.
+    });
+    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTx.getEncodedData()).asHex());
     // This will give us the adjusted estimates, much more accurate than before.
     const [localFeesEstimate, remoteFeesEstimate] =
         (await estimateFees(tentativeXcm))!;
@@ -135,7 +138,7 @@ function stringify(obj: any): string {
     return JSON.stringify(obj, converter, 2);
 }
 
-// Creates an XCM that will teleport DOT from Asset Hub to People.
+// Creates an XCM that will teleport DOT from Asset Hub to Pbh.
 //
 // Takes in the amount of DOT wanting to be transferred, as well as the
 // amount of DOT willing to be used for local and remote fees.
@@ -174,7 +177,7 @@ function createTeleport(
             weight_limit: XcmV3WeightLimit.Unlimited(),
         }),
         XcmV5Instruction.InitiateTeleport({
-            dest: PEOPLE_FROM_AH,
+            dest: PBH_FROM_AH,
             assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.AllCounted(1)),
             xcm: [
                 XcmV5Instruction.BuyExecution({
@@ -246,27 +249,27 @@ async function estimateFees(
             location.value.parents === 1 &&
             location.value.interior.type === "X1" &&
             location.value.interior.value.type === "Parachain" &&
-            location.value.interior.value.value === PEOPLE_PARA_ID,
+            location.value.interior.value.value === PBH_PARA_ID,
     )!;
     // Found it.
-    const messageToPeople = messages[0];
-    // Now that we know the XCM that will be executed on the people chain,
+    const messageToPbh = messages[0];
+    // Now that we know the XCM that will be executed on the pbh chain,
     // we need to connect to it so we can estimate the fees.
-    const peopleClient = createClient(
-        withPolkadotSdkCompat(getWsProvider(PEOPLE_WS_URL)),
+    const pbhClient = createClient(
+        withPolkadotSdkCompat(getWsProvider(PBH_WS_URL)),
     );
-    const peopleApi = peopleClient.getTypedApi(ppeople);
+    const pbhApi = pbhClient.getTypedApi(pbh);
 
-    // We're only dealing with version 4.
-    if (messageToPeople.type !== "V5") {
-        console.error("messageToPeople failed: expected XCMv5");
+    // We're only dealing with version 5.
+    if (messageToPbh.type !== "V5") {
+        console.error("messageToPbh failed: expected XCMv5");
         return;
     }
 
     // We get the delivery fees using the size of the forwarded xcm.
     const deliveryFees = await ahApi.apis.XcmPaymentApi.query_delivery_fees(
-        XcmVersionedLocation.V5(PEOPLE_FROM_AH),
-        messageToPeople,
+        XcmVersionedLocation.V5(PBH_FROM_AH),
+        messageToPbh,
     );
     // Fees should be of the version we expect and fungible tokens, in particular, DOT.
     if (
@@ -283,12 +286,12 @@ async function estimateFees(
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
 
     // Now we dry run on the destination.
-    const remoteDryRunResult = await peopleApi.apis.DryRunApi.dry_run_xcm(
+    const remoteDryRunResult = await pbhApi.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(ASSET_HUB_PARA_ID)),
         }),
-        messageToPeople,
+        messageToPbh,
     );
     if (
         !remoteDryRunResult.success ||
@@ -300,7 +303,7 @@ async function estimateFees(
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await peopleApi.apis.XcmPaymentApi.query_xcm_weight(messageToPeople);
+        await pbhApi.apis.XcmPaymentApi.query_xcm_weight(messageToPbh);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;
@@ -309,7 +312,7 @@ async function estimateFees(
 
     // Remote fees are only execution.
     const remoteFeesInDot =
-        await peopleApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+        await pbhApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             remoteWeight.value,
             XcmVersionedAssetId.V5(DOT_FROM_PARACHAINS),
         );
@@ -319,7 +322,7 @@ async function estimateFees(
         return;
     }
     console.log("remoteFeesInDot: ", remoteFeesInDot);
-    peopleClient.destroy()
+    pbhClient.destroy()
     return [localFees, remoteFeesInDot.value];
 }
 

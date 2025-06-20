@@ -21,6 +21,7 @@ import {
 import {
     createClient,
     Enum,
+    Binary,
     FixedSizeBinary,
     type PolkadotSigner,
 } from "polkadot-api";
@@ -156,7 +157,7 @@ function createXcm(
     localFees: bigint,
     remoteFees: bigint,
 ): XcmVersionedXcm {
-    const executeOnPah = kahApi.tx.System.remark("Hello Polkadot")
+    const executeOnPah = kahApi.tx.System.remark({remark: Binary.fromText("Hello Polkadot")})
     const teerToWithdraw = {
         id: TEER_FROM_SELF,
         fun: XcmV3MultiassetFungibility.Fungible(
@@ -179,12 +180,16 @@ function createXcm(
         XcmV5Instruction.InitiateTransfer({
             destination: KAH_FROM_IK,
             preserve_origin: true,
-            remote_fees: ksmForRemoteFees,
             assets: [],
             remote_xcm: [
+                XcmV5Instruction.WithdrawAsset([ksmForRemoteFees]),
+                XcmV5Instruction.PayFees({
+                    asset: ksmForRemoteFees,
+                }),
                 XcmV5Instruction.Transact({
                     origin_kind: XcmV2OriginKind.SovereignAccount,
-                    call: executeOnPah,
+                    call: Binary.fromHex("0x00003848656c6c6f20506f6c6b61646f74"),
+                    //call: executeOnPah,
                 }),
                 XcmV5Instruction.RefundSurplus(),
             ],
