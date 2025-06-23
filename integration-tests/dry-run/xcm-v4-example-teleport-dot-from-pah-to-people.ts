@@ -258,7 +258,7 @@ async function estimateFees(
     const peopleApi = peopleClient.getTypedApi(ppeople);
 
     // We're only dealing with version 4.
-    if (messageToPeople.type !== "V4") {
+    if (messageToPeople?.type !== "V4") {
         console.error("messageToPeople failed: expected XCMv4");
         return;
     }
@@ -272,7 +272,8 @@ async function estimateFees(
     if (
         !deliveryFees.success ||
         deliveryFees.value.type !== "V4" ||
-        deliveryFees.value.value[0].fun.type !== "Fungible"
+        deliveryFees.value.value.length < 1 ||
+        deliveryFees.value.value[0]?.fun?.type !== "Fungible"
     ) {
         console.error("deliveryFees failed: ", deliveryFees);
         return;

@@ -73,7 +73,7 @@ const DOT_FROM_POLKADOT_PARACHAINS = {
 };
 const KSM_FROM_POLKADOT_PARACHAINS = {
     parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama)),
+    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
 };
 // Alice's SS58 account for Polkadot.
 const ACCOUNT = "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5";
@@ -90,24 +90,31 @@ const itkClient = createClient(
 const itkApi = itkClient.getTypedApi(itk);
 
 // The whole execution of the script.
-await main();
+main();
 
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
+    //let bar: number = "oops"; // Type error: assigning string to number
     // The amount of KSM we wish to teleport.
     const transferAmount = 10n * KSM_UNITS;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
     const localFeesHighEstimate = 1n * KSM_UNITS;
     const remoteFeesHighEstimate = 1n * KSM_UNITS;
     // We create a tentative XCM, one with the high estimates for fees.
-    const tentativeXcm = createXcm(
+    const tentativeXcm = await createXcm(
         transferAmount,
         localFeesHighEstimate,
         remoteFeesHighEstimate,
     );
     console.dir(stringify(tentativeXcm));
     const weightRes = await itkApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
+    if (!weightRes.success) {
+        console.error("Failed to get weight for tentative XCM: ", weightRes);
+        await itkClient.destroy();
+        await kahClient.destroy();
+        return;
+    }
     console.log(weightRes);
     const tentativeTx = itkApi.tx.PolkadotXcm.execute({
         message: tentativeXcm,
@@ -122,7 +129,7 @@ async function main() {
         (await estimateFees(tentativeXcm))!;
 
     // With these estimates, we can create the final XCM to execute.
-    const xcm = createXcm(
+    const xcm = await createXcm(
         transferAmount,
         localFeesEstimate,
         remoteFeesEstimate,
@@ -135,7 +142,7 @@ async function main() {
             message: xcm,
             max_weight: weightResult.value,
         });
-        const stx = await itkApi.tx.sudo.sudo(tx)
+        const stx = await itkApi.tx.Sudo.sudo({call: tx.decodedCall})
         const signer = getAliceSigner();
         const result = await stx.signAndSubmit(signer);
         console.dir(stringify(result));
@@ -160,11 +167,11 @@ function stringify(obj: any): string {
     return JSON.stringify(obj, converter, 2);
 }
 
-function createXcm(
+async function createXcm(
     transferAmount: bigint,
     localFees: bigint,
     remoteFees: bigint,
-): XcmVersionedXcm {
+): Promise<XcmVersionedXcm> {
     const executeOnPah = kahApi.tx.System.remark({remark: Binary.fromText("Hello Polkadot")})
     const teerToWithdraw = {
         id: TEER_FROM_SELF,
@@ -194,11 +201,10 @@ function createXcm(
                 XcmV5Instruction.PayFees({
                     asset: ksmForRemoteFees,
                 }),
-                // XcmV5Instruction.Transact({
-                //     origin_kind: XcmV2OriginKind.SovereignAccount,
-                //     call: Binary.fromHex("0x00003848656c6c6f20506f6c6b61646f74"),
-                //     //call: executeOnPah.decodedCall,
-                // }),
+                XcmV5Instruction.Transact({
+                    origin_kind: XcmV2OriginKind.SovereignAccount(),
+                    call: await executeOnPah.getEncodedData(),
+                }),
                 XcmV5Instruction.RefundSurplus(),
             ],
         }),
@@ -243,7 +249,7 @@ async function estimateFees(
     });
 
     const dryRunResult = await itkApi.apis.DryRunApi.dry_run_call(
-        Enum("system", DispatchRawOrigin.Root),
+        Enum("system", DispatchRawOrigin.Root()),
         tx.decodedCall,
         XCM_VERSION,
     );
@@ -267,7 +273,7 @@ async function estimateFees(
     const messageToPah = messages[0];
 
     // We're only dealing with version 4.
-    if (messageToPah.type !== "V5") {
+    if (messageToPah?.type !== "V5") {
         console.error("messageToPah failed: expected XCMv5");
         return;
     }
@@ -281,7 +287,8 @@ async function estimateFees(
     if (
         !deliveryFees.success ||
         deliveryFees.value.type !== "V5" ||
-        deliveryFees.value.value[0].fun.type !== "Fungible"
+        deliveryFees.value.value.length < 1 ||
+        deliveryFees.value.value[0]?.fun?.type !== "Fungible"
     ) {
         console.error("deliveryFees failed: ", deliveryFees);
         return;
@@ -309,7 +316,7 @@ async function estimateFees(
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await itkApi.apis.XcmPaymentApi.queryXcmWeight(messageToPah);
+        await itkApi.apis.XcmPaymentApi.query_xcm_weight(messageToPah);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;

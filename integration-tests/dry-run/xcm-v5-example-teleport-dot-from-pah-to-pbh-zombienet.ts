@@ -91,6 +91,10 @@ async function main() {
     );
     const weightRes = await ahApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
     // console.dir(stringify(tentativeXcm));
+    if (!weightRes.success) {
+        console.error("Failed to get weight for tentative XCM: ", weightRes);
+        return;
+    }
     const tentativeTx = ahApi.tx.PolkadotXcm.execute({
         message: tentativeXcm,
         max_weight: weightRes.value, // Arbitrary weight, we will adjust it later.
@@ -261,7 +265,7 @@ async function estimateFees(
     // const pbhApi = pbhClient.getTypedApi(pbh);
 
     // We're only dealing with version 5.
-    if (messageToPbh.type !== "V5") {
+    if (messageToPbh?.type !== "V5") {
         console.error("messageToPbh failed: expected XCMv5");
         return;
     }
@@ -275,7 +279,8 @@ async function estimateFees(
     if (
         !deliveryFees.success ||
         deliveryFees.value.type !== "V5" ||
-        deliveryFees.value.value[0].fun.type !== "Fungible"
+        deliveryFees.value.value.length < 1 ||
+        deliveryFees.value.value[0]?.fun?.type !== "Fungible"
     ) {
         console.error("deliveryFees failed: ", deliveryFees);
         return;

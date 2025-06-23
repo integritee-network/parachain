@@ -65,3 +65,13 @@ known to work with `../bridges` zombienet `./run-tests.sh 0000-manual`:
 ```
 bun xcm-v5-example-teleport-dot-from-pah-to-pbh-zombienet.ts
 ```
+
+## debug
+
+bun won't tell you about type errors. Use this to debug your code:
+
+```
+tsc --noEmit xcm-v5-remark_on_kah_as_itk.ts
+# transpile entire directory:
+tsc --noEmit -p ./tsconfig.json 
+```

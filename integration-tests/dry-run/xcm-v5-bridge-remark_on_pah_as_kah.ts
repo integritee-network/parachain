@@ -14,6 +14,7 @@ import {
     XcmV3MultiassetFungibility,
     XcmV3WeightLimit,
     XcmV5AssetFilter,
+    XcmV2OriginKind,
     XcmV5WildAsset,
     XcmV5Instruction,
     XcmVersionedAssetId,
@@ -23,7 +24,7 @@ import {
 import {
     createClient,
     Enum,
-    FixedSizeBinary,
+    Binary,
     type PolkadotSigner,
 } from "polkadot-api";
 // import from "polkadot-api/ws-provider/node"
@@ -50,11 +51,11 @@ const PAH_WS_URL = "ws://localhost:9910";
 
 const PAH_FROM_KAH = {
     parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot), XcmV5Junction.Parachain(PAH_PARA_ID)]),
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
 };
 const KAH_FROM_PAH = {
     parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama), XcmV5Junction.Parachain(KAH_PARA_ID)]),
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
 };
 // XCM.
 const XCM_VERSION = 5;
@@ -71,7 +72,7 @@ const DOT_FROM_POLKADOT_PARACHAINS = {
 };
 const KSM_FROM_POLKADOT_PARACHAINS = {
     parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama)),
+    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
 };
 
 // Setup clients...
@@ -97,7 +98,7 @@ async function main() {
     const localFeesHighEstimate = 1n * KSM_UNITS;
     const remoteFeesHighEstimate = 1n * KSM_UNITS;
     // We create a tentative XCM, one with the high estimates for fees.
-    const tentativeXcm = createBridgeTransfer(
+    const tentativeXcm = await createBridgeTransfer(
         transferAmount,
         localFeesHighEstimate,
         remoteFeesHighEstimate,
@@ -109,7 +110,7 @@ async function main() {
         (await estimateFees(tentativeXcm))!;
 
     // With these estimates, we can create the final XCM to execute.
-    const xcm = createBridgeTransfer(
+    const xcm = await createBridgeTransfer(
         transferAmount,
         localFeesEstimate,
         remoteFeesEstimate,
@@ -144,12 +145,12 @@ function stringify(obj: any): string {
 //
 // Takes in the amount of KSM wanting to be transferred, as well as the
 // amount of KSM willing to be used for local and remote fees.
-function createBridgeTransfer(
+async function createBridgeTransfer(
     transferAmount: bigint,
     localFees: bigint,
     remoteFees: bigint,
-): XcmVersionedXcm {
-    const executeOnPah = pahApi.tx.System.remark("Hello Polkadot")
+): Promise<XcmVersionedXcm> {
+    const executeOnPah = pahApi.tx.System.remark({remark: Binary.fromText("Hello Polkadot")})
     const ksmToWithdraw = {
         id: KSM_FROM_KUSAMA_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(
@@ -170,13 +171,13 @@ function createBridgeTransfer(
             asset: ksmForLocalFees,
         }),
         XcmV5Instruction.InitiateTransfer({
-            dest: PAH_FROM_KAH,
+            destination: PAH_FROM_KAH,
             preserve_origin: true,
-            remote_fees: dotForRemoteFees,
+            assets: [],
             remote_xcm: [
                 XcmV5Instruction.Transact({
-                    call: executeOnPah,
-                    require_weight_at_most: 1_000_000_000n,
+                    origin_kind: XcmV2OriginKind.SovereignAccount(),
+                    call: await executeOnPah.getEncodedData(),
                 }),
                 XcmV5Instruction.RefundSurplus(),
             ],
@@ -222,7 +223,7 @@ async function estimateFees(
     });
 
     const dryRunResult = await pahApi.apis.DryRunApi.dry_run_call(
-        Enum("system", DispatchRawOrigin.Root),
+        Enum("system", DispatchRawOrigin.Root()),
         tx.decodedCall,
         XCM_VERSION,
     );
@@ -246,7 +247,7 @@ async function estimateFees(
     const messageToPah = messages[0];
 
     // We're only dealing with version 4.
-    if (messageToPah.type !== "V5") {
+    if (messageToPah?.type !== "V5") {
         console.error("messageToPah failed: expected XCMv5");
         return;
     }
@@ -260,7 +261,8 @@ async function estimateFees(
     if (
         !deliveryFees.success ||
         deliveryFees.value.type !== "V5" ||
-        deliveryFees.value.value[0].fun.type !== "Fungible"
+        deliveryFees.value.value.length < 1 ||
+        deliveryFees.value.value[0]?.fun?.type !== "Fungible"
     ) {
         console.error("deliveryFees failed: ", deliveryFees);
         return;
@@ -288,7 +290,7 @@ async function estimateFees(
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
 
     const remoteWeight =
-        await pahApi.apis.XcmPaymentApi.queryXcmWeight(messageToPah);
+        await pahApi.apis.XcmPaymentApi.query_xcm_weight(messageToPah);
     if (!remoteWeight.success) {
         console.error("remoteWeight failed: ", remoteWeight);
         return;
