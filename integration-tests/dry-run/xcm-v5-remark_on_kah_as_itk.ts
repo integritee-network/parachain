@@ -11,12 +11,13 @@ import {
     XcmV5Junction,
     XcmV5Junctions,
     XcmV5NetworkId,
-    XcmV3MultiassetFungibility,
+    XcmV3MultiassetFungibility, XcmV2MultiassetWildFungibility,
     XcmV5Instruction,
     XcmVersionedAssetId,
     XcmVersionedLocation,
     XcmVersionedXcm,
     XcmV2OriginKind,
+    XcmV5AssetFilter, XcmV5WildAsset
 } from "@polkadot-api/descriptors";
 import {
     createClient,
@@ -187,14 +188,23 @@ async function createXcm(
         id: KSM_FROM_KUSAMA_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(remoteFees),
     };
+    // const ksmForRemoteFilter = XcmV5AssetFilter.Wild(XcmV5WildAsset.AllOf({
+    //     id: KSM_FROM_KUSAMA_PARACHAINS,
+    //     fun: XcmV2MultiassetWildFungibility.Fungible(),
+    // }));
+    const ksmForRemoteFilter = XcmV5AssetFilter.Definite([ksmForRemoteFees]);
+
     const xcm = XcmVersionedXcm.V5([
-        XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
-        XcmV5Instruction.PayFees({
-            asset: teerForLocalFees,
-        }),
+        // we're root on source, so no fees must be paid
+        // XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
+        // XcmV5Instruction.PayFees({
+        //     asset: teerForLocalFees,
+        // }),
         XcmV5Instruction.InitiateTransfer({
             destination: KAH_FROM_IK,
             preserve_origin: true,
+            // remote_fees: Enum("ReserveDeposit", ksmForRemoteFilter),
+            // assets: [Enum("ReserveWithdraw", ksmForRemoteFilter)],
             assets: [],
             remote_xcm: [
                 XcmV5Instruction.WithdrawAsset([ksmForRemoteFees]),
