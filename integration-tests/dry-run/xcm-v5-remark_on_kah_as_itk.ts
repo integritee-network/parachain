@@ -235,7 +235,7 @@ async function estimateFees(
     const executionFees =
         await itkApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             xcmWeight.value,
-            XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
+            XcmVersionedAssetId.V5(TEER_FROM_SELF),
         );
     if (!executionFees.success) {
         console.error("executionFees failed: ", executionFees);
