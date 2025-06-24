@@ -107,10 +107,10 @@ main();
 async function main() {
     //let bar: number = "oops"; // Type error: assigning string to number
     // The amount of KSM we wish to teleport.
-    const transferAmount = 10n * KSM_UNITS;
+    const transferAmount = 1n * KSM_UNITS / 100n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 1n * KSM_UNITS;
-    const remoteFeesHighEstimate = 1n * KSM_UNITS;
+    const localFeesHighEstimate = 1n * KSM_UNITS / 100n;
+    const remoteFeesHighEstimate = 1n * KSM_UNITS / 100n;
 
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
@@ -216,22 +216,15 @@ async function createXcm(
     const teerForRemoteFilter = XcmV5AssetFilter.Definite([teerForRemoteFees]);
 
     const xcm = XcmVersionedXcm.V5([
-        // we're root on source, so no fees must be paid
+        // we're root on source, so no fees must be paid.
+        // Still, we need to withdraw an asset which can pay fees on destination
         XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
-        // XcmV5Instruction.PayFees({
-        //     asset: teerForLocalFees,
-        // }),
         XcmV5Instruction.InitiateTransfer({
             destination: KAH_FROM_IK,
             preserve_origin: true,
             remote_fees: Enum("Teleport", teerForRemoteFilter),
-            //assets: [Enum("Teleport", teerForRemoteFilter)],
             assets: [],
             remote_xcm: [
-                // XcmV5Instruction.WithdrawAsset([ksmForRemoteFees]),
-                // XcmV5Instruction.PayFees({
-                //     asset: ksmForRemoteFees,
-                // }),
                 XcmV5Instruction.Transact({
                     origin_kind: XcmV2OriginKind.SovereignAccount(),
                     call: await executeOnPah.getEncodedData(),
