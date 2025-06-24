@@ -367,16 +367,6 @@ pub type XcmRouter = (
 pub type AssetTransactors =
 	(LocalNativeTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
 
-pub struct SafeCallFilter;
-
-impl frame_support::traits::Contains<RuntimeCall> for SafeCallFilter {
-	fn contains(_call: &RuntimeCall) -> bool {
-		// This is safe, as we prevent arbitrary xcm-transact executions.
-		// For rationale, see:https://github.com/paritytech/polkadot/blob/19fdd197aff085f7f66e54942999fd536e7df475/runtime/kusama/src/xcm_config.rs#L171
-		true
-	}
-}
-
 pub struct XcmConfig;
 
 impl staging_xcm_executor::Config for XcmConfig {
@@ -403,7 +393,7 @@ impl staging_xcm_executor::Config for XcmConfig {
 	type FeeManager = ();
 	type MessageExporter = ();
 	type UniversalAliases = Nothing;
-	type SafeCallFilter = SafeCallFilter;
+	type SafeCallFilter = Everything;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = FrameTransactionalProcessor;
 	type HrmpNewChannelOpenRequestHandler = ();
@@ -419,7 +409,7 @@ pub type LocalSignedOriginToLocation = SignedToAccountId32<RuntimeOrigin, Accoun
 
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalSignedOriginToLocation>; // Prohibit sending arbitrary XCMs from users of this chain
+	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalSignedOriginToLocation>; // Allow sending arbitrary XCMs from users of this chain
 	type XcmRouter = XcmRouter;
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalSignedOriginToLocation>; // Allow any local origin in XCM execution.
 	type XcmExecuteFilter = Everything;
