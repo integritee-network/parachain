@@ -43,8 +43,11 @@ const IK_PARA_ID = 2015;
 
 // We're using localhost here since this was tested with chopsticks.
 // For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
-const KAH_WS_URL = "ws://localhost:9010";
-const IK_WS_URL = "ws://localhost:9144";
+//const KAH_WS_URL = "ws://localhost:9010";
+//const IK_WS_URL = "ws://localhost:9144";
+
+const KAH_WS_URL = "ws://localhost:8000";
+const IK_WS_URL = "ws://localhost:8001";
 
 const IK_FROM_KAH = {
     parents: 1,
@@ -67,6 +70,10 @@ const KSM_FROM_KUSAMA_PARACHAINS = {
 const TEER_FROM_SELF = {
     parents: 0,
     interior: XcmV5Junctions.Here(),
+};
+const TEER_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(2015)),
 };
 const DOT_FROM_POLKADOT_PARACHAINS = {
     parents: 1,
@@ -102,6 +109,7 @@ async function main() {
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
     const localFeesHighEstimate = 1n * KSM_UNITS;
     const remoteFeesHighEstimate = 1n * KSM_UNITS;
+
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
         transferAmount,
@@ -109,6 +117,16 @@ async function main() {
         remoteFeesHighEstimate,
     );
     console.dir(stringify(tentativeXcm));
+    const rootAccountLocal = await itkApi.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(TEER_FROM_SELF))
+    if (!rootAccountLocal.success) {
+        console.error("Failed to get root account on source chain: ", rootAccountLocal);
+        await itkClient.destroy();
+        await kahClient.destroy();
+        return;
+    }
+
+    const rootAccountInfo = await itkApi.query.System.Account.getValue(rootAccountLocal.value)
+    console.log("Root account on source chain: ", rootAccountLocal, " with AccountInfo ", rootAccountInfo);
     const weightRes = await itkApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
     if (!weightRes.success) {
         console.error("Failed to get weight for tentative XCM: ", weightRes);
@@ -122,8 +140,8 @@ async function main() {
         max_weight: weightRes.value, // Arbitrary weight, we will adjust it later.
     });
     console.log(tentativeTx)
-    const tentativeTxSudo = itkApi.tx.Sudo.sudo({call: tentativeTx.decodedCall});
-    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
+    //const tentativeTxSudo = itkApi.tx.Sudo.sudo({call: tentativeTx.decodedCall});
+    //console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
     const [localFeesEstimate, remoteFeesEstimate] =
@@ -180,9 +198,9 @@ async function createXcm(
             transferAmount + localFees + remoteFees,
         ),
     };
-    const teerForLocalFees = {
+    const teerForRemoteFees = {
         id: TEER_FROM_SELF,
-        fun: XcmV3MultiassetFungibility.Fungible(localFees),
+        fun: XcmV3MultiassetFungibility.Fungible(remoteFees),
     };
     const ksmForRemoteFees = {
         id: KSM_FROM_KUSAMA_PARACHAINS,
@@ -193,24 +211,25 @@ async function createXcm(
     //     fun: XcmV2MultiassetWildFungibility.Fungible(),
     // }));
     const ksmForRemoteFilter = XcmV5AssetFilter.Definite([ksmForRemoteFees]);
+    const teerForRemoteFilter = XcmV5AssetFilter.Definite([teerForRemoteFees]);
 
     const xcm = XcmVersionedXcm.V5([
         // we're root on source, so no fees must be paid
-        // XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
+        XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
         // XcmV5Instruction.PayFees({
         //     asset: teerForLocalFees,
         // }),
         XcmV5Instruction.InitiateTransfer({
             destination: KAH_FROM_IK,
             preserve_origin: true,
-            // remote_fees: Enum("ReserveDeposit", ksmForRemoteFilter),
-            // assets: [Enum("ReserveWithdraw", ksmForRemoteFilter)],
+            remote_fees: Enum("Teleport", teerForRemoteFilter),
+            //assets: [Enum("Teleport", teerForRemoteFilter)],
             assets: [],
             remote_xcm: [
-                XcmV5Instruction.WithdrawAsset([ksmForRemoteFees]),
-                XcmV5Instruction.PayFees({
-                    asset: ksmForRemoteFees,
-                }),
+                // XcmV5Instruction.WithdrawAsset([ksmForRemoteFees]),
+                // XcmV5Instruction.PayFees({
+                //     asset: ksmForRemoteFees,
+                // }),
                 XcmV5Instruction.Transact({
                     origin_kind: XcmV2OriginKind.SovereignAccount(),
                     call: await executeOnPah.getEncodedData(),
