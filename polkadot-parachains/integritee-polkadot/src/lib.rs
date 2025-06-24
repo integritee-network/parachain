@@ -134,7 +134,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: Cow::Borrowed("integritee-polkadot"),
 	impl_name: Cow::Borrowed("integritee-full"),
 	authoring_version: 2,
-	spec_version: 553,
+	spec_version: 560,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 8,
@@ -1363,12 +1363,15 @@ impl_runtime_apis! {
 		}
 
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-			let latest_asset_id: Result<AssetId, ()> = asset.try_into();
+			let latest_asset_id: Result<AssetId, ()> = asset.clone().try_into();
 			match latest_asset_id {
 				Ok(asset_id) if asset_id.0 == xcm_config::SelfLocation::get() => {
 					Ok(WeightToFee::weight_to_fee(&weight))
 				},
-				_ => todo!("Error handling"),
+				Ok(asset_id) if asset_id.0 == xcm_config::RelayChainLocation::get() => {
+					Ok(WeightToFee::weight_to_fee(&weight))
+				},
+				_ => todo!("Asset fee payment for {:?} not implemented", asset),
 			}
 		}
 

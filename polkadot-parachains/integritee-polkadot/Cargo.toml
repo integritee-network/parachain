@@ -2,7 +2,7 @@
 name = "integritee-polkadot-runtime"
 description = "The Integritee Polkadot parachain runtime"
 # align major.minor revision with polkadot SDK. patch revision must match runtime spec_version
-version = "1.18.553"
+version = "1.18.560"
 authors = ["Integritee AG <hello@integritee.network>"]
 homepage = "https://integritee.network/"
 repository = "https://github.com/integritee-network/parachain"
