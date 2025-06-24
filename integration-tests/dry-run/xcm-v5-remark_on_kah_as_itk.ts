@@ -41,11 +41,13 @@ import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 const KAH_PARA_ID = 1000;
 const IK_PARA_ID = 2015;
 
-// We're using localhost here since this was tested with chopsticks.
+
 // For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
 //const KAH_WS_URL = "ws://localhost:9010";
 //const IK_WS_URL = "ws://localhost:9144";
 
+// We're running against chopsticks with wasm-override to get XCMv5 support.
+// `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
 const KAH_WS_URL = "ws://localhost:8000";
 const IK_WS_URL = "ws://localhost:8001";
 
