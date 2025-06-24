@@ -25,7 +25,8 @@ bun papi add kbh -w ws://localhost:8945
 bun papi add pah -w ws://localhost:9910
 bun papi add pbh -w ws://localhost:8943
 # bun papi add ppeople -n polkadot_people
-bun papi add itk -w ws://localhost:9144
+bun papi add itk --wasm ../../target/release/wbuild/integritee-kusama-runtime/integritee_kusama_runtime.wasm 
+# or: bun papi add itk -w ws://localhost:9144
 bun papi add itp -w ws://localhost:9244
 ```
 

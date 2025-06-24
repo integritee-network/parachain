@@ -43,10 +43,7 @@
       "metadata": ".papi/metadata/ppeople.scale"
     },
     "itk": {
-      "wsUrl": "ws://localhost:9144",
-      "metadata": ".papi/metadata/itk.scale",
-      "genesis": "0xd94462a00e879c6e457c7ac25de20ddc9ebf5667d2a380c046dd41a645e2ffd9",
-      "codeHash": "0x4400510617b965238bd7c26e7d5301d48b74543a79f8c1728718471a2fa86924"
+      "metadata": ".papi/metadata/itk.scale"
     },
     "itp": {
       "wsUrl": "ws://localhost:9244",
