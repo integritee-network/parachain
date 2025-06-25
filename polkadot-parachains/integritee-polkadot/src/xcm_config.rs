@@ -55,11 +55,12 @@ use staging_xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
 	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
-	EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor,
-	FungibleAdapter, FungiblesAdapter, GlobalConsensusParachainConvertsFor, HashedDescription,
-	NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin,
+	DescribeTerminus, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
+	FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	GlobalConsensusParachainConvertsFor, HashedDescription, NoChecking, ParentAsSuperuser,
+	ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	TrailingSetTopicAsId, WithComputedOrigin,
 };
 use staging_xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
@@ -135,6 +136,8 @@ pub type LocationToAccountId = (
 	SiblingParachainConvertsVia<Sibling, AccountId>,
 	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
 	AccountId32Aliases<RelayNetwork, AccountId>,
+	// Here/local root location to AccountId.
+	HashedDescription<AccountId, DescribeTerminus>,
 	// Foreign locations alias into accounts according to a hash of their standard description.
 	HashedDescription<AccountId, DescribeFamily<DescribeAllTerminal>>,
 	// Different global consensus parachain sovereign account.
