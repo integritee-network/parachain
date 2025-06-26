@@ -36,6 +36,7 @@ import {
     mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
+import type {I4q39t5hn830vp, If9iqq7i64mur8} from "@polkadot-api/descriptors/dist/common-types";
 
 // Useful constants.
 const KAH_PARA_ID = 1000;
@@ -142,8 +143,8 @@ async function main() {
         max_weight: weightRes.value, // Arbitrary weight, we will adjust it later.
     });
     console.log(tentativeTx)
-    //const tentativeTxSudo = itkApi.tx.Sudo.sudo({call: tentativeTx.decodedCall});
-    //console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
+    const tentativeTxSudo = itkApi.tx.Sudo.sudo({call: tentativeTx.decodedCall});
+    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
     const [localFeesEstimate, remoteFeesEstimate] =
@@ -219,6 +220,18 @@ async function createXcm(
         // we're root on source, so no fees must be paid.
         // Still, we need to withdraw an asset which can pay fees on destination
         XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
+        XcmV5Instruction.SetAppendix([
+            // XcmV5Instruction.ReportError({
+            //     "destination": TEER_FROM_SIBLING,
+            //     "query_id": 1n,
+            //     "max_weight": {ref_time: 0n, proof_size: 0n},
+            // }),
+            XcmV5Instruction.RefundSurplus(),
+            XcmV5Instruction.DepositAsset({
+                assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
+                beneficiary: TEER_FROM_SIBLING,
+            })
+        ]),
         XcmV5Instruction.InitiateTransfer({
             destination: KAH_FROM_IK,
             preserve_origin: true,
@@ -229,10 +242,8 @@ async function createXcm(
                     origin_kind: XcmV2OriginKind.SovereignAccount(),
                     call: await executeOnPah.getEncodedData(),
                 }),
-                XcmV5Instruction.RefundSurplus(),
             ],
         }),
-        XcmV5Instruction.RefundSurplus(),
     ]);
     return xcm;
 }
