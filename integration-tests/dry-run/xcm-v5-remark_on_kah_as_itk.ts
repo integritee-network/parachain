@@ -99,7 +99,7 @@ async function main() {
     // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 1n * TEER_UNITS / 10n;
+    const localFeesHighEstimate = 0n * TEER_UNITS / 10n; // we're root locally and don't pay fees, so this is just a placeholder.
     const remoteFeesHighEstimate = 2n * TEER_UNITS;
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
@@ -148,11 +148,13 @@ async function main() {
     const [localFeesEstimate, remoteFeesEstimate] =
         (await estimateFees(tentativeXcm))!;
 
+    console.log("Local fees estimate [TEER]: ", localFeesEstimate);
+    console.log("Remote fees estimate [TEER]: ", remoteFeesEstimate);
     // With these estimates, we can create the final XCM to execute.
     const xcm = await createXcm(
         transferAmount,
         localFeesEstimate,
-        remoteFeesHighEstimate, // TODO: account for conversion from TEER to DOT here when using the updated estimate
+        remoteFeesEstimate,
     );
     console.log("Executing XCM now....")
     const weightResult = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
@@ -170,7 +172,17 @@ async function main() {
             .pipe(take(1))
             .forEach((event) => {
                 console.log("Event received: System.Remarked from ", event.payload.sender, " with hash ", event.payload.hash.asHex());
-            })
+            });
+        const issuedEvents = await kahApi.event.ForeignAssets.Issued.pull();
+        if (issuedEvents.length > 0) {
+            console.log("foreignAssets.Issued (returning overpaid fees to sovereign sibling account on KAH [TEER]", issuedEvents[0].payload.amount, " to ", issuedEvents[0].payload.owner);
+            const effectiveFees = remoteFeesEstimate - issuedEvents[0].payload.amount
+            console.log("Effectively paid fees ", effectiveFees, " = ", Number(effectiveFees) / Number(TEER_UNITS), " TEER");
+        } else {
+            console.log("No foreignAssets.issued events found. this likely means it didn't work as expected.");
+        }
+
+
     }
     await itkClient.destroy();
     await kahClient.destroy();
@@ -349,6 +361,21 @@ async function estimateFees(
         return;
     }
     console.log("remoteDryRunResult: ", remoteDryRunResult.value);
+    const swapCreditEvent = remoteDryRunResult.value.emitted_events.find(
+        (event: any) =>
+            event.type === "AssetConversion" &&
+            event.value?.type === "SwapCreditExecuted"
+    );
+
+    if (swapCreditEvent) {
+        console.log("Found SwapCreditExecuted event:", swapCreditEvent.value.value);
+    } else {
+        console.error("SwapCreditExecuted event not found.");
+        return;
+    }
+    const teerPerKsm = Number(swapCreditEvent.value.value.amount_in) / Number(swapCreditEvent.value.value.amount_out);
+    const teerSpent = swapCreditEvent.value.value.amount_in;
+    console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
 
     const remoteWeight =
         await itkApi.apis.XcmPaymentApi.query_xcm_weight(messageToPah);
@@ -359,19 +386,19 @@ async function estimateFees(
     console.log("remoteWeight: ", remoteWeight.value);
 
     // Remote fees are only execution.
-    const remoteFeesInDot =
+    const remoteFeesInKsm =
         await itkApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
             remoteWeight.value,
             XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );
 
-    if (!remoteFeesInDot.success) {
-        console.error("remoteFeesInDot failed: ", remoteFeesInDot);
+    if (!remoteFeesInKsm.success) {
+        console.error("remoteFeesInKsm failed: ", remoteFeesInKsm);
         return;
     }
-    console.log("remoteFeesInDot: ", remoteFeesInDot);
-    const remoteFeesInTeer = remoteFeesInDot.value * 100n;
-    console.log("remoteFeesInTeer: ", remoteFeesInTeer);
+    console.log("remoteFeesInKsm: ", remoteFeesInKsm);
+    const remoteFeesInTeer = BigInt(Math.round(Number(teerSpent) * 1.1));
+    console.log("remoteFeesInTeer (with margin): ", remoteFeesInTeer);
     return [localFees, remoteFeesInTeer];
 }
 
