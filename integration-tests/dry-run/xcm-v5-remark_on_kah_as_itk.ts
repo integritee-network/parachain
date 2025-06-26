@@ -107,11 +107,18 @@ main();
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
     //let bar: number = "oops"; // Type error: assigning string to number
-    // The amount of KSM we wish to teleport.
-    const transferAmount = 1n * KSM_UNITS / 100n;
+    // The amount of TEER we wish to teleport.
+    const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 1n * KSM_UNITS / 100n;
-    const remoteFeesHighEstimate = 1n * KSM_UNITS / 100n;
+    const localFeesHighEstimate = 1n * TEER_UNITS / 100n;
+    const remoteFeesHighEstimate = 1n * TEER_UNITS;
+
+    const stx = await itkApi.tx.System.remark({remark: Binary.fromText("Let's trigger state migration")})
+    const signer = getAliceSigner();
+    const result = await stx.signAndSubmit(signer);
+    console.log("triggered state migrations if necessary. waiting for a bit....")
+    // wait for chopsticks api's to catch up
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
