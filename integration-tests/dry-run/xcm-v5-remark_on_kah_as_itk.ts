@@ -36,6 +36,7 @@ import {
     mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
+import {take} from "rxjs"
 import type {I4q39t5hn830vp, If9iqq7i64mur8} from "@polkadot-api/descriptors/dist/common-types";
 
 // Useful constants.
@@ -113,7 +114,7 @@ async function main() {
     const localFeesHighEstimate = 1n * TEER_UNITS / 100n;
     const remoteFeesHighEstimate = 1n * TEER_UNITS;
 
-    const stx = await itkApi.tx.System.remark({remark: Binary.fromText("Let's trigger state migration")})
+    const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
     const result = await stx.signAndSubmit(signer);
     console.log("triggered state migrations if necessary. waiting for a bit....")
@@ -175,6 +176,12 @@ async function main() {
         const signer = getAliceSigner();
         const result = await stx.signAndSubmit(signer);
         console.dir(stringify(result.txHash));
+        console.log("Await System.Remarked event on destination chain...")
+        const destinationEvent = await kahApi.event.System.Remarked.watch()
+            .pipe(take(1))
+            .forEach((event) => {
+                console.log("Event received: System.Remarked from ", event.payload.sender, " with hash=", event.payload.hash.asHex());
+            })
     }
     await itkClient.destroy();
     await kahClient.destroy();
@@ -201,7 +208,7 @@ async function createXcm(
     localFees: bigint,
     remoteFees: bigint,
 ): Promise<XcmVersionedXcm> {
-    const executeOnPah = kahApi.tx.System.remark({remark: Binary.fromText("Hello Polkadot")})
+    const executeOnPah = kahApi.tx.System.remark_with_event({remark: Binary.fromText("Hello Polkadot")})
     const teerToWithdraw = {
         id: TEER_FROM_SELF,
         fun: XcmV3MultiassetFungibility.Fungible(
