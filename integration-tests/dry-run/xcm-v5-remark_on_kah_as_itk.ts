@@ -161,7 +161,7 @@ async function main() {
     const xcm = await createXcm(
         transferAmount,
         localFeesEstimate,
-        remoteFeesEstimate,
+        remoteFeesHighEstimate, // TODO: account for conversion from TEER to DOT here
     );
     // We get the weight and we execute.
     console.log("Executing XCM now....")
@@ -174,7 +174,7 @@ async function main() {
         const stx = await itkApi.tx.Sudo.sudo({call: tx.decodedCall})
         const signer = getAliceSigner();
         const result = await stx.signAndSubmit(signer);
-        console.dir(stringify(result));
+        console.dir(stringify(result.txHash));
     }
     await itkClient.destroy();
     await kahClient.destroy();
@@ -236,7 +236,7 @@ async function createXcm(
             XcmV5Instruction.RefundSurplus(),
             XcmV5Instruction.DepositAsset({
                 assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
-                beneficiary: TEER_FROM_SIBLING,
+                beneficiary: TEER_FROM_SELF,
             })
         ]),
         XcmV5Instruction.InitiateTransfer({
@@ -377,7 +377,9 @@ async function estimateFees(
         return;
     }
     console.log("remoteFeesInDot: ", remoteFeesInDot);
-    return [localFees, remoteFeesInDot.value];
+    const remoteFeesInTeer = remoteFeesInDot.value * 100000n;
+    console.log("remoteFeesInTeer: ", remoteFeesInTeer);
+    return [localFees, remoteFeesInTeer];
 }
 
 // Just a helper function to get a signer for ALICE.
