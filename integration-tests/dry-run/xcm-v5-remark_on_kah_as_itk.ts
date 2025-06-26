@@ -99,8 +99,8 @@ async function main() {
     // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 0n * TEER_UNITS / 10n; // we're root locally and don't pay fees, so this is just a placeholder.
-    const remoteFeesHighEstimate = 2n * TEER_UNITS;
+    const localFeesHighEstimate = 0n; // we're root locally and don't pay fees, so this is just a placeholder.
+    const remoteFeesHighEstimate = 10n * TEER_UNITS;
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
