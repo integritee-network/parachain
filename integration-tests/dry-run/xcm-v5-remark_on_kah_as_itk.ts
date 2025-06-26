@@ -367,14 +367,20 @@ async function estimateFees(
             event.value?.type === "SwapCreditExecuted"
     );
 
-    if (swapCreditEvent) {
+    if (
+        swapCreditEvent &&
+        typeof swapCreditEvent.value.value === "object" &&
+        swapCreditEvent.value.value !== null &&
+        "amount_in" in swapCreditEvent.value.value &&
+        "amount_out" in swapCreditEvent.value.value
+    ) {
         console.log("Found SwapCreditExecuted event:", swapCreditEvent.value.value);
     } else {
-        console.error("SwapCreditExecuted event not found.");
+        console.error("SwapCreditExecuted event not found or malformed.", swapCreditEvent);
         return;
     }
-    const teerPerKsm = Number(swapCreditEvent.value.value.amount_in) / Number(swapCreditEvent.value.value.amount_out);
-    const teerSpent = swapCreditEvent.value.value.amount_in;
+    const teerPerKsm = Number(swapCreditEvent.value?.value?.amount_in) / Number(swapCreditEvent?.value?.value?.amount_out);
+    const teerSpent = swapCreditEvent.value?.value?.amount_in;
     console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
 
     const remoteWeight =
