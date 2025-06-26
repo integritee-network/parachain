@@ -1,17 +1,19 @@
-// reuires a running bridge-zombienet. See ../bridges
+// requires a running IK-KAH chopsticks
+// for setup, refer to
+// https://github.com/integritee-network/parachain/issues/323
 //
-// As KAH sovereign, we will send a xcm to IK to transact/execute a system.remark
-// .
+// As IK sovereign, we will send a xcm to KAH to transact/execute a system.remark_with_event
+// all fees will be paid in TEER and converted to KSM on KAH as needed
 
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
-    itk,
-    kah,
+    itk, // bun papi add itk -w http://localhost:8001
+    kah, // bun papi add kah -w http://localhost:8000
     DispatchRawOrigin,
     XcmV5Junction,
     XcmV5Junctions,
     XcmV5NetworkId,
-    XcmV3MultiassetFungibility, XcmV2MultiassetWildFungibility,
+    XcmV3MultiassetFungibility,
     XcmV5Instruction,
     XcmVersionedAssetId,
     XcmVersionedLocation,
@@ -37,21 +39,19 @@ import {
 } from "@polkadot-labs/hdkd-helpers";
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 import {take} from "rxjs"
-import type {I4q39t5hn830vp, If9iqq7i64mur8} from "@polkadot-api/descriptors/dist/common-types";
 
 // Useful constants.
 const KAH_PARA_ID = 1000;
 const IK_PARA_ID = 2015;
 
-
-// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
-//const KAH_WS_URL = "ws://localhost:9010";
-//const IK_WS_URL = "ws://localhost:9144";
-
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
 const KAH_WS_URL = "ws://localhost:8000";
 const IK_WS_URL = "ws://localhost:8001";
+
+// if running against the bridge zombienet instead, use these:
+//const KAH_WS_URL = "ws://localhost:9010";
+//const IK_WS_URL = "ws://localhost:9144";
 
 const IK_FROM_KAH = {
     parents: 1,
@@ -64,7 +64,6 @@ const KAH_FROM_IK = {
 // XCM.
 const XCM_VERSION = 5;
 
-const KSM_UNITS = 1_000_000_000_000n;
 const TEER_UNITS = 1_000_000_000_000n;
 
 const KSM_FROM_KUSAMA_PARACHAINS = {
@@ -75,20 +74,6 @@ const TEER_FROM_SELF = {
     parents: 0,
     interior: XcmV5Junctions.Here(),
 };
-const TEER_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(2015)),
-};
-const DOT_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const KSM_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
-};
-// Alice's SS58 account for Polkadot.
-const ACCOUNT = "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5";
 
 // Setup clients...
 const kahClient = createClient(
@@ -107,8 +92,7 @@ main();
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
-    //let bar: number = "oops"; // Type error: assigning string to number
-    // The amount of TEER we wish to teleport.
+    // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
     const localFeesHighEstimate = 1n * TEER_UNITS / 100n;
@@ -116,7 +100,7 @@ async function main() {
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
-    const result = await stx.signAndSubmit(signer);
+    await stx.signAndSubmit(signer);
     console.log("triggered state migrations if necessary. waiting for a bit....")
     // wait for chopsticks api's to catch up
     await new Promise(resolve => setTimeout(resolve, 5000));
@@ -128,6 +112,8 @@ async function main() {
         remoteFeesHighEstimate,
     );
     console.dir(stringify(tentativeXcm));
+
+    // We can now query the root account on the source chain.
     const rootAccountLocal = await itkApi.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(TEER_FROM_SELF))
     if (!rootAccountLocal.success) {
         console.error("Failed to get root account on source chain: ", rootAccountLocal);
@@ -135,9 +121,9 @@ async function main() {
         await kahClient.destroy();
         return;
     }
-
     const rootAccountInfo = await itkApi.query.System.Account.getValue(rootAccountLocal.value)
     console.log("Root account on source chain: ", rootAccountLocal, " with AccountInfo ", rootAccountInfo);
+
     const weightRes = await itkApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
     if (!weightRes.success) {
         console.error("Failed to get weight for tentative XCM: ", weightRes);
@@ -162,9 +148,8 @@ async function main() {
     const xcm = await createXcm(
         transferAmount,
         localFeesEstimate,
-        remoteFeesHighEstimate, // TODO: account for conversion from TEER to DOT here
+        remoteFeesHighEstimate, // TODO: account for conversion from TEER to DOT here when using the updated estimate
     );
-    // We get the weight and we execute.
     console.log("Executing XCM now....")
     const weightResult = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (weightResult.success) {
@@ -177,10 +162,10 @@ async function main() {
         const result = await stx.signAndSubmit(signer);
         console.dir(stringify(result.txHash));
         console.log("Await System.Remarked event on destination chain...")
-        const destinationEvent = await kahApi.event.System.Remarked.watch()
+        await kahApi.event.System.Remarked.watch()
             .pipe(take(1))
             .forEach((event) => {
-                console.log("Event received: System.Remarked from ", event.payload.sender, " with hash=", event.payload.hash.asHex());
+                console.log("Event received: System.Remarked from ", event.payload.sender, " with hash ", event.payload.hash.asHex());
             })
     }
     await itkClient.destroy();
@@ -223,11 +208,6 @@ async function createXcm(
         id: KSM_FROM_KUSAMA_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(remoteFees),
     };
-    // const ksmForRemoteFilter = XcmV5AssetFilter.Wild(XcmV5WildAsset.AllOf({
-    //     id: KSM_FROM_KUSAMA_PARACHAINS,
-    //     fun: XcmV2MultiassetWildFungibility.Fungible(),
-    // }));
-    const ksmForRemoteFilter = XcmV5AssetFilter.Definite([ksmForRemoteFees]);
     const teerForRemoteFilter = XcmV5AssetFilter.Definite([teerForRemoteFees]);
 
     const xcm = XcmVersionedXcm.V5([
@@ -235,11 +215,6 @@ async function createXcm(
         // Still, we need to withdraw an asset which can pay fees on destination
         XcmV5Instruction.WithdrawAsset([teerToWithdraw]),
         XcmV5Instruction.SetAppendix([
-            // XcmV5Instruction.ReportError({
-            //     "destination": TEER_FROM_SIBLING,
-            //     "query_id": 1n,
-            //     "max_weight": {ref_time: 0n, proof_size: 0n},
-            // }),
             XcmV5Instruction.RefundSurplus(),
             XcmV5Instruction.DepositAsset({
                 assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
