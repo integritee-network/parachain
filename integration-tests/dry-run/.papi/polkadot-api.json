@@ -15,10 +15,10 @@
       "codeHash": "0x4df2db32490f85e6ec69d135faa8d96e6fa8e7087a39deed70710af62bdfebac"
     },
     "kah": {
-      "wsUrl": "ws://localhost:9910",
+      "wsUrl": "http://localhost:8000",
       "metadata": ".papi/metadata/kah.scale",
-      "genesis": "0x0c231e1dd46a096629b50072f965dfb4c2a0c62568def5da97e423d5dedb50c6",
-      "codeHash": "0xb5b3386c0e8170b20e186646c0ff0d46f5e4b45ae3203c5ebe045c084714eb35"
+      "genesis": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
+      "codeHash": "0x8356dd03a2a5521b9339ce0c6b2a56d3edf83f0ca7262e9edabb695df770a0f6"
     },
     "kbh": {
       "wsUrl": "ws://localhost:8945",

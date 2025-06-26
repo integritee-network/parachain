@@ -334,7 +334,7 @@ async function estimateFees(
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
 
     // Now we dry run on the destination.
-    const remoteDryRunResult = await itkApi.apis.DryRunApi.dry_run_xcm(
+    const remoteDryRunResult = await kahApi.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
