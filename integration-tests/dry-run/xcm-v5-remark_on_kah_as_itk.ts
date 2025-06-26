@@ -74,6 +74,10 @@ const TEER_FROM_SELF = {
     parents: 0,
     interior: XcmV5Junctions.Here(),
 };
+const TEER_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(2015)),
+};
 
 // Setup clients...
 const kahClient = createClient(
@@ -95,8 +99,8 @@ async function main() {
     // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 1n * TEER_UNITS / 100n;
-    const remoteFeesHighEstimate = 1n * TEER_UNITS;
+    const localFeesHighEstimate = 1n * TEER_UNITS / 10n;
+    const remoteFeesHighEstimate = 2n * TEER_UNITS;
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
@@ -227,6 +231,13 @@ async function createXcm(
             remote_fees: Enum("Teleport", teerForRemoteFilter),
             assets: [],
             remote_xcm: [
+                XcmV5Instruction.SetAppendix([
+                    XcmV5Instruction.RefundSurplus(),
+                    XcmV5Instruction.DepositAsset({
+                        assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
+                        beneficiary: TEER_FROM_SIBLING,
+                    })
+                ]),
                 XcmV5Instruction.Transact({
                     origin_kind: XcmV2OriginKind.SovereignAccount(),
                     call: await executeOnPah.getEncodedData(),
@@ -359,7 +370,7 @@ async function estimateFees(
         return;
     }
     console.log("remoteFeesInDot: ", remoteFeesInDot);
-    const remoteFeesInTeer = remoteFeesInDot.value * 100000n;
+    const remoteFeesInTeer = remoteFeesInDot.value * 100n;
     console.log("remoteFeesInTeer: ", remoteFeesInTeer);
     return [localFees, remoteFeesInTeer];
 }
