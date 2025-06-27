@@ -293,30 +293,32 @@ async function createXcm(
                     })
                 ]),
                 // we 'd like exactly ksmForRemote2Fees and keep the rest in TEER
-                XcmV5Instruction.ExchangeAsset({
-                    give: teerToSwapOnRemote1Filter,
-                    want: [ksmForRemote2Fees],
-                    maximal: false
-                }),
-                // XcmV5Instruction.InitiateTransfer({
-                //     destination: PAH_FROM_KAH,
-                //     preserve_origin: true,
-                //     remote_fees: Enum("ReserveDeposit", ksmForRemote2Filter),
-                //     assets: [],
-                //     remote_xcm: [
-                //         XcmV5Instruction.SetAppendix([
-                //             XcmV5Instruction.RefundSurplus(),
-                //             XcmV5Instruction.DepositAsset({
-                //                 assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
-                //                 beneficiary: TEER_FROM_COUSIN,
-                //             })
-                //         ]),
-                //         XcmV5Instruction.Transact({
-                //             origin_kind: XcmV2OriginKind.SovereignAccount(),
-                //             call: await executeOnPah.getEncodedData(),
-                //         }),
-                //     ],
+                // XcmV5Instruction.ExchangeAsset({
+                //     give: teerToSwapOnRemote1Filter,
+                //     want: [ksmForRemote2Fees],
+                //     maximal: false
                 // }),
+                // as a shortcut, let's use KSM we already have on sovereign account
+                XcmV5Instruction.WithdrawAsset([ksmForRemote2Fees]),
+                XcmV5Instruction.InitiateTransfer({
+                    destination: PAH_FROM_KAH,
+                    preserve_origin: true,
+                    remote_fees: Enum("ReserveDeposit", ksmForRemote2Filter),
+                    assets: [],
+                    remote_xcm: [
+                        XcmV5Instruction.SetAppendix([
+                            XcmV5Instruction.RefundSurplus(),
+                            XcmV5Instruction.DepositAsset({
+                                assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
+                                beneficiary: TEER_FROM_COUSIN,
+                            })
+                        ]),
+                        XcmV5Instruction.Transact({
+                            origin_kind: XcmV2OriginKind.SovereignAccount(),
+                            call: await executeOnPah.getEncodedData(),
+                        }),
+                    ],
+                }),
             ],
         }),
     ]);
