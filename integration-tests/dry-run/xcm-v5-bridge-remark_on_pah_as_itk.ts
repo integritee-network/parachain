@@ -142,7 +142,7 @@ async function main() {
         transferAmount,
         localFeesHighEstimate,
         remote1FeesHighEstimateTeer,
-        remote2FeesHighEstimateTeerConverted,
+        BigInt(Math.round(Number(remote2FeesHighEstimateTeerConverted) * 1.5)),
         remote2FeesHighEstimateKsm
     );
     console.dir(stringify(tentativeXcm));
@@ -186,7 +186,7 @@ async function main() {
         transferAmount,
         localFeesEstimate,
         remote1FeesEstimate,
-        BigInt(Math.round(Number(remote2FeesEstimateKsm) * teerPerKsm)),
+        BigInt(Math.round(Number(remote2FeesEstimateKsm) * teerPerKsm * 1.5)),
         remote2FeesEstimateKsm
     );
     console.log("Executing XCM now....")
@@ -283,6 +283,7 @@ async function createXcm(
             preserve_origin: true,
             remote_fees: Enum("Teleport", teerForRemote1Filter),
             assets: [],
+            //assets: [Enum("Teleport", teerToSwapOnRemote1Filter)],
             remote_xcm: [
                 XcmV5Instruction.SetAppendix([
                     XcmV5Instruction.RefundSurplus(),
