@@ -27,10 +27,10 @@
       "codeHash": "0xd5c30bef2c87523c97c7001fb90621cf85b5405389533a161138ae64378d0068"
     },
     "pah": {
-      "wsUrl": "ws://localhost:9910",
+      "wsUrl": "http://localhost:8002",
       "metadata": ".papi/metadata/pah.scale",
-      "genesis": "0x0c231e1dd46a096629b50072f965dfb4c2a0c62568def5da97e423d5dedb50c6",
-      "codeHash": "0xb5b3386c0e8170b20e186646c0ff0d46f5e4b45ae3203c5ebe045c084714eb35"
+      "genesis": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+      "codeHash": "0x895162f32905116ba8765aee474a9ab85702cf770047a6359e293d6d38e3364a"
     },
     "pbh": {
       "wsUrl": "ws://localhost:8943",

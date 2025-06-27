@@ -9,7 +9,7 @@
 import {
     itk, // bun papi add itk -w http://localhost:8001
     kah, // bun papi add kah -w http://localhost:8000
-    pah, // bun papi add kah -w http://localhost:8002
+    pah, // bun papi add pah -w http://localhost:8002
     DispatchRawOrigin,
     XcmV5Junction,
     XcmV5Junctions,
@@ -438,10 +438,10 @@ async function estimateFees(
         !remoteDryRunResult.success ||
         remoteDryRunResult.value.execution_result.type !== "Complete"
     ) {
-        console.error("remoteDryRunResult failed: ", remoteDryRunResult);
+        console.error("remote1DryRunResult failed: ", remoteDryRunResult);
         return;
     }
-    console.log("remoteDryRunResult: ", remoteDryRunResult.value);
+    console.log("remote1DryRunResult: ", remoteDryRunResult.value);
     const swapCreditEvent = remoteDryRunResult.value.emitted_events.find(
         (event: any) =>
             event.type === "AssetConversion" &&
@@ -467,10 +467,10 @@ async function estimateFees(
     const remoteWeight =
         await itkApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
     if (!remoteWeight.success) {
-        console.error("remoteWeight failed: ", remoteWeight);
+        console.error("remote1Weight failed: ", remoteWeight);
         return;
     }
-    console.log("remoteWeight: ", remoteWeight.value);
+    console.log("remote1Weight: ", remoteWeight.value);
 
     // Remote fees are only execution.
     const remoteFeesInKsm =
@@ -480,24 +480,59 @@ async function estimateFees(
         );
 
     if (!remoteFeesInKsm.success) {
-        console.error("remoteFeesInKsm failed: ", remoteFeesInKsm);
+        console.error("remote1FeesInKsm failed: ", remoteFeesInKsm);
         return;
     }
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
     const [_dummy, messages2] = remoteDryRunResult.value.forwarded_xcms.find(
-        ([location, _]) =>
-            location.type === "V5" &&
-            location.value.parents === 2 &&
-            location.value.interior.type === "X2"
+        ([location, message]) =>
+            location.type === "V5"
     )!;
 
-    const messageToPah = messages2[0];
+    const messageToKbh = messages2[0];
     // Found it.
+    console.log("messageToKbh: ", messageToKbh);
+
+    const exportMessageInstruction = messageToKbh?.value.find((instruction: any) =>
+        instruction.type === "ExportMessage" &&
+        typeof instruction.value === "object" &&
+        instruction.value !== null &&
+        "xcm" in instruction.value
+    )
+    console.log(exportMessageInstruction)
+    const messageToPah = {
+        type: messageToKbh.type,
+        value: exportMessageInstruction?.value?.xcm
+    };
     console.log("messageToPah: ", messageToPah);
 
-    console.log("remoteFeesInKsm: ", remoteFeesInKsm);
+    // Now we dry run on the destination.
+    const remote2DryRunResult = await pahApi.apis.DryRunApi.dry_run_xcm(
+        XcmVersionedLocation.V5({
+            parents: 2,
+            interior: XcmV5Junctions.X2([
+                XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()),
+                XcmV5Junction.Parachain(IK_PARA_ID)
+            ]),
+        }),
+        // XcmVersionedLocation.V5({
+        //     parents: 1,
+        //     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(1002)),
+        // }),
+        messageToPah,
+    );
+    if (
+        !remote2DryRunResult.success ||
+        remote2DryRunResult.value.execution_result.type !== "Complete"
+    ) {
+        console.error("remoteDryRunResult failed: ", remote2DryRunResult);
+        return;
+    }
+    console.log("remote2DryRunResult: ", remote2DryRunResult.value);
+
+    console.log("remote1FeesInKsm: ", remoteFeesInKsm);
     const remote1FeesInTeer = BigInt(Math.round(Number(teerSpent) * 1.1));
     console.log("remote1FeesInTeer (with margin): ", remote1FeesInTeer);
 
