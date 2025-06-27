@@ -385,8 +385,18 @@ async function estimateFees(
     const exchangeAssetInstruction = messageToKah?.value.find((instruction: any) =>
         instruction.type === "ExchangeAsset"
     )
-    console.log("ExchangeAsset attempt: give ", exchangeAssetInstruction.value.give.value);
-    console.log("ExchangeAsset attempt: want ", exchangeAssetInstruction.value.want[0]);
+    if (
+        exchangeAssetInstruction &&
+        typeof exchangeAssetInstruction.value === "object" &&
+        exchangeAssetInstruction.value !== null &&
+        "give" in exchangeAssetInstruction.value &&
+        "want" in exchangeAssetInstruction.value
+    ) {
+        console.log("ExchangeAsset attempt: give ", exchangeAssetInstruction.value.give.value);
+        console.log("ExchangeAsset attempt: want ", exchangeAssetInstruction.value.want[0]);
+    } else {
+        console.log("ExchangeAsset instruction does not have 'give' or 'want' properties:", exchangeAssetInstruction?.value);
+    }
 
     // We're only dealing with version 4.
     if (messageToKah?.type !== "V5") {
