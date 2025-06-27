@@ -77,6 +77,7 @@ const KAH_FROM_PAH = {
 const XCM_VERSION = 5;
 
 const TEER_UNITS = 1_000_000_000_000n;
+const KSM_UNITS = 1_000_000_000_000n;
 
 const KSM_FROM_KUSAMA_PARACHAINS = {
     parents: 1,
@@ -122,8 +123,8 @@ async function main() {
     const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
     const localFeesHighEstimate = 0n; // we're root locally and don't pay fees, so this is just a placeholder.
-    const remote1FeesHighEstimate = 10n * TEER_UNITS;
-    const remote2FeesHighEstimate = 10n * TEER_UNITS;
+    const remote1FeesHighEstimateTeer = 10n * TEER_UNITS;
+    const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
@@ -132,12 +133,17 @@ async function main() {
     // wait for chopsticks api's to catch up
     await new Promise(resolve => setTimeout(resolve, 5000));
 
+    const remote2FeesHighEstimateTeerConverted = await kahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(TEER_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, remote2FeesHighEstimateKsm, true);
+    const teerPerKsm = Number(remote2FeesHighEstimateTeerConverted) / Number(remote2FeesHighEstimateKsm)
+    console.log("Current AssetConversion quote for remote account: out: ", remote2FeesHighEstimateTeerConverted, " in ", remote2FeesHighEstimateKsm, " TEER. price: ", teerPerKsm, " TEER per KSM");
+
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
         transferAmount,
         localFeesHighEstimate,
-        remote1FeesHighEstimate,
-        remote2FeesHighEstimate,
+        remote1FeesHighEstimateTeer,
+        remote2FeesHighEstimateTeerConverted,
+        remote2FeesHighEstimateKsm
     );
     console.dir(stringify(tentativeXcm));
 
@@ -169,18 +175,19 @@ async function main() {
     console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
-    const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimate] =
+    const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimateKsm] =
         (await estimateFees(tentativeXcm))!;
 
     console.log("Local fees estimate [TEER]: ", localFeesEstimate);
     console.log("Remote 1 fees estimate [TEER]: ", remote1FeesEstimate);
-    console.log("Remote 2 fees estimate [TEER]: ", remote2FeesEstimate);
+    console.log("Remote 2 fees estimate [TEER]: ", remote2FeesEstimateKsm);
     // With these estimates, we can create the final XCM to execute.
     const xcm = await createXcm(
         transferAmount,
         localFeesEstimate,
         remote1FeesEstimate,
-        remote2FeesEstimate,
+        BigInt(Math.round(Number(remote2FeesEstimateKsm) * teerPerKsm)),
+        remote2FeesEstimateKsm
     );
     console.log("Executing XCM now....")
     const weightResult = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
@@ -233,25 +240,31 @@ function stringify(obj: any): string {
 async function createXcm(
     transferAmount: bigint,
     localFees: bigint,
-    remote1Fees: bigint,
-    remote2Fees: bigint,
+    remote1FeesTeer: bigint,
+    remote2AllocationTeer: bigint,
+    remote2FeesKsm: bigint,
 ): Promise<XcmVersionedXcm> {
     const executeOnPah = pahApi.tx.System.remark_with_event({remark: Binary.fromText("Hello Polkadot")})
     const teerToWithdraw = {
         id: TEER_FROM_SELF,
         fun: XcmV3MultiassetFungibility.Fungible(
-            transferAmount + localFees + remote1Fees,
+            transferAmount + localFees + remote1FeesTeer + remote2AllocationTeer,
         ),
     };
-    const teerForRemote1Fees = {
+    const teerForRemote1Total = {
         id: TEER_FROM_SELF,
-        fun: XcmV3MultiassetFungibility.Fungible(remote1Fees),
+        fun: XcmV3MultiassetFungibility.Fungible(remote1FeesTeer + remote2AllocationTeer),
+    };
+    const teerToSwapOnRemote1 = {
+        id: TEER_FROM_SIBLING,
+        fun: XcmV3MultiassetFungibility.Fungible(remote2AllocationTeer),
     };
     const ksmForRemote2Fees = {
         id: KSM_FROM_KUSAMA_PARACHAINS,
-        fun: XcmV3MultiassetFungibility.Fungible(remote2Fees),
+        fun: XcmV3MultiassetFungibility.Fungible(remote2FeesKsm),
     };
-    const teerForRemoteFilter = XcmV5AssetFilter.Definite([teerForRemote1Fees]);
+    const teerForRemote1Filter = XcmV5AssetFilter.Definite([teerForRemote1Total]);
+    const teerToSwapOnRemote1Filter = XcmV5AssetFilter.Definite([teerToSwapOnRemote1]);
     const ksmForRemote2Filter = XcmV5AssetFilter.Definite([ksmForRemote2Fees]);
 
     const xcm = XcmVersionedXcm.V5([
@@ -268,7 +281,7 @@ async function createXcm(
         XcmV5Instruction.InitiateTransfer({
             destination: KAH_FROM_IK,
             preserve_origin: true,
-            remote_fees: Enum("Teleport", teerForRemoteFilter),
+            remote_fees: Enum("Teleport", teerForRemote1Filter),
             assets: [],
             remote_xcm: [
                 XcmV5Instruction.SetAppendix([
@@ -278,25 +291,31 @@ async function createXcm(
                         beneficiary: TEER_FROM_SIBLING,
                     })
                 ]),
-                XcmV5Instruction.InitiateTransfer({
-                    destination: PAH_FROM_KAH,
-                    preserve_origin: true,
-                    remote_fees: Enum("ReserveDeposit", ksmForRemote2Filter),
-                    assets: [],
-                    remote_xcm: [
-                        XcmV5Instruction.SetAppendix([
-                            XcmV5Instruction.RefundSurplus(),
-                            XcmV5Instruction.DepositAsset({
-                                assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
-                                beneficiary: TEER_FROM_COUSIN,
-                            })
-                        ]),
-                        XcmV5Instruction.Transact({
-                            origin_kind: XcmV2OriginKind.SovereignAccount(),
-                            call: await executeOnPah.getEncodedData(),
-                        }),
-                    ],
+                // we 'd like exactly ksmForRemote2Fees and keep the rest in TEER
+                XcmV5Instruction.ExchangeAsset({
+                    give: teerToSwapOnRemote1Filter,
+                    want: [ksmForRemote2Fees],
+                    maximal: false
                 }),
+                // XcmV5Instruction.InitiateTransfer({
+                //     destination: PAH_FROM_KAH,
+                //     preserve_origin: true,
+                //     remote_fees: Enum("ReserveDeposit", ksmForRemote2Filter),
+                //     assets: [],
+                //     remote_xcm: [
+                //         XcmV5Instruction.SetAppendix([
+                //             XcmV5Instruction.RefundSurplus(),
+                //             XcmV5Instruction.DepositAsset({
+                //                 assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
+                //                 beneficiary: TEER_FROM_COUSIN,
+                //             })
+                //         ]),
+                //         XcmV5Instruction.Transact({
+                //             origin_kind: XcmV2OriginKind.SovereignAccount(),
+                //             call: await executeOnPah.getEncodedData(),
+                //         }),
+                //     ],
+                // }),
             ],
         }),
     ]);
@@ -361,6 +380,12 @@ async function estimateFees(
     )!;
     // Found it.
     const messageToKah = messages[0];
+
+    const exchangeAssetInstruction = messageToKah?.value.find((instruction: any) =>
+        instruction.type === "ExchangeAsset"
+    )
+    console.log("ExchangeAsset attempt: give ", exchangeAssetInstruction.value.give.value);
+    console.log("ExchangeAsset attempt: want ", exchangeAssetInstruction.value.want[0]);
 
     // We're only dealing with version 4.
     if (messageToKah?.type !== "V5") {
@@ -463,8 +488,8 @@ async function estimateFees(
     const remote1FeesInTeer = BigInt(Math.round(Number(teerSpent) * 1.1));
     console.log("remote1FeesInTeer (with margin): ", remote1FeesInTeer);
 
-    const remote2FeesInTeer = 0n // TODO
-    return [localFees, remote1FeesInTeer, remote2FeesInTeer];
+    const remote2FeesInKsm = 0n // TODO
+    return [localFees, remote1FeesInTeer, remote2FeesInKsm];
 }
 
 // Just a helper function to get a signer for ALICE.
