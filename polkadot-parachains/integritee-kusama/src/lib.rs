@@ -796,7 +796,7 @@ impl pallet_porteer::Config for Runtime {
 	type WeightInfo = ();
 	type PorteerAdmin =
 	EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
-	// In the parachain setup this will be the Porteer pallet on the origin chain.
+	// Todo: Do we want to allow to transfer tokens back?
 	type TokenSenderLocationOrigin =
 	EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
 	type PortTokensToDestination = MockPortTokens;
