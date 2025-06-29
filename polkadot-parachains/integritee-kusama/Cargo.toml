@@ -55,6 +55,7 @@ pallet-democracy = { workspace = true }
 pallet-enclave-bridge = { workspace = true }
 pallet-message-queue = { workspace = true }
 pallet-multisig = { workspace = true }
+pallet-porteer = { workspace = true }
 pallet-preimage = { workspace = true }
 pallet-proxy = { workspace = true }
 pallet-scheduler = { workspace = true }
@@ -194,6 +195,8 @@ std = [
     "xcm-transactor-primitives/std",
     "polkadot-primitives/std",
     "xcm-primitives/std",
+    "pallet-porteer/std",
+    "xcm-runtime-apis/std",
 ]
 runtime-benchmarks = [
     "assets-common/runtime-benchmarks",
@@ -244,6 +247,8 @@ runtime-benchmarks = [
     "polkadot-primitives/runtime-benchmarks",
     "polkadot-runtime-parachains/runtime-benchmarks",
     "staging-xcm/runtime-benchmarks",
+    "pallet-porteer/runtime-benchmarks",
+    "xcm-runtime-apis/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -292,6 +297,7 @@ try-runtime = [
     "frame-support/try-runtime",
     "polkadot-runtime-parachains/try-runtime",
     "sp-runtime/try-runtime",
+    "pallet-porteer/try-runtime",
 ]
 # Set timing constants (e.g. session period) to faster versions to speed up testing.
 fast-runtime = []
