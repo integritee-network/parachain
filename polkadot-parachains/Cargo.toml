@@ -89,7 +89,9 @@ substrate-build-script-utils = { workspace = true }
 assert_cmd = { workspace = true }
 nix = { workspace = true }
 pallet-sudo = { workspace = true, features = ["std"] }
-polkadot-cli = { workspace = true, features = ["rococo-native"] } # purge_chain_works works with rococo-local and needs to allow this
+polkadot-cli = { workspace = true, features = [
+    "rococo-native",
+] } # purge_chain_works works with rococo-local and needs to allow this
 tempfile = { workspace = true }
 
 [features]
