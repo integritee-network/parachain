@@ -163,26 +163,26 @@ polkadot-runtime-parachains = "19.1.0"
 substrate-build-script-utils = "11.0.0"
 substrate-wasm-builder = "26.0.1"
 
-[patch."https://github.com/integritee-network/pallets.git"]
-claims-primitives = { path = '../integritee-pallets/primitives/claims' }
-common-primitives = { path = '../integritee-pallets/primitives/common' }
-enclave-bridge-primitives = { path = '../integritee-pallets/primitives/enclave-bridge' }
-pallet-asset-registry = { path = '../integritee-pallets/asset-registry' }
-pallet-claims = { path = '../integritee-pallets/claims' }
-pallet-enclave-bridge = { path = '../integritee-pallets/enclave-bridge' }
-pallet-porteer = { path = '../integritee-pallets/porteer' }
-pallet-sidechain = { path = '../integritee-pallets/sidechain' }
-pallet-teeracle = { path = '../integritee-pallets/teeracle' }
-pallet-teerdays = { path = '../integritee-pallets/teerdays' }
-pallet-teerex = { path = '../integritee-pallets/teerex' }
-pallet-xcm-transactor = { path = '../integritee-pallets/xcm-transactor' }
-sgx-verify = { path = '../integritee-pallets/teerex/sgx-verify' }
-teeracle-primitives = { path = '../integritee-pallets/primitives/teeracle' }
-teerdays-primitives = { path = '../integritee-pallets/primitives/teerdays' }
-teerex-primitives = { path = '../integritee-pallets/primitives/teerex' }
-test-utils = { path = '../integritee-pallets/test-utils' }
-xcm-primitives = { path = '../integritee-pallets/primitives/xcm' }
-xcm-transactor-primitives = { path = '../integritee-pallets/primitives/xcm-transactor' }
+#[patch."https://github.com/integritee-network/pallets.git"]
+#claims-primitives = { path = '../pallets/primitives/claims' }
+#common-primitives = { path = '../pallets/primitives/common' }
+#enclave-bridge-primitives = { path = '../pallets/primitives/enclave-bridge' }
+#pallet-asset-registry = { path = '../pallets/asset-registry' }
+#pallet-claims = { path = '../pallets/claims' }
+#pallet-enclave-bridge = { path = '../pallets/enclave-bridge' }
+#pallet-porteer = { path = '../pallets/porteer' }
+#pallet-sidechain = { path = '../pallets/sidechain' }
+#pallet-teeracle = { path = '../pallets/teeracle' }
+#pallet-teerdays = { path = '../pallets/teerdays' }
+#pallet-teerex = { path = '../pallets/teerex' }
+#pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
+#sgx-verify = { path = '../pallets/teerex/sgx-verify' }
+#teeracle-primitives = { path = '../pallets/primitives/teeracle' }
+#teerdays-primitives = { path = '../pallets/primitives/teerdays' }
+#teerex-primitives = { path = '../pallets/primitives/teerex' }
+#test-utils = { path = '../pallets/test-utils' }
+#xcm-primitives = { path = '../pallets/primitives/xcm' }
+#xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
 
 [patch.crates-io]
 ring = { git = "https://github.com/integritee-network/ring-xous", branch = "0.16.20-hack1.84.1" }
