@@ -279,6 +279,7 @@ async function estimateFees(
         return;
     }
     console.log("deliveryFees: ", deliveryFees.value.value);
+    console.log("deliveryFees: ", deliveryFees.value.value);
 
     // Local fees are execution + delivery.
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;

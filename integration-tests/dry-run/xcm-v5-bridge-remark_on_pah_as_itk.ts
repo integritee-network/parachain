@@ -433,8 +433,8 @@ async function estimateFees(
     }
 
     // We get the delivery fees using the size of the forwarded xcm.
-    const deliveryFees = await kahApi.apis.XcmPaymentApi.query_delivery_fees(
-        XcmVersionedLocation.V5(IK_FROM_KAH),
+    const deliveryFees = await itkApi.apis.XcmPaymentApi.query_delivery_fees(
+        XcmVersionedLocation.V5(KAH_FROM_IK),
         messageToKah,
     );
     // Fees should be of the version we expect and fungible tokens, in particular, KSM.
@@ -447,7 +447,7 @@ async function estimateFees(
         console.error("deliveryFees failed: ", deliveryFees);
         return;
     }
-    console.log("deliveryFees: ", deliveryFees.value.value);
+    console.log("deliveryFees to remote1: ", deliveryFees.value.value);
 
     // Local fees are execution + delivery.
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
@@ -488,7 +488,6 @@ async function estimateFees(
     }
     const teerPerKsm = Number(swapCreditEvent.value?.value?.amount_in) / Number(swapCreditEvent?.value?.value?.amount_out);
     const teerSpent = swapCreditEvent.value?.value?.amount_in;
-    console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
 
     const remote1Weight =
         await kahApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
@@ -576,7 +575,6 @@ async function estimateFees(
     }
     const ksmPerDot = Number(swapCreditEvent2.value?.value?.amount_in) / Number(swapCreditEvent2?.value?.value?.amount_out);
     const ksmSpent = swapCreditEvent2.value?.value?.amount_in;
-    console.log("simulated rate as KSM per DOT: ", ksmPerDot, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
 
     const remote2Weight =
         await pahApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
@@ -600,11 +598,17 @@ async function estimateFees(
     console.log("API: remote1FeesInKsm: ", remote1FeesInKsm.value);
     console.log("API: remote2FeesInDot: ", remote2FeesInDot.value);
 
+    console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
+    console.log("simulated rate as KSM per DOT: ", ksmPerDot, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
+
+
     const remote1FeesInTeer = BigInt(Math.round(Number(teerSpent) * 1.1));
     console.log("remote1FeesInTeer (with margin): ", remote1FeesInTeer);
 
     const remote2FeesInKsm = BigInt(Math.round(Number(ksmSpent) * 1.1));
     console.log("remote2FeesInKsm (with margin): ", remote2FeesInKsm);
+
+    console.log("to be paid by caller to cover everything: ", localFees + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm) * teerPerKsm)), " TEER");
 
     return [localFees, remote1FeesInTeer, remote2FeesInKsm];
 }
