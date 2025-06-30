@@ -153,16 +153,29 @@ async function main() {
         console.error("Failed to get root account on source chain: ", rootAccountLocal);
         await itkClient.destroy();
         await kahClient.destroy();
+        await pahClient.destroy();
         return;
     }
     const rootAccountInfo = await itkApi.query.System.Account.getValue(rootAccountLocal.value)
     console.log("Root account on source chain: ", rootAccountLocal, " with AccountInfo ", rootAccountInfo);
+
+    const rootAccountRemote2 = await pahApi.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(TEER_FROM_COUSIN))
+    if (!rootAccountRemote2.success) {
+        console.error("Failed to get root account on remote2 chain: ", rootAccountRemote2);
+        await itkClient.destroy();
+        await kahClient.destroy();
+        await pahClient.destroy();
+        return;
+    }
+    const sovereignAccountInfoRemote2 = await itkApi.query.System.Account.getValue(rootAccountLocal.value)
+    console.log("Sovereign account on remote2 chain: ", rootAccountRemote2, " with AccountInfo ", sovereignAccountInfoRemote2);
 
     const weightRes = await itkApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
     if (!weightRes.success) {
         console.error("Failed to get weight for tentative XCM: ", weightRes);
         await itkClient.destroy();
         await kahClient.destroy();
+        await pahClient.destroy();
         return;
     }
     console.log(weightRes);
@@ -219,6 +232,7 @@ async function main() {
     }
     await itkClient.destroy();
     await kahClient.destroy();
+    await pahClient.destroy();
 }
 
 // Helper function to convert bigints to strings and binaries to hex strings in objects.
@@ -427,7 +441,7 @@ async function estimateFees(
     const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
 
     // Now we dry run on the destination.
-    const remoteDryRunResult = await kahApi.apis.DryRunApi.dry_run_xcm(
+    const remote1DryRunResult = await kahApi.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
@@ -435,14 +449,14 @@ async function estimateFees(
         messageToKah,
     );
     if (
-        !remoteDryRunResult.success ||
-        remoteDryRunResult.value.execution_result.type !== "Complete"
+        !remote1DryRunResult.success ||
+        remote1DryRunResult.value.execution_result.type !== "Complete"
     ) {
-        console.error("remote1DryRunResult failed: ", remoteDryRunResult);
+        console.error("remote1DryRunResult failed: ", remote1DryRunResult);
         return;
     }
-    console.log("remote1DryRunResult: ", remoteDryRunResult.value);
-    const swapCreditEvent = remoteDryRunResult.value.emitted_events.find(
+    console.log("remote1DryRunResult: ", remote1DryRunResult.value);
+    const swapCreditEvent = remote1DryRunResult.value.emitted_events.find(
         (event: any) =>
             event.type === "AssetConversion" &&
             event.value?.type === "SwapCreditExecuted"
@@ -486,7 +500,7 @@ async function estimateFees(
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
-    const [_dummy, messages2] = remoteDryRunResult.value.forwarded_xcms.find(
+    const [_dummy, messages2] = remote1DryRunResult.value.forwarded_xcms.find(
         ([location, message]) =>
             location.type === "V5"
     )!;
@@ -527,7 +541,7 @@ async function estimateFees(
         !remote2DryRunResult.success ||
         remote2DryRunResult.value.execution_result.type !== "Complete"
     ) {
-        console.error("remoteDryRunResult failed: ", remote2DryRunResult);
+        console.error("remote2DryRunResult failed: ", remote2DryRunResult);
         return;
     }
     console.log("remote2DryRunResult: ", remote2DryRunResult.value);
