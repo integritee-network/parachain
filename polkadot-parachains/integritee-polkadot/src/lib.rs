@@ -785,9 +785,17 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 use sp_core::hex2array;
+use staging_xcm::latest::{Location, NetworkId};
+use staging_xcm::prelude::{GlobalConsensus, Parachain};
+
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
-	pub const PorteerOnIntegriteeKusama: AccountId = AccountId::new(hex2array!("a75e9d1ed1909ded5aeffa081ba5abcfb0268dc21e19502b7ef5cbacd12d7cdd"));
+	
+	pub const IntegriteeKusamaLocation: Location = Location {
+			parents: 2,
+			interior: (GlobalConsensus(NetworkId::Kusama), Parachain(2015)).into(),
+		};
+	pub const IntegriteeKusamaSovereignAccount: AccountId = AccountId::new(hex2array!("8e420f365988e859988375baa048faf25a88de7ddd979425ccaad93fea6b244d"));
 }
 
 pub struct MockPortTokens;
@@ -808,7 +816,7 @@ impl pallet_porteer::Config for Runtime {
 	type PorteerAdmin =
 		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
 	type TokenSenderLocationOrigin =
-		EitherOfDiverse<EnsureSignedBy<PorteerOnIntegriteeKusama, AccountId32>, EnsureRoot<AccountId32>>;
+		EitherOfDiverse<EnsureSignedBy<IntegriteeKusamaSovereignAccount, AccountId32>, EnsureRoot<AccountId32>>;
 	type PortTokensToDestination = MockPortTokens;
 	type Fungible = Balances;
 }

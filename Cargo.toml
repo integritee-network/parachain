@@ -105,6 +105,7 @@ sp-runtime = { version = "41.1.0", default-features = false }
 sp-session = { version = "38.1.0", default-features = false }
 sp-std = { version = "14.0.0", default-features = false }
 sp-storage = { version = "22.0.0", default-features = false }
+sp-tracing = { version = "17.1.0", default-features = false }
 sp-transaction-pool = { version = "36.0.0", default-features = false }
 sp-version = { version = "39.0.0", default-features = false }
 staging-xcm = { version = "16.2.0", default-features = false }

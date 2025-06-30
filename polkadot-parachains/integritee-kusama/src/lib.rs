@@ -109,6 +109,7 @@ mod weights;
 
 mod migrations;
 pub mod xcm_config;
+mod porteer;
 
 pub type SessionHandlers = ();
 
