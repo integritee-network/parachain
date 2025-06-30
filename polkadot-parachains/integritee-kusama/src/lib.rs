@@ -85,11 +85,18 @@ use parachains_common::{message_queue::NarrowOriginToSibling, AssetIdForTrustBac
 use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, ConstU128, ConstU32, OpaqueMetadata};
-use sp_core::crypto::AccountId32;
+use sp_core::{
+	crypto::{AccountId32, KeyTypeId},
+	ConstU128, ConstU32, OpaqueMetadata,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-use sp_runtime::{generic, impl_opaque_keys, traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup}, transaction_validity::{TransactionSource, TransactionValidity}, ApplyExtrinsicResult, DispatchError, RuntimeDebug};
+use sp_runtime::{
+	generic, impl_opaque_keys,
+	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
+	transaction_validity::{TransactionSource, TransactionValidity},
+	ApplyExtrinsicResult, DispatchError, RuntimeDebug,
+};
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -108,8 +115,8 @@ mod helpers;
 mod weights;
 
 mod migrations;
-pub mod xcm_config;
 mod porteer;
+pub mod xcm_config;
 
 pub type SessionHandlers = ();
 
@@ -796,10 +803,10 @@ impl pallet_porteer::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type PorteerAdmin =
-	EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
 	// Todo: Do we want to allow to transfer tokens back?
 	type TokenSenderLocationOrigin =
-	EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
 	type PortTokensToDestination = MockPortTokens;
 	type Fungible = Balances;
 }

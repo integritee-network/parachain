@@ -1,20 +1,15 @@
-use frame_support::__private::sp_tracing;
-use frame_support::dispatch::RawOrigin;
-use frame_support::traits::Currency;
+use crate::{
+	xcm_config::XcmConfig, Balances, IntegriteeKusamaLocation, IntegriteeKusamaSovereignAccount,
+	Porteer, RuntimeCall, TEER,
+};
+use frame_support::{__private::sp_tracing, dispatch::RawOrigin, traits::Currency};
 use pallet_porteer::PorteerConfig;
-use crate::{xcm_config::XcmConfig, Balances, IntegriteeKusamaLocation, IntegriteeKusamaSovereignAccount, Porteer, RuntimeCall, TEER};
 use parity_scale_codec::Encode;
 use staging_xcm::{
-	latest::{
-		Asset, AssetFilter, ExecuteXcm, Junctions, OriginKind, Weight,
-		WildAsset, Xcm,
-	},
-	prelude::{
-		DepositAsset, PayFees, RefundSurplus, SetAppendix, Transact,
-		WithdrawAsset,
-	},
+	latest::{Asset, AssetFilter, ExecuteXcm, Junctions, OriginKind, Weight, WildAsset, Xcm},
+	prelude::{DepositAsset, PayFees, RefundSurplus, SetAppendix, Transact, WithdrawAsset},
+	v5::Outcome,
 };
-use staging_xcm::v5::Outcome;
 use staging_xcm_executor::{traits::ConvertLocation, XcmExecutor};
 
 #[test]
@@ -40,14 +35,12 @@ fn porteer_mint_from_ik_works() {
 		let mint_amount = TEER;
 		let bob_balance_before = Balances::free_balance(&bob);
 
-		Balances::make_free_balance_be(&IntegriteeKusamaSovereignAccount::get(), 4*TEER);
+		Balances::make_free_balance_be(&IntegriteeKusamaSovereignAccount::get(), 4 * TEER);
 		Porteer::set_porteer_config(
 			RawOrigin::Root.into(),
-			PorteerConfig {
-				send_enabled: true,
-				receive_enabled: true,
-			}
-		).unwrap();
+			PorteerConfig { send_enabled: true, receive_enabled: true },
+		)
+		.unwrap();
 
 		let message = Xcm(vec![
 			// Assume that the IntegriteeKusamaSovereign account has some TEER
@@ -92,7 +85,7 @@ fn porteer_mint_from_ik_works() {
 		);
 
 		// This does not catch errors from within the Porteer pallet.
-		assert!(matches!(result, Outcome::Complete {..}));
+		assert!(matches!(result, Outcome::Complete { .. }));
 
 		assert_eq!(Balances::free_balance(&bob), bob_balance_before + mint_amount);
 	});

@@ -785,12 +785,14 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 use sp_core::hex2array;
-use staging_xcm::latest::{Location, NetworkId};
-use staging_xcm::prelude::{GlobalConsensus, Parachain};
+use staging_xcm::{
+	latest::{Location, NetworkId},
+	prelude::{GlobalConsensus, Parachain},
+};
 
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
-	
+
 	pub const IntegriteeKusamaLocation: Location = Location {
 			parents: 2,
 			interior: (GlobalConsensus(NetworkId::Kusama), Parachain(2015)).into(),
@@ -815,8 +817,10 @@ impl pallet_porteer::Config for Runtime {
 	type WeightInfo = ();
 	type PorteerAdmin =
 		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
-	type TokenSenderLocationOrigin =
-		EitherOfDiverse<EnsureSignedBy<IntegriteeKusamaSovereignAccount, AccountId32>, EnsureRoot<AccountId32>>;
+	type TokenSenderLocationOrigin = EitherOfDiverse<
+		EnsureSignedBy<IntegriteeKusamaSovereignAccount, AccountId32>,
+		EnsureRoot<AccountId32>,
+	>;
 	type PortTokensToDestination = MockPortTokens;
 	type Fungible = Balances;
 }
