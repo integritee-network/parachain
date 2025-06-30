@@ -620,7 +620,7 @@ async function estimateFees(
     console.log("API: remote2FeesInDot: ", remote2FeesInDot.value);
 
     console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
-    console.log("simulated rate as KSM per DOT: ", ksmPerDot, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
+    console.log("simulated rate as KSM per DOT: ", ksmPerDot / 100, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
 
 
     const remote1FeesInTeer = BigInt(Math.round(Number(teerSpent) * 1.1));
