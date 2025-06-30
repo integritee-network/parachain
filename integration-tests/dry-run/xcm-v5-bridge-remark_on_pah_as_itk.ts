@@ -447,10 +447,11 @@ async function estimateFees(
         console.error("deliveryFees failed: ", deliveryFees);
         return;
     }
-    console.log("deliveryFees to remote1: ", deliveryFees.value.value);
+    const deliveryFeesToRemote1Teer = deliveryFees.value.value[0].fun.value;
+    console.log("deliveryFees to remote1 [TEER]: ", deliveryFeesToRemote1Teer);
 
-    // Local fees are execution + delivery.
-    const localFees = executionFees.value + deliveryFees.value.value[0].fun.value;
+    // Local fees for execution (which is virtual as root won't pay execution).
+    const localExecutionFees = executionFees.value;
 
     // Now we dry run on the destination.
     const remote1DryRunResult = await kahApi.apis.DryRunApi.dry_run_xcm(
@@ -533,6 +534,24 @@ async function estimateFees(
     };
     console.log("messageToPah: ", messageToPah);
 
+    // We get the delivery fees using the size of the forwarded xcm.
+    const deliveryFeesToRemote2 = await kahApi.apis.XcmPaymentApi.query_delivery_fees(
+        XcmVersionedLocation.V5(PAH_FROM_KAH),
+        messageToKbh, // unclear if this should be messagetoKbh or Pah. doesn't seem to include bridge relayer fee
+    );
+    // Fees should be of the version we expect and fungible tokens, in particular, KSM.
+    if (
+        !deliveryFeesToRemote2.success ||
+        deliveryFeesToRemote2.value.type !== "V5" ||
+        deliveryFeesToRemote2.value.value.length < 1 ||
+        deliveryFeesToRemote2.value.value[0]?.fun?.type !== "Fungible"
+    ) {
+        console.error("deliveryFeesToRemote2 failed: ", deliveryFeesToRemote2);
+        return;
+    }
+    const deliveryFeesToRemote2Ksm = deliveryFeesToRemote2.value.value[0].fun.value
+    console.log("deliveryFees KAH to PAH [KSM]: ", deliveryFeesToRemote2Ksm);
+
     // Now we dry run on the destination.
     const remote2DryRunResult = await pahApi.apis.DryRunApi.dry_run_xcm(
         // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
@@ -595,7 +614,9 @@ async function estimateFees(
         console.error("remote2FeesInDot failed: ", remote2FeesInDot);
         return;
     }
+    console.log("API: deliveryFeesToRemote1Teer: ", deliveryFeesToRemote1Teer);
     console.log("API: remote1FeesInKsm: ", remote1FeesInKsm.value);
+    console.log("API: deliveryFeesToRemote2Ksm: ", deliveryFeesToRemote2Ksm);
     console.log("API: remote2FeesInDot: ", remote2FeesInDot.value);
 
     console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
@@ -608,9 +629,9 @@ async function estimateFees(
     const remote2FeesInKsm = BigInt(Math.round(Number(ksmSpent) * 1.1));
     console.log("remote2FeesInKsm (with margin): ", remote2FeesInKsm);
 
-    console.log("to be paid by caller to cover everything: ", localFees + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm) * teerPerKsm)), " TEER");
+    console.log("to be paid by caller to cover everything: ", localExecutionFees + deliveryFeesToRemote1Teer + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm)), " TEER");
 
-    return [localFees, remote1FeesInTeer, remote2FeesInKsm];
+    return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm];
 }
 
 // Just a helper function to get a signer for ALICE.
