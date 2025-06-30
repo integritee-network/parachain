@@ -21,7 +21,7 @@
 use super::{
 	AccountId, AssetRegistry, Assets, Balance, Balances, MaxInstructions, MessageQueue,
 	ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
-	TreasuryAccount, XcmpQueue, TEER,
+	TransactionByteFee, TreasuryAccount, XcmpQueue, TEER,
 };
 use crate::weights;
 use core::marker::PhantomData;
@@ -33,7 +33,7 @@ use frame_support::{
 	traits::{Contains, ContainsPair, Disabled, Everything, Nothing, TransformOrigin},
 };
 use frame_system::EnsureRoot;
-use integritee_parachains_common::xcm_config::IsNativeConcrete;
+use integritee_parachains_common::{currency::CENTS, xcm_config::IsNativeConcrete};
 use orml_traits::{
 	location::{RelativeReserveProvider, Reserve},
 	parameter_type_with_key,
@@ -42,7 +42,6 @@ use pallet_xcm::XcmPassthrough;
 use parachains_common::{message_queue::ParaIdToSibling, AssetIdForTrustBackedAssets};
 use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
-use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
 use sp_runtime::{traits::Convert, RuntimeDebug};
@@ -344,6 +343,9 @@ parameter_types! {
 		RelayLocationFilter::get(),
 		AssetHubLocation::get()
 	);
+
+	pub const BaseDeliveryFee: u128 = CENTS.saturating_mul(3);
+	pub DeliveryFeeAssetId: AssetId = AssetId(SelfLocation::get());
 }
 
 pub type TrustedTeleporters = (Case<AssetHubTrustedTeleporter>,);
@@ -442,6 +444,12 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
+pub type PriceForSiblingParachainDelivery = polkadot_runtime_common::xcm_sender::ExponentialPrice<
+	DeliveryFeeAssetId,
+	BaseDeliveryFee,
+	TransactionByteFee,
+	XcmpQueue,
+>;
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ChannelInfo = ParachainSystem;
@@ -452,7 +460,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = cumulus_pallet_xcmp_queue::weights::SubstrateWeight<Runtime>;
-	type PriceForSiblingDelivery = NoPriceForMessageDelivery<ParaId>;
+	type PriceForSiblingDelivery = PriceForSiblingParachainDelivery;
 	type MaxActiveOutboundChannels = ConstU32<128>;
 	// Most on-chain HRMP channels are configured to use 102400 bytes of max message size, so we
 	// need to set the page size larger than that until we reduce the channel size on-chain.
