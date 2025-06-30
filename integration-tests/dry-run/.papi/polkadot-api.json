@@ -46,10 +46,10 @@
       "metadata": ".papi/metadata/itk.scale"
     },
     "itp": {
-      "wsUrl": "ws://localhost:9244",
+      "wsUrl": "http://localhost:8003",
       "metadata": ".papi/metadata/itp.scale",
-      "genesis": "0x7c71222371c3d2b2dec1f4d541604f75c24f8bda7e10be0f759a40166387cb35",
-      "codeHash": "0xc9c1e33ff5ccc68df0d8ed8036738bbf86db930f954a4fbd3ea8b4c45ece6548"
+      "genesis": "0xe13e7af377c64e83f95e0d70d5e5c3c01d697a84538776c5b9bbe0e7d7b6034c",
+      "codeHash": "0x501c0ff54a3d15eaf44b7cf0f471875befdb952b4b86946a32d1f80d90a61985"
     }
   }
 }

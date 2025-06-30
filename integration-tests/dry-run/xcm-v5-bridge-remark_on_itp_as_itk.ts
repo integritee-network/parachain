@@ -14,6 +14,7 @@
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
     itk, // bun papi add itk -w http://localhost:8001
+    itp, // bun papi add itp -w http://localhost:8003
     kah, // bun papi add kah -w http://localhost:8000
     pah, // bun papi add pah -w http://localhost:8002
     DispatchRawOrigin,
@@ -51,20 +52,22 @@ import {take} from "rxjs"
 const KAH_PARA_ID = 1000;
 const PAH_PARA_ID = 1000;
 const IK_PARA_ID = 2015;
+const IP_PARA_ID = 2039;
 
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
 const KAH_WS_URL = "ws://localhost:8000";
 const IK_WS_URL = "ws://localhost:8001";
 const PAH_WS_URL = "ws://localhost:8002";
+const IP_WS_URL = "ws://localhost:8003";
 
 // if running against the bridge zombienet instead, use these:
 //const KAH_WS_URL = "ws://localhost:9010";
 //const IK_WS_URL = "ws://localhost:9144";
 
-const IK_FROM_KAH = {
+const IP_FROM_PAH = {
     parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
 };
 const KAH_FROM_IK = {
     parents: 1,
@@ -84,8 +87,13 @@ const XCM_VERSION = 5;
 
 const TEER_UNITS = 1_000_000_000_000n;
 const KSM_UNITS = 1_000_000_000_000n;
+const DOT_UNITS = 10_000_000_000n;
 
 const KSM_FROM_KUSAMA_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.Here(),
+};
+const DOT_FROM_POLKADOT_PARACHAINS = {
     parents: 1,
     interior: XcmV5Junctions.Here(),
 };
@@ -118,6 +126,10 @@ const itkClient = createClient(
 );
 const itkApi = itkClient.getTypedApi(itk);
 
+const itpClient = createClient(
+    withPolkadotSdkCompat(getWsProvider(IP_WS_URL)),
+);
+const itpApi = itpClient.getTypedApi(itp);
 
 // The whole execution of the script.
 main();
@@ -131,10 +143,13 @@ async function main() {
     const localFeesHighEstimate = 1n * TEER_UNITS; // we're root locally and don't pay fees for execution, but for delivery we do.
     const remote1FeesHighEstimateTeer = 10n * TEER_UNITS;
     const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
+    const remote3FeesHighEstimateDot = 1n * DOT_UNITS / 10n;
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
     await stx.signAndSubmit(signer);
+    const stx2 = await itpApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
+    await stx2.signAndSubmit(signer);
     console.log("triggered state migrations if necessary. waiting for a bit....")
     // wait for chopsticks api's to catch up
     await new Promise(resolve => setTimeout(resolve, 5000));
@@ -153,7 +168,8 @@ async function main() {
         localFeesHighEstimate,
         remote1FeesHighEstimateTeer,
         BigInt(Math.round(Number(remote2FeesHighEstimateTeerConverted) * 1.5)),
-        remote2FeesHighEstimateKsm
+        remote2FeesHighEstimateKsm,
+        remote3FeesHighEstimateDot
     );
     console.dir(stringify(tentativeXcm));
 
@@ -198,19 +214,21 @@ async function main() {
     console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await tentativeTxSudo.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
-    const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimateKsm] =
+    const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimateKsm, remote3FeesEstimateDot] =
         (await estimateFees(tentativeXcm))!;
 
     console.log("Local fees estimate [TEER]: ", localFeesEstimate);
     console.log("Remote 1 fees estimate [TEER]: ", remote1FeesEstimate);
     console.log("Remote 2 fees estimate [KSM]: ", remote2FeesEstimateKsm);
+    console.log("Remote 3 fees estimate [DOT]: ", remote3FeesEstimateDot);
     // With these estimates, we can create the final XCM to execute.
     const xcm = await createXcm(
         transferAmount,
         localFeesEstimate,
         remote1FeesEstimate,
         BigInt(Math.round(Number(remote2FeesEstimateKsm) * teerPerKsm * 1.5)),
-        remote2FeesEstimateKsm
+        remote2FeesEstimateKsm,
+        remote3FeesEstimateDot
     );
 
     const weightResult = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
@@ -269,8 +287,9 @@ async function createXcm(
     remote1FeesTeer: bigint,
     remote2AllocationTeer: bigint,
     remote2FeesKsm: bigint,
+    remote3FeesDot: bigint,
 ): Promise<XcmVersionedXcm> {
-    const executeOnPah = pahApi.tx.System.remark_with_event({remark: Binary.fromText("Hello Polkadot")})
+    const executeOnItp = itpApi.tx.System.remark_with_event({remark: Binary.fromText("Hello Integritee on Polkadot")})
     const teerToWithdraw = {
         id: TEER_FROM_SELF,
         fun: XcmV3MultiassetFungibility.Fungible(
@@ -289,9 +308,14 @@ async function createXcm(
         id: KSM_FROM_KUSAMA_PARACHAINS,
         fun: XcmV3MultiassetFungibility.Fungible(remote2FeesKsm),
     };
+    const dotForRemote3Fees = {
+        id: DOT_FROM_POLKADOT_PARACHAINS,
+        fun: XcmV3MultiassetFungibility.Fungible(remote3FeesDot),
+    };
     const teerForRemote1Filter = XcmV5AssetFilter.Definite([teerForRemote1Total]);
     const teerToSwapOnRemote1Filter = XcmV5AssetFilter.Definite([teerToSwapOnRemote1]);
     const ksmForRemote2Filter = XcmV5AssetFilter.Definite([ksmForRemote2Fees]);
+    const dotForRemote3Filter = XcmV5AssetFilter.Definite([dotForRemote3Fees]);
 
     const xcm = XcmVersionedXcm.V5([
         // we're root on source, so no fees must be paid.
@@ -311,6 +335,7 @@ async function createXcm(
             assets: [],
             //assets: [Enum("Teleport", teerToSwapOnRemote1Filter)],
             remote_xcm: [
+                // to execute on KAH
                 XcmV5Instruction.SetAppendix([
                     XcmV5Instruction.RefundSurplus(),
                     XcmV5Instruction.DepositAsset({
@@ -332,6 +357,7 @@ async function createXcm(
                     remote_fees: Enum("ReserveDeposit", ksmForRemote2Filter),
                     assets: [],
                     remote_xcm: [
+                        // to execute on PAH
                         XcmV5Instruction.SetAppendix([
                             XcmV5Instruction.RefundSurplus(),
                             XcmV5Instruction.DepositAsset({
@@ -339,9 +365,27 @@ async function createXcm(
                                 beneficiary: TEER_FROM_COUSIN,
                             })
                         ]),
-                        XcmV5Instruction.Transact({
-                            origin_kind: XcmV2OriginKind.SovereignAccount(),
-                            call: await executeOnPah.getEncodedData(),
+                        // as a shortcut, let's use DOT we already have on sovereign account
+                        XcmV5Instruction.WithdrawAsset([dotForRemote3Fees]),
+                        XcmV5Instruction.InitiateTransfer({
+                            destination: IP_FROM_PAH,
+                            preserve_origin: true,
+                            remote_fees: Enum("ReserveDeposit", dotForRemote3Filter),
+                            assets: [],
+                            remote_xcm: [
+                                // to execute on IP
+                                XcmV5Instruction.SetAppendix([
+                                    XcmV5Instruction.RefundSurplus(),
+                                    XcmV5Instruction.DepositAsset({
+                                        assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.All()),
+                                        beneficiary: TEER_FROM_COUSIN,
+                                    })
+                                ]),
+                                XcmV5Instruction.Transact({
+                                    origin_kind: XcmV2OriginKind.SovereignAccount(),
+                                    call: await executeOnItp.getEncodedData(),
+                                }),
+                            ],
                         }),
                     ],
                 }),
@@ -361,7 +405,7 @@ async function createXcm(
 // If there's any issue and fees couldn't be estimated, returns undefined.
 async function estimateFees(
     xcm: XcmVersionedXcm,
-): Promise<[bigint, bigint, bigint] | undefined> {
+): Promise<[bigint, bigint, bigint, bigint] | undefined> {
     const xcmWeight = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (!xcmWeight.success) {
         console.error("xcmWeight failed: ", xcmWeight);
@@ -574,6 +618,20 @@ async function estimateFees(
     }
     console.log("remote2DryRunResult: ", remote2DryRunResult.value);
 
+    // XCM execution might result in multiple messages being sent.
+    // That's why we need to search for our message in the `forwarded_xcms` array.
+    const [_dummy3, messages3] = remote2DryRunResult.value.forwarded_xcms.find(
+        ([location, _]) =>
+            location.type === "V5" &&
+            location.value.parents === 1 &&
+            location.value.interior.type === "X1" &&
+            location.value.interior.value.type === "Parachain" &&
+            location.value.interior.value.value === IP_PARA_ID,
+    )!;
+    // Found it.
+    const messageToItp = messages3[0];
+    console.log("messageToItp: ", messageToItp);
+
     const swapCreditEvent2 = remote2DryRunResult.value.emitted_events.find(
         (event: any) =>
             event.type === "AssetConversion" &&
@@ -631,7 +689,8 @@ async function estimateFees(
 
     console.log("to be paid by caller to cover everything: ", localExecutionFees + deliveryFeesToRemote1Teer + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm)), " TEER");
 
-    return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm];
+    const remote3FeesInDot = 0n; //TODO
+    return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm, remote3FeesInDot];
 }
 
 // Just a helper function to get a signer for ALICE.
