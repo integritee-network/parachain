@@ -528,7 +528,7 @@ async function estimateFees(
             parents: 2,
             interior: XcmV5Junctions.X2([
                 XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()),
-                XcmV5Junction.Parachain(IK_PARA_ID)
+                XcmV5Junction.Parachain(KAH_PARA_ID)
             ]),
         }),
         // XcmVersionedLocation.V5({
