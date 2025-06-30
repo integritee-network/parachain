@@ -2,6 +2,12 @@
 // for setup, refer to
 // https://github.com/integritee-network/parachain/issues/323
 //
+// Kusama and Polkadot side must be run separately:
+// npx @acala-network/chopsticks@latest xcm --p=./configs/kusama-asset-hub.yml --p=./configs/integritee-kusama.yml
+// should be ports 8000 and 8001 respectively.
+// npx @acala-network/chopsticks@latest xcm --p=./configs/polkadot-asset-hub.yml --p=./configs/integritee-polkadot.yml
+// should be ports 8002 and 8003 respectively.
+//
 // As IK sovereign, we will send a xcm to KAH to transact/execute a system.remark_with_event
 // all fees will be paid in TEER and converted to KSM on KAH as needed
 
@@ -137,6 +143,10 @@ async function main() {
     const teerPerKsm = Number(remote2FeesHighEstimateTeerConverted) / Number(remote2FeesHighEstimateKsm)
     console.log("Current AssetConversion quote for remote account: out: ", remote2FeesHighEstimateTeerConverted, " in ", remote2FeesHighEstimateKsm, " TEER. price: ", teerPerKsm, " TEER per KSM");
 
+    //const remote2FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, remote2FeesHighEstimateKsm, true);
+    //const teerPerKsm = Number(remote2FeesHighEstimateKsmConverted) / Number(remote2FeesHighEstimateKsm)
+    //console.log("Current AssetConversion quote for remote account: out: ", remote2FeesHighEstimateKsmConverted, " in ", remote2FeesHighEstimateKsm, " TEER. price: ", teerPerKsm, " TEER per KSM");
+
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
         transferAmount,
@@ -193,7 +203,7 @@ async function main() {
 
     console.log("Local fees estimate [TEER]: ", localFeesEstimate);
     console.log("Remote 1 fees estimate [TEER]: ", remote1FeesEstimate);
-    console.log("Remote 2 fees estimate [TEER]: ", remote2FeesEstimateKsm);
+    console.log("Remote 2 fees estimate [KSM]: ", remote2FeesEstimateKsm);
     // With these estimates, we can create the final XCM to execute.
     const xcm = await createXcm(
         transferAmount,
@@ -202,7 +212,7 @@ async function main() {
         BigInt(Math.round(Number(remote2FeesEstimateKsm) * teerPerKsm * 1.5)),
         remote2FeesEstimateKsm
     );
-    console.log("Executing XCM now....")
+
     const weightResult = await itkApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
     if (weightResult.success) {
         const tx = itkApi.tx.PolkadotXcm.execute({
@@ -210,11 +220,13 @@ async function main() {
             max_weight: weightResult.value,
         });
         const stx = await itkApi.tx.Sudo.sudo({call: tx.decodedCall})
+        console.log("encoded adjusted call on source chain (e.g. to try with chopsticks): ", (await stx.getEncodedData()).asHex());
         const signer = getAliceSigner();
+        console.log("Executing XCM now....")
         const result = await stx.signAndSubmit(signer);
         console.dir(stringify(result.txHash));
         console.log("Await System.Remarked event on destination chain...")
-        await kahApi.event.System.Remarked.watch()
+        await pahApi.event.System.Remarked.watch()
             .pipe(take(1))
             .forEach((event) => {
                 console.log("Event received: System.Remarked from ", event.payload.sender, " with hash ", event.payload.hash.asHex());
@@ -478,23 +490,23 @@ async function estimateFees(
     const teerSpent = swapCreditEvent.value?.value?.amount_in;
     console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
 
-    const remoteWeight =
-        await itkApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
-    if (!remoteWeight.success) {
-        console.error("remote1Weight failed: ", remoteWeight);
+    const remote1Weight =
+        await kahApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
+    if (!remote1Weight.success) {
+        console.error("remote1Weight failed: ", remote1Weight);
         return;
     }
-    console.log("remote1Weight: ", remoteWeight.value);
+    console.log("remote1Weight: ", remote1Weight.value);
 
     // Remote fees are only execution.
-    const remoteFeesInKsm =
-        await itkApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
-            remoteWeight.value,
+    const remote1FeesInKsm =
+        await kahApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+            remote1Weight.value,
             XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
         );
 
-    if (!remoteFeesInKsm.success) {
-        console.error("remote1FeesInKsm failed: ", remoteFeesInKsm);
+    if (!remote1FeesInKsm.success) {
+        console.error("remote1FeesInKsm failed: ", remote1FeesInKsm);
         return;
     }
 
@@ -524,6 +536,8 @@ async function estimateFees(
 
     // Now we dry run on the destination.
     const remote2DryRunResult = await pahApi.apis.DryRunApi.dry_run_xcm(
+        // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
+        // see runtime patch to allow this: https://github.com/polkadot-fellows/runtimes/compare/main...encointer:runtimes:ab/trusted-aliaser-patch
         XcmVersionedLocation.V5({
             parents: 2,
             interior: XcmV5Junctions.X2([
@@ -531,10 +545,6 @@ async function estimateFees(
                 XcmV5Junction.Parachain(KAH_PARA_ID)
             ]),
         }),
-        // XcmVersionedLocation.V5({
-        //     parents: 1,
-        //     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(1002)),
-        // }),
         messageToPah,
     );
     if (
@@ -546,11 +556,56 @@ async function estimateFees(
     }
     console.log("remote2DryRunResult: ", remote2DryRunResult.value);
 
-    console.log("remote1FeesInKsm: ", remoteFeesInKsm);
+    const swapCreditEvent2 = remote2DryRunResult.value.emitted_events.find(
+        (event: any) =>
+            event.type === "AssetConversion" &&
+            event.value?.type === "SwapCreditExecuted"
+    );
+
+    if (
+        swapCreditEvent2 &&
+        typeof swapCreditEvent2.value.value === "object" &&
+        swapCreditEvent2.value.value !== null &&
+        "amount_in" in swapCreditEvent2.value.value &&
+        "amount_out" in swapCreditEvent2.value.value
+    ) {
+        console.log("Found SwapCreditExecuted event:", swapCreditEvent2.value.value);
+    } else {
+        console.error("SwapCreditExecuted event not found or malformed.", swapCreditEvent2);
+        return;
+    }
+    const ksmPerDot = Number(swapCreditEvent2.value?.value?.amount_in) / Number(swapCreditEvent2?.value?.value?.amount_out);
+    const ksmSpent = swapCreditEvent2.value?.value?.amount_in;
+    console.log("simulated rate as KSM per DOT: ", ksmPerDot, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
+
+    const remote2Weight =
+        await pahApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
+    if (!remote2Weight.success) {
+        console.error("remote2Weight failed: ", remote2Weight);
+        return;
+    }
+    console.log("API: remote2Weight: ", remote2Weight.value);
+
+    // Remote fees are only execution.
+    const remote2FeesInDot =
+        await pahApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+            remote2Weight.value,
+            XcmVersionedAssetId.V5(KSM_FROM_KUSAMA_PARACHAINS),
+        );
+
+    if (!remote2FeesInDot.success) {
+        console.error("remote2FeesInDot failed: ", remote2FeesInDot);
+        return;
+    }
+    console.log("API: remote1FeesInKsm: ", remote1FeesInKsm.value);
+    console.log("API: remote2FeesInDot: ", remote2FeesInDot.value);
+
     const remote1FeesInTeer = BigInt(Math.round(Number(teerSpent) * 1.1));
     console.log("remote1FeesInTeer (with margin): ", remote1FeesInTeer);
 
-    const remote2FeesInKsm = 0n // TODO
+    const remote2FeesInKsm = BigInt(Math.round(Number(ksmSpent) * 1.1));
+    console.log("remote2FeesInKsm (with margin): ", remote2FeesInKsm);
+
     return [localFees, remote1FeesInTeer, remote2FeesInKsm];
 }
 
