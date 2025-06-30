@@ -117,6 +117,9 @@ mod weights;
 mod migrations;
 pub mod xcm_config;
 
+#[cfg(test)]
+mod tests;
+
 pub type SessionHandlers = ();
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
@@ -784,6 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 use sp_core::hex2array;
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
+	pub const PorteerOnIntegriteeKusama: AccountId = AccountId::new(hex2array!("a75e9d1ed1909ded5aeffa081ba5abcfb0268dc21e19502b7ef5cbacd12d7cdd"));
 }
 
 pub struct MockPortTokens;
@@ -803,11 +807,8 @@ impl pallet_porteer::Config for Runtime {
 	type WeightInfo = ();
 	type PorteerAdmin =
 		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
-	// Todo: WIP I need to wrap my hand around this, naively, I think we just need:
-	// LocationToAccountId([GlobalConsensus(Kusama), IntegriteeParachain, PorteerIndex])
-	// and then it should work with the below setup.
 	type TokenSenderLocationOrigin =
-		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+		EitherOfDiverse<EnsureSignedBy<PorteerOnIntegriteeKusama, AccountId32>, EnsureRoot<AccountId32>>;
 	type PortTokensToDestination = MockPortTokens;
 	type Fungible = Balances;
 }
