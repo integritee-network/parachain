@@ -694,11 +694,51 @@ async function estimateFees(
     }
     console.log("remote3DryRunResult: ", remote3DryRunResult.value);
 
+    // We get the delivery fees using the size of the forwarded xcm.
+    const deliveryFeesToRemote3 = await pahApi.apis.XcmPaymentApi.query_delivery_fees(
+        XcmVersionedLocation.V5(IP_FROM_PAH),
+        messageToItp,
+    );
+    // Fees should be of the version we expect and fungible tokens, in particular, KSM.
+    if (
+        !deliveryFeesToRemote3.success ||
+        deliveryFeesToRemote3.value.type !== "V5" ||
+        deliveryFeesToRemote3.value.value.length < 1 ||
+        deliveryFeesToRemote3.value.value[0]?.fun?.type !== "Fungible"
+    ) {
+        console.error("deliveryFeesToRemote3 failed: ", deliveryFeesToRemote3);
+        return;
+    }
+    const deliveryFeesToRemote3Dot = deliveryFeesToRemote3.value.value[0].fun.value
+    console.log("deliveryFees PAH to ITP [DOT]: ", deliveryFeesToRemote3Dot);
+
+    const remote3Weight =
+        await pahApi.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
+    if (!remote3Weight.success) {
+        console.error("remote3Weight failed: ", remote3Weight);
+        return;
+    }
+    console.log("API: remote3Weight: ", remote3Weight.value);
+
+    // Remote fees are only execution.
+    const resultRemote3FeesInDot =
+        await itpApi.apis.XcmPaymentApi.query_weight_to_asset_fee(
+            remote3Weight.value,
+            XcmVersionedAssetId.V5(DOT_FROM_POLKADOT_PARACHAINS),
+        );
+
+    if (!resultRemote3FeesInDot.success) {
+        console.error("remote3FeesInDot failed: ", resultRemote3FeesInDot);
+        return;
+    }
+    const remote3FeesInDot = resultRemote3FeesInDot.value;
 
     console.log("API: deliveryFeesToRemote1Teer: ", deliveryFeesToRemote1Teer);
     console.log("API: remote1FeesInKsm: ", remote1FeesInKsm.value);
     console.log("API: deliveryFeesToRemote2Ksm: ", deliveryFeesToRemote2Ksm);
     console.log("API: remote2FeesInDot: ", remote2FeesInDot.value);
+    console.log("API: deliveryFeesToRemote2Dot: ", deliveryFeesToRemote3Dot);
+    console.log("API: remote3FeesInDot: ", remote3FeesInDot);
 
     console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
     console.log("simulated rate as KSM per DOT: ", ksmPerDot / 100, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
@@ -710,10 +750,9 @@ async function estimateFees(
     const remote2FeesInKsm = BigInt(Math.round(Number(ksmSpent) * 1.1));
     console.log("remote2FeesInKsm (with margin): ", remote2FeesInKsm);
 
-    console.log("to be paid by caller to cover everything: ", localExecutionFees + deliveryFeesToRemote1Teer + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm)), " TEER");
+    console.log("to be paid by caller to cover everything: ", localExecutionFees + deliveryFeesToRemote1Teer + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm + Number(remote3FeesInDot + deliveryFeesToRemote3Dot) * teerPerKsm * ksmPerDot)), " TEER");
 
-    const remote3FeesInDot = 1n; //TODO
-    return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm, remote3FeesInDot];
+    return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm, remote3FeesInDot + deliveryFeesToRemote3Dot];
 }
 
 // Just a helper function to get a signer for ALICE.
