@@ -128,7 +128,7 @@ async function main() {
     // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 0n;
     // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 0n; // we're root locally and don't pay fees, so this is just a placeholder.
+    const localFeesHighEstimate = 1n * TEER_UNITS; // we're root locally and don't pay fees for execution, but for delivery we do.
     const remote1FeesHighEstimateTeer = 10n * TEER_UNITS;
     const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
 
