@@ -143,7 +143,7 @@ async function main() {
     const localFeesHighEstimate = 1n * TEER_UNITS; // we're root locally and don't pay fees for execution, but for delivery we do.
     const remote1FeesHighEstimateTeer = 10n * TEER_UNITS;
     const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
-    const remote3FeesHighEstimateDot = 1n * DOT_UNITS / 10n;
+    const remote3FeesHighEstimateDot = 10n * DOT_UNITS;
 
     const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
     const signer = getAliceSigner();
@@ -672,6 +672,29 @@ async function estimateFees(
         console.error("remote2FeesInDot failed: ", remote2FeesInDot);
         return;
     }
+
+    // Now we dry run on the destination.
+    const remote3DryRunResult = await itpApi.apis.DryRunApi.dry_run_xcm(
+        // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
+        // see runtime patch to allow this: https://github.com/polkadot-fellows/runtimes/compare/main...encointer:runtimes:ab/trusted-aliaser-patch
+        XcmVersionedLocation.V5({
+            parents: 1,
+            interior: XcmV5Junctions.X1(
+                XcmV5Junction.Parachain(PAH_PARA_ID)
+            ),
+        }),
+        messageToItp,
+    );
+    if (
+        !remote3DryRunResult.success ||
+        remote3DryRunResult.value.execution_result.type !== "Complete"
+    ) {
+        console.error("remote3DryRunResult failed: ", remote3DryRunResult);
+        return;
+    }
+    console.log("remote3DryRunResult: ", remote3DryRunResult.value);
+
+
     console.log("API: deliveryFeesToRemote1Teer: ", deliveryFeesToRemote1Teer);
     console.log("API: remote1FeesInKsm: ", remote1FeesInKsm.value);
     console.log("API: deliveryFeesToRemote2Ksm: ", deliveryFeesToRemote2Ksm);
@@ -689,7 +712,7 @@ async function estimateFees(
 
     console.log("to be paid by caller to cover everything: ", localExecutionFees + deliveryFeesToRemote1Teer + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm)), " TEER");
 
-    const remote3FeesInDot = 0n; //TODO
+    const remote3FeesInDot = 1n; //TODO
     return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm, remote3FeesInDot];
 }
 
