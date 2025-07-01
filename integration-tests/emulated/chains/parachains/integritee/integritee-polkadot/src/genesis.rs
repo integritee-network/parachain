@@ -61,8 +61,8 @@ pub fn genesis() -> sp_core::storage::Storage {
 				.into_iter()
 				.map(|(acc, aura)| {
 					(
-						acc.clone(),                                    // account id
-						acc,                                            // validator id
+						acc.clone(),                                       // account id
+						acc,                                               // validator id
 						integritee_polkadot_runtime::SessionKeys { aura }, // session keys
 					)
 				})
@@ -98,6 +98,7 @@ pub fn genesis() -> sp_core::storage::Storage {
 
 	build_genesis_storage(
 		&genesis_config,
-		integritee_polkadot_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		integritee_polkadot_runtime::WASM_BINARY
+			.expect("WASM binary was not built, please build it!"),
 	)
 }
