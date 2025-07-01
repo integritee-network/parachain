@@ -17,19 +17,19 @@ pub use asset_hub_kusama_emulated_chain;
 pub use asset_hub_polkadot_emulated_chain;
 pub use bridge_hub_kusama_emulated_chain;
 pub use bridge_hub_polkadot_emulated_chain;
-pub use kusama_emulated_chain;
-pub use polkadot_emulated_chain;
 pub use integritee_kusama_emulated_chain;
 pub use integritee_polkadot_emulated_chain;
+pub use kusama_emulated_chain;
+pub use polkadot_emulated_chain;
 
 use asset_hub_kusama_emulated_chain::AssetHubKusama;
 use asset_hub_polkadot_emulated_chain::AssetHubPolkadot;
 use bridge_hub_kusama_emulated_chain::BridgeHubKusama;
 use bridge_hub_polkadot_emulated_chain::BridgeHubPolkadot;
-use kusama_emulated_chain::Kusama;
-use polkadot_emulated_chain::Polkadot;
 use integritee_kusama_emulated_chain::IntegriteeKusama;
 use integritee_polkadot_emulated_chain::IntegriteePolkadot;
+use kusama_emulated_chain::Kusama;
+use polkadot_emulated_chain::Polkadot;
 
 // Cumulus
 use emulated_integration_tests_common::{
