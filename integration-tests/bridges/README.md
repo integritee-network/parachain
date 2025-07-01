@@ -30,7 +30,8 @@ cp ./target/release/substrate-relay ~/local_bridge_testing/bin/
 cd 
 git clone https://github.com/polkadot-fellows/runtimes.git
 cd runtimes
-git checkout v1.5.1
+git checkout v1.6.0
+# actually, a patch is needed, use this instead until the patch is released: https://github.com/encointer/runtimes/tree/ab/trusted-aliaser-patch
 git apply ./integration-tests/bridges/sudo-relay.patch
 cargo +nightly build --release -p chain-spec-generator --no-default-features --features fast-runtime,polkadot,kusama,bridge-hub-kusama,bridge-hub-polkadot,asset-hub-kusama,asset-hub-polkadot
 
@@ -74,3 +75,25 @@ XCMv5
   Alice): https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9010#/extrinsics/decode/0x1f0b050101007d1f0500010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0504010000070010a5d4e80000000000
 * send 1 DOT from PAH to IP(
   Alice) https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9910#/extrinsics/decode/0x1f0b05010100dd1f0500010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d05040100000700e40b54020000000000
+
+### interventions
+
+this setup is brittle and it can happen that not all setup calls succeed. To iterate a setup step, do:
+
+```
+cd integration-tests/bridges/environments/polkadot-kusama
+export FRAMEWORK_PATH=~/local_bridge_testing/downloads/polkadot-sdk/bridges/testing/framework/
+source "$FRAMEWORK_PATH/utils/bridges.sh"
+source "$FRAMEWORK_PATH/utils/zombienet.sh"
+
+# re-run init scripts
+./helper.sh init-asset-hub-polkadot-local
+
+# manually run zndsl (adjust test DIR as per zombienet output:
+export ZOMBIENET_BINARY=~/local_bridge_testing/bin/zombienet
+export TEST_DIR=/tmp/bridges-tests-run-vEMZt
+export ENV_PATH=/home/brenzi/integritee/parachain/integration-tests/bridges/environments/polkadot-kusama
+polkadot_dir=`cat $TEST_DIR/polkadot.env`
+kusama_dir=`cat $TEST_DIR/kusama.env`
+run_zndsl ../../tests/0001-polkadot-kusama-asset-transfer/ksm-reaches-polkadot.zndsl $polkadot_dir
+```

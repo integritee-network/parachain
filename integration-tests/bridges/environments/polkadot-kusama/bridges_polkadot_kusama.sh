@@ -453,6 +453,18 @@ case "$1" in
           "//Alice" \
           "$ASSET_HUB_KUSAMA_SOVEREIGN_ACCOUNT_AT_BRIDGE_HUB_KUSAMA" \
           $((25 * $TEER))
+      # root origin local account
+      transfer_balance \
+          "ws://127.0.0.1:9144" \
+          "//Alice" \
+          "2JZNyFtn2KWCcgU6vM7Mh7TXR2BGCdewgPxZCQaofwcbF5cn" \
+          $((100 * $TEER))
+      # sovereign account of IK on PAH
+      transfer_balance \
+          "ws://127.0.0.1:9910" \
+          "//Alice" \
+          "14DXRZEfzojXowgGnamfGzTjnMERF9cVWRkdHHYQFiTsDiXB" \
+          $((100 * $DOT))
       # set XCM version of remote IntegriteePolkadot for relay and AH
       force_xcm_version \
           "ws://127.0.0.1:9945" \
@@ -469,6 +481,14 @@ case "$1" in
           --sudo \
           tx.polkadotXcm.forceXcmVersion \
               "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Polkadot" }, { "Parachain": 2039 } ] } }')" \
+              $XCM_VERSION
+      # also for KAH
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.polkadotXcm.forceXcmVersion \
+              "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } }')" \
               $XCM_VERSION
       echo "Creating asset for KSM token on IntegriteeKusama"
       # create asset for KSM token
@@ -500,62 +520,158 @@ case "$1" in
           tx.assetRegistry.registerReserveAsset \
               "0" \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+      # create a TEER/KSM pool on KAH
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9010" \
+          --seed "//Alice" \
+          tx.assetConversion.createPool \
+              "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2015 }]}}')" \
+      # send 10 KSM to IK Alice for initial fees
+      limited_reserve_transfer_assets \
+          "ws://127.0.0.1:9010" \
+          "//Alice" \
+          "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2015 } ] } } }')" \
+          "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
+          0 \
+          "Unlimited"
+      # send 100 TEER to KAH Alice for pool
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          tx.polkadotXcm.transferAssets \
+              "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } } }')" \
+              "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '100000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
+              "1" \
+              "Unlimited"
+      # provide liquidity to TEER/KSM pool on KAH
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9010" \
+          --seed "//Alice" \
+          tx.assetConversion.addLiquidity \
+              "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2015 }]}}')" \
+              "1000000000000" \
+              "90000000000000" \
+              "1" \
+              "1" \
+              "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"
       ;;
 
 init-integritee-polkadot-local)
-      # SA of sibling asset hub pays for the execution
-      transfer_balance \
-          "ws://127.0.0.1:9244" \
-          "//Alice" \
-          "$ASSET_HUB_POLKADOT_SOVEREIGN_ACCOUNT_AT_BRIDGE_HUB_POLKADOT" \
-          $((25 * $TEER))
-      # set XCM version of remote IntegriteeKusama for relay and AH
-      force_xcm_version \
-          "ws://127.0.0.1:9942" \
-          "//Alice" \
-          2039 \
-          "ws://127.0.0.1:9910" \
-          "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 2015 } ] } }')" \
-          $XCM_VERSION
-
-      # above call has no authority over integritee. need to do it locally
+#      # SA of sibling asset hub pays for the inwards execution
+#      transfer_balance \
+#          "ws://127.0.0.1:9244" \
+#          "//Alice" \
+#          "$ASSET_HUB_POLKADOT_SOVEREIGN_ACCOUNT_AT_BRIDGE_HUB_POLKADOT" \
+#          $((25 * $TEER))
+#      # root origin local account on IP
+#      transfer_balance \
+#          "ws://127.0.0.1:9244" \
+#          "//Alice" \
+#          "2JZNyFtn2KWCcgU6vM7Mh7TXR2BGCdewgPxZCQaofwcbF5cn" \
+#          $((100 * $TEER))
+#      # sovereign account of IP on KAH
+#      transfer_balance \
+#          "ws://127.0.0.1:9010" \
+#          "//Alice" \
+#          "1626x6zX5RFZH41vmfRAtYD4WWM7T5jcRUrpUhqp5bYpHeTX" \
+#          $((100 * $KSM))
+#      # set XCM version of remote IntegriteeKusama for relay and AH
+#      force_xcm_version \
+#          "ws://127.0.0.1:9942" \
+#          "//Alice" \
+#          2039 \
+#          "ws://127.0.0.1:9910" \
+#          "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 2015 } ] } }')" \
+#          $XCM_VERSION
+#
+#      # above call has no authority over integritee. need to do it locally
+#      call_polkadot_js_api \
+#          --ws "ws://127.0.0.1:9244" \
+#          --seed "//Alice" \
+#          --sudo \
+#          tx.polkadotXcm.forceXcmVersion \
+#              "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 2015 } ] } }')" \
+#              $XCM_VERSION
+#      # also for PAH
+#      call_polkadot_js_api \
+#          --ws "ws://127.0.0.1:9244" \
+#          --seed "//Alice" \
+#          --sudo \
+#          tx.polkadotXcm.forceXcmVersion \
+#              "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } }')" \
+#              $XCM_VERSION
+#      echo "Creating asset for DOT token on IntegriteePolkadot"
+#      # create asset for DOT token
+#      call_polkadot_js_api \
+#          --ws "ws://127.0.0.1:9244" \
+#          --seed "//Alice" \
+#          --sudo \
+#          tx.assets.forceCreate \
+#              "0" \
+#              "2Li4fsP2bHBbSwpa2rgaswP22Kpqpr4uLyzbuym2Kc82v6oG" \
+#              "false" \
+#              "$AHK_DOT_ED" \
+#      # force metadata DOT token
+#      call_polkadot_js_api \
+#          --ws "ws://127.0.0.1:9244" \
+#          --seed "//Alice" \
+#          --sudo \
+#          tx.assets.forceSetMetadata \
+#              "0" \
+#              "Polkadot DOT" \
+#              "DOT" \
+#              "10" \
+#              "false" \
+#      # register location for DOT token
+#      call_polkadot_js_api \
+#          --ws "ws://127.0.0.1:9244" \
+#          --seed "//Alice" \
+#          --sudo \
+#          tx.assetRegistry.registerReserveAsset \
+#              "0" \
+#              "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+#      # create a TEER/DOT pool on PAH
+#      call_polkadot_js_api \
+#          --ws "ws://127.0.0.1:9910" \
+#          --seed "//Alice" \
+#          tx.assetConversion.createPool \
+#              "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+#              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2039 }]}}')" \
+#      # send 10 DOT to IP Alice for initial fees
+#      limited_reserve_transfer_assets \
+#          "ws://127.0.0.1:9910" \
+#          "//Alice" \
+#          "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } } }')" \
+#          "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+#          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
+#          0 \
+#          "Unlimited"
+      # send 100 TEER to PAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9244" \
           --seed "//Alice" \
-          --sudo \
-          tx.polkadotXcm.forceXcmVersion \
-              "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 2015 } ] } }')" \
-              $XCM_VERSION
-      echo "Creating asset for DOT token on IntegriteePolkadot"
-      # create asset for DOT token
+          tx.polkadotXcm.transferAssets \
+              "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } } }')" \
+              "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '100000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
+              "1" \
+              "Unlimited"
+      # provide liquidity to TEER/DOT pool on PAH
       call_polkadot_js_api \
-          --ws "ws://127.0.0.1:9244" \
+          --ws "ws://127.0.0.1:9910" \
           --seed "//Alice" \
-          --sudo \
-          tx.assets.forceCreate \
-              "0" \
-              "2Li4fsP2bHBbSwpa2rgaswP22Kpqpr4uLyzbuym2Kc82v6oG" \
-              "false" \
-              "$AHK_DOT_ED" \
-      # force metadata DOT token
-      call_polkadot_js_api \
-          --ws "ws://127.0.0.1:9244" \
-          --seed "//Alice" \
-          --sudo \
-          tx.assets.forceSetMetadata \
-              "0" \
-              "Polkadot DOT" \
-              "DOT" \
-              "10" \
-              "false" \
-      # register location for DOT token
-      call_polkadot_js_api \
-          --ws "ws://127.0.0.1:9244" \
-          --seed "//Alice" \
-          --sudo \
-          tx.assetRegistry.registerReserveAsset \
-              "0" \
+          tx.assetConversion.addLiquidity \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2039 }]}}')" \
+              "400000000000" \
+              "90000000000000" \
+              "1" \
+              "1" \
+              "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5"
       ;;
 
   reserve-transfer-assets-from-asset-hub-polkadot-local)

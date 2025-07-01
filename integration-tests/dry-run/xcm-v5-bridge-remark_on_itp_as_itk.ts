@@ -56,14 +56,16 @@ const IP_PARA_ID = 2039;
 
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
-const KAH_WS_URL = "ws://localhost:8000";
-const IK_WS_URL = "ws://localhost:8001";
-const PAH_WS_URL = "ws://localhost:8002";
-const IP_WS_URL = "ws://localhost:8003";
+// const KAH_WS_URL = "ws://localhost:8000";
+// const IK_WS_URL = "ws://localhost:8001";
+// const PAH_WS_URL = "ws://localhost:8002";
+// const IP_WS_URL = "ws://localhost:8003";
 
 // if running against the bridge zombienet instead, use these:
-//const KAH_WS_URL = "ws://localhost:9010";
-//const IK_WS_URL = "ws://localhost:9144";
+const KAH_WS_URL = "ws://localhost:9010";
+const IK_WS_URL = "ws://localhost:9144";
+const PAH_WS_URL = "ws://localhost:9910";
+const IP_WS_URL = "ws://localhost:9244";
 
 const IP_FROM_PAH = {
     parents: 1,
@@ -94,6 +96,14 @@ const KSM_FROM_KUSAMA_PARACHAINS = {
     interior: XcmV5Junctions.Here(),
 };
 const DOT_FROM_POLKADOT_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.Here(),
+};
+const KSM_FROM_POLKADOT_PARACHAINS = {
+    parents: 2,
+    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
+};
+const DOT_FROM_SIBLING_PARACHAINS = {
     parents: 1,
     interior: XcmV5Junctions.Here(),
 };
@@ -145,22 +155,22 @@ async function main() {
     const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
     const remote3FeesHighEstimateDot = 10n * DOT_UNITS;
 
-    const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
-    const signer = getAliceSigner();
-    await stx.signAndSubmit(signer);
-    const stx2 = await itpApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
-    await stx2.signAndSubmit(signer);
-    console.log("triggered state migrations if necessary. waiting for a bit....")
-    // wait for chopsticks api's to catch up
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    // const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
+    // const signer = getAliceSigner();
+    // await stx.signAndSubmit(signer);
+    // const stx2 = await itpApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
+    // await stx2.signAndSubmit(signer);
+    // console.log("triggered state migrations if necessary. waiting for a bit....")
+    // // wait for chopsticks api's to catch up
+    // await new Promise(resolve => setTimeout(resolve, 5000));
 
     const remote2FeesHighEstimateTeerConverted = await kahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(TEER_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, remote2FeesHighEstimateKsm, true);
     const teerPerKsm = Number(remote2FeesHighEstimateTeerConverted) / Number(remote2FeesHighEstimateKsm)
-    console.log("Current AssetConversion quote for remote account: out: ", remote2FeesHighEstimateTeerConverted, " in ", remote2FeesHighEstimateKsm, " TEER. price: ", teerPerKsm, " TEER per KSM");
+    console.log("Current AssetConversion quote for remote1 account: out: ", remote2FeesHighEstimateTeerConverted, " in ", remote2FeesHighEstimateKsm, " TEER. price: ", teerPerKsm, " TEER per KSM");
 
-    //const remote2FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, remote2FeesHighEstimateKsm, true);
-    //const teerPerKsm = Number(remote2FeesHighEstimateKsmConverted) / Number(remote2FeesHighEstimateKsm)
-    //console.log("Current AssetConversion quote for remote account: out: ", remote2FeesHighEstimateKsmConverted, " in ", remote2FeesHighEstimateKsm, " TEER. price: ", teerPerKsm, " TEER per KSM");
+    const remote3FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, remote3FeesHighEstimateDot, true);
+    const ksmPerDot = Number(remote3FeesHighEstimateKsmConverted) / Number(remote2FeesHighEstimateKsm)
+    console.log("Current AssetConversion quote for remote2 account: out: ", remote3FeesHighEstimateKsmConverted, " in ", remote3FeesHighEstimateDot, " TEER. price: ", ksmPerDot, " KSM per DOT");
 
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
@@ -194,7 +204,7 @@ async function main() {
         return;
     }
     const sovereignAccountInfoRemote2 = await itkApi.query.System.Account.getValue(rootAccountLocal.value)
-    console.log("Sovereign account on remote2 chain: ", rootAccountRemote2, " with AccountInfo ", sovereignAccountInfoRemote2);
+    console.log("Sovereign account of ITK on remote2 ITP chain: ", rootAccountRemote2, " with AccountInfo ", sovereignAccountInfoRemote2);
 
     const weightRes = await itkApi.apis.XcmPaymentApi.query_xcm_weight(tentativeXcm);
     if (!weightRes.success) {
@@ -733,12 +743,13 @@ async function estimateFees(
     }
     const remote3FeesInDot = resultRemote3FeesInDot.value;
 
-    console.log("API: deliveryFeesToRemote1Teer: ", deliveryFeesToRemote1Teer);
-    console.log("API: remote1FeesInKsm: ", remote1FeesInKsm.value);
-    console.log("API: deliveryFeesToRemote2Ksm: ", deliveryFeesToRemote2Ksm);
-    console.log("API: remote2FeesInDot: ", remote2FeesInDot.value);
-    console.log("API: deliveryFeesToRemote2Dot: ", deliveryFeesToRemote3Dot);
-    console.log("API: remote3FeesInDot: ", remote3FeesInDot);
+    console.log("API: localExecutionFees (virtual) [TEER]: ", localExecutionFees);
+    console.log("API: deliveryFeesToRemote1Teer    [TEER]: ", deliveryFeesToRemote1Teer);
+    console.log("API: remote1FeesInKsm*            [KSM] : ", remote1FeesInKsm.value);
+    console.log("API: deliveryFeesToRemote2Ksm     [KSM] : ", deliveryFeesToRemote2Ksm);
+    console.log("API: remote2FeesInDot*            [DOT] : ", remote2FeesInDot.value);
+    console.log("API: deliveryFeesToRemote2Dot     [DOT] : ", deliveryFeesToRemote3Dot);
+    console.log("API: remote3FeesInDot             [DOT] : ", remote3FeesInDot);
 
     console.log("simulated rate as TEER per KSM: ", teerPerKsm, " with TEER converted for fees: ", teerSpent, " equal to fees in KSM: ", swapCreditEvent.value.value.amount_out);
     console.log("simulated rate as KSM per DOT: ", ksmPerDot / 100, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
@@ -750,7 +761,11 @@ async function estimateFees(
     const remote2FeesInKsm = BigInt(Math.round(Number(ksmSpent) * 1.1));
     console.log("remote2FeesInKsm (with margin): ", remote2FeesInKsm);
 
-    console.log("to be paid by caller to cover everything: ", localExecutionFees + deliveryFeesToRemote1Teer + remote1FeesInTeer + BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm + Number(remote3FeesInDot + deliveryFeesToRemote3Dot) * teerPerKsm * ksmPerDot)), " TEER");
+    const totalCallerFeesInTeer = localExecutionFees +
+        deliveryFeesToRemote1Teer + remote1FeesInTeer +
+        BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm +
+            Number(remote3FeesInDot + deliveryFeesToRemote3Dot) * teerPerKsm * ksmPerDot))
+    console.log("to be paid by caller to cover everything: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS), " TEER");
 
     return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm, remote3FeesInDot + deliveryFeesToRemote3Dot];
 }
