@@ -1955,6 +1955,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "bridge-hub-ik-to-ip-integration-tests"
+version = "1.18.0"
+dependencies = [
+ "bp-bridge-hub-kusama",
+ "bp-messages",
+ "bridge-hub-kusama-runtime",
+ "cumulus-pallet-xcmp-queue",
+ "emulated-integration-tests-common",
+ "frame-support",
+ "hex-literal",
+ "integration-tests-helpers",
+ "kusama-polkadot-system-emulated-network",
+ "pallet-asset-conversion",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-bridge-messages",
+ "pallet-message-queue",
+ "pallet-xcm",
+ "parachains-common",
+ "parity-scale-codec",
+ "scale-info",
+ "snowbridge-beacon-primitives",
+ "snowbridge-core",
+ "snowbridge-inbound-queue-primitives",
+ "snowbridge-pallet-inbound-queue-fixtures",
+ "snowbridge-pallet-outbound-queue",
+ "snowbridge-pallet-system",
+ "sp-core",
+ "sp-runtime",
+ "staging-xcm",
+ "staging-xcm-executor",
+ "system-parachains-constants",
+ "xcm-runtime-apis",
+]
+
+[[package]]
 name = "bridge-hub-kusama-emulated-chain"
 version = "1.0.0"
 source = "git+https://github.com/encointer/runtimes?branch=ab%2Ftrusted-aliaser-patch#e16288ff8717b98f5cbc484742ce312bd7c67c3f"

@@ -9,6 +9,7 @@ members = [
     "integration-tests/emulated/chains/parachains/integritee/integritee-kusama",
     "integration-tests/emulated/chains/parachains/integritee/integritee-polkadot",
     "integration-tests/emulated/networks/kusama-polkadot-system",
+    "integration-tests/emulated/tests/bridges/ik-to-ip",
     "polkadot-parachains",
     "polkadot-parachains/common",
     "polkadot-parachains/integritee-kusama",
@@ -172,7 +173,12 @@ substrate-build-script-utils = "11.0.0"
 substrate-wasm-builder = "26.0.1"
 
 # runtimes repository (mainly used for integration tests)
+bp-messages = { version = "0.20.1", default-features = false }
+pallet-bridge-messages = { version = "0.20.1", default-features = false }
+
 emulated-integration-tests-common = { version = "20.1.0" }
+bp-bridge-hub-kusama = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
+bridge-hub-kusama-runtime = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 integration-tests-helpers = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 asset-hub-kusama-emulated-chain = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 asset-hub-polkadot-emulated-chain = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
@@ -180,12 +186,22 @@ bridge-hub-kusama-emulated-chain = { git = "https://github.com/encointer/runtime
 bridge-hub-polkadot-emulated-chain = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 kusama-emulated-chain = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 polkadot-emulated-chain = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
+system-parachains-constants = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
+
+# Snowbridge
+snowbridge-beacon-primitives = { version = "0.13.1" }
+snowbridge-core = { version = "0.13.2" }
+snowbridge-inbound-queue-primitives = { version = "0.2.2" }
+snowbridge-pallet-system = { version = "0.13.3" }
+snowbridge-pallet-outbound-queue = { version = "0.13.0" }
+snowbridge-pallet-inbound-queue-fixtures = { version = "0.21.0" }
 
 # local
 integritee-kusama-emulated-chain = { path = "integration-tests/emulated/chains/parachains/integritee/integritee-kusama", default-features = false }
 integritee-kusama-runtime = { path = "polkadot-parachains/integritee-kusama", default-features = false }
 integritee-polkadot-emulated-chain = { path = "integration-tests/emulated/chains/parachains/integritee/integritee-polkadot", default-features = false }
 integritee-polkadot-runtime = { path = "polkadot-parachains/integritee-polkadot", default-features = false }
+kusama-polkadot-system-emulated-network = { path = "integration-tests/emulated/networks/kusama-polkadot-system", default-features = false }
 
 #[patch."https://github.com/integritee-network/pallets.git"]
 #claims-primitives = { path = '../pallets/primitives/claims' }
