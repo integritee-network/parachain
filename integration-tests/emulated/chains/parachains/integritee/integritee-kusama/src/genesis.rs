@@ -22,7 +22,7 @@ use emulated_integration_tests_common::{
 use parachains_common::Balance;
 use staging_xcm::prelude::*;
 
-pub const PARA_ID: u32 = 1001;
+pub const PARA_ID: u32 = 2015;
 pub const ED: Balance = integritee_kusama_runtime::ExistentialDeposit::get();
 
 frame_support::parameter_types! {

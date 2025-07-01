@@ -22,19 +22,19 @@ use emulated_integration_tests_common::{
 use parachains_common::Balance;
 use staging_xcm::prelude::*;
 
-pub const PARA_ID: u32 = 1001;
-pub const ED: Balance = integritee_kusama_runtime::ExistentialDeposit::get();
+pub const PARA_ID: u32 = 2039;
+pub const ED: Balance = integritee_polkadot_runtime::ExistentialDeposit::get();
 
 frame_support::parameter_types! {
-	pub UniversalLocation: InteriorLocation = [GlobalConsensus(Kusama), Parachain(PARA_ID)].into();
+	pub UniversalLocation: InteriorLocation = [GlobalConsensus(Polkadot), Parachain(PARA_ID)].into();
 }
 
 pub fn genesis() -> sp_core::storage::Storage {
 	let alice = sp_keyring::Sr25519Keyring::Alice.to_account_id();
 
-	let genesis_config = integritee_kusama_runtime::RuntimeGenesisConfig {
-		system: integritee_kusama_runtime::SystemConfig::default(),
-		balances: integritee_kusama_runtime::BalancesConfig {
+	let genesis_config = integritee_polkadot_runtime::RuntimeGenesisConfig {
+		system: integritee_polkadot_runtime::SystemConfig::default(),
+		balances: integritee_polkadot_runtime::BalancesConfig {
 			balances: accounts::init_balances()
 				.iter()
 				.cloned()
@@ -43,27 +43,27 @@ pub fn genesis() -> sp_core::storage::Storage {
 			dev_accounts: None,
 		},
 		democracy: Default::default(),
-		council: integritee_kusama_runtime::CouncilConfig {
+		council: integritee_polkadot_runtime::CouncilConfig {
 			members: vec![alice.clone()],
 			..Default::default()
 		},
-		parachain_info: integritee_kusama_runtime::ParachainInfoConfig {
+		parachain_info: integritee_polkadot_runtime::ParachainInfoConfig {
 			parachain_id: PARA_ID.into(),
 			..Default::default()
 		},
-		collator_selection: integritee_kusama_runtime::CollatorSelectionConfig {
+		collator_selection: integritee_polkadot_runtime::CollatorSelectionConfig {
 			invulnerables: collators::invulnerables().iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: ED * 16,
 			..Default::default()
 		},
-		session: integritee_kusama_runtime::SessionConfig {
+		session: integritee_polkadot_runtime::SessionConfig {
 			keys: collators::invulnerables()
 				.into_iter()
 				.map(|(acc, aura)| {
 					(
 						acc.clone(),                                    // account id
 						acc,                                            // validator id
-						integritee_kusama_runtime::SessionKeys { aura }, // session keys
+						integritee_polkadot_runtime::SessionKeys { aura }, // session keys
 					)
 				})
 				.collect(),
@@ -71,22 +71,22 @@ pub fn genesis() -> sp_core::storage::Storage {
 		},
 		aura: Default::default(),
 		aura_ext: Default::default(),
-		polkadot_xcm: integritee_kusama_runtime::PolkadotXcmConfig {
+		polkadot_xcm: integritee_polkadot_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
 		},
 		assets: Default::default(),
 		pool_assets: Default::default(),
-		teerex: integritee_kusama_runtime::TeerexConfig {
+		teerex: integritee_polkadot_runtime::TeerexConfig {
 			allow_sgx_debug_mode: true,
 			allow_skipping_attestation: true,
 			_config: Default::default(),
 		},
-		technical_committee: integritee_kusama_runtime::TechnicalCommitteeConfig {
+		technical_committee: integritee_polkadot_runtime::TechnicalCommitteeConfig {
 			members: vec![alice],
 			..Default::default()
 		},
-		porteer: integritee_kusama_runtime::PorteerConfig {
+		porteer: integritee_polkadot_runtime::PorteerConfig {
 			porteer_config: pallet_porteer::PorteerConfig {
 				send_enabled: true,
 				receive_enabled: true,
@@ -98,6 +98,6 @@ pub fn genesis() -> sp_core::storage::Storage {
 
 	build_genesis_storage(
 		&genesis_config,
-		integritee_kusama_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		integritee_polkadot_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 	)
 }
