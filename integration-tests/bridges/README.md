@@ -92,7 +92,7 @@ source "$FRAMEWORK_PATH/utils/zombienet.sh"
 # manually run zndsl (adjust test DIR as per zombienet output:
 export ZOMBIENET_BINARY=~/local_bridge_testing/bin/zombienet
 export TEST_DIR=/tmp/bridges-tests-run-vEMZt
-export ENV_PATH=/home/brenzi/integritee/parachain/integration-tests/bridges/environments/polkadot-kusama
+export ENV_PATH=~/integritee/parachain/integration-tests/bridges/environments/polkadot-kusama
 polkadot_dir=`cat $TEST_DIR/polkadot.env`
 kusama_dir=`cat $TEST_DIR/kusama.env`
 run_zndsl ../../tests/0001-polkadot-kusama-asset-transfer/ksm-reaches-polkadot.zndsl $polkadot_dir

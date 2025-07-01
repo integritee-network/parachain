@@ -170,7 +170,7 @@ async function main() {
 
     const remote3FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, remote3FeesHighEstimateDot, true);
     const ksmPerDot = Number(remote3FeesHighEstimateKsmConverted) / Number(remote2FeesHighEstimateKsm)
-    console.log("Current AssetConversion quote for remote2 account: out: ", remote3FeesHighEstimateKsmConverted, " in ", remote3FeesHighEstimateDot, " TEER. price: ", ksmPerDot, " KSM per DOT");
+    console.log("Current AssetConversion quote for remote2 account: out: ", remote3FeesHighEstimateKsmConverted, " in ", remote3FeesHighEstimateDot, " KSM. price: ", ksmPerDot, " KSM per DOT");
 
     // We create a tentative XCM, one with the high estimates for fees.
     const tentativeXcm = await createXcm(
