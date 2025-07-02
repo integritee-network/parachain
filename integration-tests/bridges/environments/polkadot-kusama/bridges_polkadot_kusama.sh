@@ -70,6 +70,8 @@ GLOBAL_CONSENSUS_KUSAMA_SOVEREIGN_ACCOUNT="14zcUAhP5XypiFQWA3b1AnGKrhZqR4XWUo4de
 ASSET_HUB_POLKADOT_SOVEREIGN_ACCOUNT_AT_BRIDGE_HUB_POLKADOT="13cKp89SgdtqUngo2WiEijPrQWdHFhzYZLf2TJePKRvExk7o"
 INTEGRITEE_KUSAMA_SIBLING_ACCOUNT="FBeL7EDeogX8JScLQqEVZJtvKRukqBTM8dwZWJvXUFoaiJP"
 INTEGRITEE_POLKADOT_SIBLING_ACCOUNT="13cKp89Vh9FRH3u4ESYeNA7jxX3K78KMLJqPUgyonot6TFbF"
+BOB_SOVEREIGN_ACCOUNT_AT_KUSAMA="FoQJpPyadYccjavVdTWxpxU7rUEaYhfLCPwXgkfD6Zat9QP"
+BOB_SOVEREIGN_ACCOUNT_AT_POLKADOT="14E5nqKAp3oAJcmzgZhUD2RcptBeUBScxKHgJKU4HPNcKVf3"
 
 # Expected sovereign accounts for rewards on BridgeHubs.
 #
@@ -283,33 +285,8 @@ case "$1" in
   run-messages-relay)
     run_messages_relay
     ;;
-  init-asset-hub-polkadot-local)
+  init-polkadot-local)
       ensure_polkadot_js_api
-      # create foreign assets for native Kusama token (governance call on Polkadot)
-      force_create_foreign_asset \
-          "ws://127.0.0.1:9942" \
-          "//Alice" \
-          1000 \
-          "ws://127.0.0.1:9910" \
-          "$(jq --null-input '{ "parents": 2, "interior": { "X1": [ { "GlobalConsensus": "Kusama" } ] } }')" \
-          "$GLOBAL_CONSENSUS_KUSAMA_SOVEREIGN_ACCOUNT" \
-          $AHP_KSM_ED \
-          true
-      force_create_foreign_asset \
-          "ws://127.0.0.1:9942" \
-          "//Alice" \
-          1000 \
-          "ws://127.0.0.1:9910" \
-          "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } }')" \
-          "$INTEGRITEE_POLKADOT_SIBLING_ACCOUNT" \
-          $TEER_ED \
-          false
-      # SA of sibling integritee pays for the execution
-      transfer_balance \
-          "ws://127.0.0.1:9910" \
-          "//Alice" \
-          "$INTEGRITEE_POLKADOT_SIBLING_ACCOUNT" \
-          $((25 * $DOT))
       # HRMP
       open_hrmp_channels \
           "ws://127.0.0.1:9942" \
@@ -327,6 +304,56 @@ case "$1" in
           "ws://127.0.0.1:9942" \
           "//Alice" \
           2039 1000 4 524288
+      # governance set XCM version of remote AssetHubKusama on AHP
+      force_xcm_version \
+          "ws://127.0.0.1:9942" \
+          "//Alice" \
+          1000 \
+          "ws://127.0.0.1:9910" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 1000 } ] } }')" \
+          $XCM_VERSION
+      # governance set XCM version of remote BridgeHubKusama on BHP
+      force_xcm_version \
+          "ws://127.0.0.1:9942" \
+          "//Alice" \
+          1002 \
+          "ws://127.0.0.1:8943" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 1002 } ] } }')" \
+          $XCM_VERSION
+      ;;
+  init-asset-hub-polkadot-local)
+      ensure_polkadot_js_api
+      # create pool for DOT and wKSM
+      create_pool \
+          "ws://127.0.0.1:9910" \
+          "//Bob" \
+          "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama" }] } }')"
+      # Create liquidity in the pool
+      add_liquidity \
+          "ws://127.0.0.1:9910" \
+          "//Bob" \
+          "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama"}] } }')" \
+          10000000000 \
+          10000000 \
+          "$BOB_SOVEREIGN_ACCOUNT_AT_POLKADOT"
+      # create foreign assets for native Kusama token (governance call on Polkadot)
+      force_create_foreign_asset \
+          "ws://127.0.0.1:9942" \
+          "//Alice" \
+          1000 \
+          "ws://127.0.0.1:9910" \
+          "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } }')" \
+          "$INTEGRITEE_POLKADOT_SIBLING_ACCOUNT" \
+          $TEER_ED \
+          false
+      # SA of sibling integritee pays for the execution
+      transfer_balance \
+          "ws://127.0.0.1:9910" \
+          "//Alice" \
+          "$INTEGRITEE_POLKADOT_SIBLING_ACCOUNT" \
+          $((25 * $DOT))
       # set XCM version of remote AssetHubKusama
       force_xcm_version \
           "ws://127.0.0.1:9942" \
@@ -365,33 +392,8 @@ case "$1" in
           "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Kusama" }, { "Parachain": 1002 } ] } }')" \
           $XCM_VERSION
       ;;
-  init-asset-hub-kusama-local)
+  init-kusama-local)
       ensure_polkadot_js_api
-      # create foreign assets for native Polkadot token (governance call on Kusama)
-      force_create_foreign_asset \
-          "ws://127.0.0.1:9945" \
-          "//Alice" \
-          1000 \
-          "ws://127.0.0.1:9010" \
-          "$(jq --null-input '{ "parents": 2, "interior": { "X1": [ { "GlobalConsensus": "Polkadot" } ] } }')" \
-          "$GLOBAL_CONSENSUS_POLKADOT_SOVEREIGN_ACCOUNT" \
-          $AHK_DOT_ED \
-          true
-      force_create_foreign_asset \
-          "ws://127.0.0.1:9945" \
-          "//Alice" \
-          1000 \
-          "ws://127.0.0.1:9010" \
-          "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 2015 } ] } }')" \
-          "$INTEGRITEE_KUSAMA_SIBLING_ACCOUNT" \
-          $TEER_ED \
-          false
-      # SA of sibling integritee pays for the execution
-      transfer_balance \
-          "ws://127.0.0.1:9010" \
-          "//Alice" \
-          "$INTEGRITEE_KUSAMA_SIBLING_ACCOUNT" \
-          $((25 * $KSM))
       # HRMP
       open_hrmp_channels \
           "ws://127.0.0.1:9945" \
@@ -409,6 +411,56 @@ case "$1" in
           "ws://127.0.0.1:9945" \
           "//Alice" \
           2015 1000 4 524288
+
+      # governance set XCM version of remote AssetHubPolkadot on AHK
+      force_xcm_version \
+          "ws://127.0.0.1:9945" \
+          "//Alice" \
+          1000 \
+          "ws://127.0.0.1:9010" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Polkadot" }, { "Parachain": 1000 } ] } }')" \
+          $XCM_VERSION
+      # governance set XCM version of remote BridgeHubPolkadot on BHK
+      force_xcm_version \
+          "ws://127.0.0.1:9945" \
+          "//Alice" \
+          1002 \
+          "ws://127.0.0.1:8945" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X2": [ { "GlobalConsensus": "Polkadot" }, { "Parachain": 1002 } ] } }')" \
+          $XCM_VERSION
+      ;;
+  init-asset-hub-kusama-local)
+      ensure_polkadot_js_api
+      # create pool for KSM and wDOT
+      create_pool \
+          "ws://127.0.0.1:9010" \
+          "//Bob" \
+          "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot" }] } }')"
+      # Create liquidity in the pool
+      add_liquidity \
+          "ws://127.0.0.1:9010" \
+          "//Bob" \
+          "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
+          "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot"}] } }')" \
+          10000000000 \
+          10000000 \
+          "$BOB_SOVEREIGN_ACCOUNT_AT_KUSAMA"
+      force_create_foreign_asset \
+          "ws://127.0.0.1:9945" \
+          "//Alice" \
+          1000 \
+          "ws://127.0.0.1:9010" \
+          "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 2015 } ] } }')" \
+          "$INTEGRITEE_KUSAMA_SIBLING_ACCOUNT" \
+          $TEER_ED \
+          false
+      # SA of sibling integritee pays for the execution
+      transfer_balance \
+          "ws://127.0.0.1:9010" \
+          "//Alice" \
+          "$INTEGRITEE_KUSAMA_SIBLING_ACCOUNT" \
+          $((25 * $KSM))
       # set XCM version of remote AssetHubPolkadot
       force_xcm_version \
           "ws://127.0.0.1:9945" \

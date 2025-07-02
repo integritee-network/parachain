@@ -13,11 +13,11 @@ export ENV_PATH=`realpath ${BASH_SOURCE%/*}/../../environments/polkadot-kusama`
 $ENV_PATH/spawn.sh --init --start-relayer &
 env_pid=$!
 
-ensure_process_file $env_pid $TEST_DIR/polkadot.env 600
+ensure_process_file $env_pid $TEST_DIR/polkadot.env 800
 polkadot_dir=`cat $TEST_DIR/polkadot.env`
 echo
 
-ensure_process_file $env_pid $TEST_DIR/kusama.env 300
+ensure_process_file $env_pid $TEST_DIR/kusama.env 800
 kusama_dir=`cat $TEST_DIR/kusama.env`
 echo
 
