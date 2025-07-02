@@ -20,7 +20,7 @@ use emulated_integration_tests_common::{
 	accounts, build_genesis_storage, collators, SAFE_XCM_VERSION,
 };
 use parachains_common::Balance;
-use staging_xcm::prelude::*;
+use xcm::prelude::*;
 
 pub const PARA_ID: u32 = 2015;
 pub const ED: Balance = integritee_kusama_runtime::ExistentialDeposit::get();

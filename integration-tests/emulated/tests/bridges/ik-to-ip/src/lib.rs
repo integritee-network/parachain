@@ -14,7 +14,7 @@
 // limitations under the License.
 
 // Substrate
-pub use codec::Encode;
+pub use parity_scale_codec::Encode;
 pub use frame_support::{assert_err, assert_ok, pallet_prelude::DispatchResult};
 pub use sp_runtime::{traits::Dispatchable, DispatchError};
 
@@ -60,13 +60,13 @@ pub use kusama_polkadot_system_emulated_network::{
 		kusama_runtime::{xcm_config::UniversalLocation as KusamaRelayUniversalLocation, Dmp},
 		KusamaRelayPallet as KusamaPallet,
 	},
-	penpal_emulated_chain::{
-		penpal_runtime::xcm_config::{
-			CustomizableAssetFromSystemAssetHub as PenpalCustomizableAssetFromSystemAssetHub,
-			UniversalLocation as PenpalUniversalLocation,
-		},
-		PenpalAParaPallet as PenpalAPallet, PenpalAssetOwner,
-	},
+	// penpal_emulated_chain::{
+	// 	penpal_runtime::xcm_config::{
+	// 		CustomizableAssetFromSystemAssetHub as PenpalCustomizableAssetFromSystemAssetHub,
+	// 		UniversalLocation as PenpalUniversalLocation,
+	// 	},
+	// 	PenpalAParaPallet as PenpalAPallet, PenpalAssetOwner,
+	// },
 	AssetHubKusamaPara as AssetHubKusama, AssetHubKusamaParaReceiver as AssetHubKusamaReceiver,
 	AssetHubKusamaParaSender as AssetHubKusamaSender, AssetHubPolkadotPara as AssetHubPolkadot,
 	AssetHubPolkadotParaReceiver as AssetHubPolkadotReceiver,

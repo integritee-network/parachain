@@ -18,8 +18,8 @@ frame-support = { workspace = true, default-features = true }
 parachains-common = { workspace = true, default-features = true }
 cumulus-primitives-core = { workspace = true, default-features = true }
 emulated-integration-tests-common = { workspace = true }
-staging-xcm = { workspace = true, default-features = true }
-staging-xcm-builder = { workspace = true, default-features = true }
+xcm = { workspace = true, default-features = true }
+xcm-builder = { workspace = true, default-features = true }
 polkadot-parachain-primitives = { workspace = true }
 
 pallet-porteer = { workspace = true, default-features = true }
@@ -38,6 +38,6 @@ runtime-benchmarks = [
 	"integration-tests-helpers/runtime-benchmarks",
 	"parachains-common/runtime-benchmarks",
 	"polkadot-parachain-primitives/runtime-benchmarks",
-	"staging-xcm-builder/runtime-benchmarks",
-	"staging-xcm/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
+	"xcm/runtime-benchmarks",
 ]

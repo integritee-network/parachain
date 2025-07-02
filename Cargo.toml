@@ -117,9 +117,9 @@ sp-storage = { version = "22.0.0", default-features = false }
 sp-tracing = { version = "17.1.0", default-features = false }
 sp-transaction-pool = { version = "36.0.0", default-features = false }
 sp-version = { version = "39.0.0", default-features = false }
-staging-xcm = { version = "16.2.0", default-features = false }
-staging-xcm-builder = { version = "20.1.1", default-features = false }
-staging-xcm-executor = { version = "19.1.2", default-features = false }
+xcm = { package = "staging-xcm", version = "16.2.0", default-features = false }
+xcm-builder = { package = "staging-xcm-builder", version = "20.1.1", default-features = false }
+xcm-executor = { package = "staging-xcm-executor", version = "19.1.2", default-features = false }
 xcm-runtime-apis = { version = "0.7.1", default-features = false }
 
 # std stuff

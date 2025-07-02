@@ -22,9 +22,9 @@ pallet-assets = { workspace = true, default-features = true }
 pallet-message-queue = { workspace = true, default-features = true }
 
 # Polkadot
-staging-xcm = { workspace = true, default-features = true }
+xcm = { workspace = true, default-features = true }
 pallet-xcm = { workspace = true, default-features = true }
-staging-xcm-executor = { workspace = true, default-features = true }
+xcm-executor = { workspace = true, default-features = true }
 xcm-runtime-apis = { workspace = true, default-features = true }
 
 # Cumulus
@@ -73,7 +73,7 @@ runtime-benchmarks = [
 	"snowbridge-pallet-system/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"system-parachains-constants/runtime-benchmarks",
-	"staging-xcm-executor/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
 	"xcm-runtime-apis/runtime-benchmarks",
-	"staging-xcm/runtime-benchmarks",
+	"xcm/runtime-benchmarks",
 ]

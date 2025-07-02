@@ -102,7 +102,7 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm::{
+use xcm::{
 	latest::prelude::AssetId, Version as XcmVersion, VersionedAssetId, VersionedAssets,
 	VersionedLocation, VersionedXcm,
 };
@@ -523,9 +523,9 @@ impl pallet_message_queue::Config for Runtime {
 		cumulus_primitives_core::AggregateMessageOrigin,
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+	type MessageProcessor = xcm_builder::ProcessXcmMessage<
 		AggregateMessageOrigin,
-		staging_xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
+		xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
 		RuntimeCall,
 	>;
 	type Size = u32;
@@ -1386,7 +1386,7 @@ impl_runtime_apis! {
 	}
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
-		fn query_acceptable_payment_assets(xcm_version: staging_xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
+		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
 			let acceptable_assets = vec![AssetId(xcm_config::SelfLocation::get())];
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}

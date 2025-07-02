@@ -5,12 +5,12 @@ use crate::{
 use frame_support::{__private::sp_tracing, dispatch::RawOrigin, traits::Currency};
 use pallet_porteer::PorteerConfig;
 use parity_scale_codec::Encode;
-use staging_xcm::{
+use xcm::{
 	latest::{Asset, AssetFilter, ExecuteXcm, Junctions, OriginKind, Weight, WildAsset, Xcm},
 	prelude::{DepositAsset, PayFees, RefundSurplus, SetAppendix, Transact, WithdrawAsset},
 	v5::Outcome,
 };
-use staging_xcm_executor::{traits::ConvertLocation, XcmExecutor};
+use xcm_executor::{traits::ConvertLocation, XcmExecutor};
 
 #[test]
 fn ik_porteer_sovereign_account_matches() {
@@ -72,7 +72,7 @@ fn porteer_mint_from_ik_works() {
 		]);
 
 		let message =
-			Xcm::<<XcmConfig as staging_xcm_executor::Config>::RuntimeCall>::from(message.clone());
+			Xcm::<<XcmConfig as xcm_executor::Config>::RuntimeCall>::from(message.clone());
 		let mut hash = Default::default();
 
 		// Execute message in this parachain with IntegriteeKusamaOrigin

@@ -31,7 +31,7 @@ use std::str::FromStr;
 pub type ChainSpec = sc_service::GenericChainSpec<Extensions>;
 
 /// The default XCM version to set in genesis config.
-const SAFE_XCM_VERSION: u32 = staging_xcm::prelude::XCM_VERSION;
+const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]

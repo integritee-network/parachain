@@ -30,8 +30,8 @@ sp-std = { workspace = true }
 polkadot-core-primitives = { workspace = true }
 polkadot-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
-staging-xcm = { workspace = true }
-staging-xcm-executor = { workspace = true }
+xcm = { workspace = true }
+xcm-executor = { workspace = true }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
@@ -54,6 +54,6 @@ std = [
     "sp-io/std",
     "sp-runtime/std",
     "sp-std/std",
-    "staging-xcm-executor/std",
-    "staging-xcm/std",
+    "xcm-executor/std",
+    "xcm/std",
 ]

@@ -91,9 +91,9 @@ sp-storage = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 staging-parachain-info = { workspace = true }
-staging-xcm = { workspace = true }
-staging-xcm-builder = { workspace = true }
-staging-xcm-executor = { workspace = true }
+xcm = { workspace = true }
+xcm-builder = { workspace = true }
+xcm-executor = { workspace = true }
 xcm-primitives = { workspace = true }
 xcm-runtime-apis = { workspace = true }
 xcm-transactor-primitives = { workspace = true }
@@ -192,9 +192,9 @@ std = [
     "sp-transaction-pool/std",
     "sp-version/std",
     "staging-parachain-info/std",
-    "staging-xcm-builder/std",
-    "staging-xcm-executor/std",
-    "staging-xcm/std",
+    "xcm-builder/std",
+    "xcm-executor/std",
+    "xcm/std",
     "substrate-wasm-builder",
     "xcm-transactor-primitives/std",
     "polkadot-primitives/std",
@@ -244,14 +244,14 @@ runtime-benchmarks = [
     "polkadot-parachain-primitives/runtime-benchmarks",
     "polkadot-runtime-common/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
-    "staging-xcm-builder/runtime-benchmarks",
-    "staging-xcm-executor/runtime-benchmarks",
+    "xcm-builder/runtime-benchmarks",
+    "xcm-executor/runtime-benchmarks",
     "cumulus-pallet-dmp-queue/runtime-benchmarks",
     "cumulus-primitives-core/runtime-benchmarks",
     "pallet-transaction-payment/runtime-benchmarks",
     "polkadot-primitives/runtime-benchmarks",
     "polkadot-runtime-parachains/runtime-benchmarks",
-    "staging-xcm/runtime-benchmarks",
+    "xcm/runtime-benchmarks",
     "pallet-porteer/runtime-benchmarks",
     "xcm-runtime-apis/runtime-benchmarks",
 ]

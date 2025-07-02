@@ -1,11 +1,11 @@
 use core::marker::PhantomData;
 use frame_support::traits::ContainsPair;
 use sp_runtime::traits::{CheckedConversion, Convert};
-use staging_xcm::{
+use xcm::{
 	latest::{Asset, AssetId, Junction, Location},
 	prelude::{Fungible, Parachain},
 };
-use staging_xcm_executor::traits::MatchesFungible;
+use xcm_executor::traits::MatchesFungible;
 
 /// Type alias to conveniently refer to `frame_system`'s `Config::AccountId`.
 pub type AccountIdOf<R> = <R as frame_system::Config>::AccountId;
