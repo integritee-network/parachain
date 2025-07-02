@@ -12,6 +12,7 @@ use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::{
 use sp_runtime::traits::Bounded;
 use xcm::{v3::Error::WeightLimitReached, v5::AssetTransferFilter::Teleport};
 use xcm::latest::AssetTransferFilter::ReserveDeposit;
+use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 use crate::tests::{asset_hub_polkadot_location, ik_on_ahk};
 
 #[test]
@@ -43,15 +44,16 @@ fn ik_to_ip_xcm_works() {
     });
 
 	<IntegriteeKusama as TestExt>::execute_with(|| {
+        type Runtime = <IntegriteeKusama as Chain>::Runtime;
         type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
         type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
         assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_TEER_BALANCE));
 
-		let xcm = ik_xcm();
+        let weight = Runtime::query_xcm_weight(VersionedXcm::from(ik_xcm())).unwrap();
 		<IntegriteeKusama as IntegriteeKusamaPallet>::PolkadotXcm::execute(
 			RawOrigin::Root.into(),
-			bx!(VersionedXcm::from(xcm)),
-			Weight::max_value(),
+			bx!(VersionedXcm::from(ik_xcm())),
+            weight,
 		)
 		.unwrap();
 
