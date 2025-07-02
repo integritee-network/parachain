@@ -74,8 +74,7 @@ pub use kusama_polkadot_system_emulated_network::{
 	BridgeHubKusamaParaReceiver as BridgeHubKusamaReceiver,
 	BridgeHubKusamaParaSender as BridgeHubKusamaSender, BridgeHubPolkadotPara as BridgeHubPolkadot,
 	KusamaRelay as Kusama, KusamaRelayReceiver as KusamaReceiver,
-	KusamaRelaySender as KusamaSender, PenpalAPara as PenpalA,
-	PenpalAParaReceiver as PenpalAReceiver, PenpalAParaSender as PenpalASender,
+	KusamaRelaySender as KusamaSender,
 };
 pub use parachains_common::{AccountId, Balance};
 

@@ -15,11 +15,9 @@
 
 use crate::*;
 
-mod asset_transfers;
-mod claim_assets;
+// mod asset_transfers;
 mod register_bridged_assets;
 mod send_xcm;
-mod teleport;
 
 mod snowbridge {
 	pub const CHAIN_ID: u64 = 1;
