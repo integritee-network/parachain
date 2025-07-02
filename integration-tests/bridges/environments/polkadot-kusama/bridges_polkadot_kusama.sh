@@ -329,14 +329,14 @@ case "$1" in
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama" }] } }')"
-      # Create liquidity in the pool
+      # Create liquidity in the pool @ 1 DOT = 0.25 KSM
       add_liquidity \
           "ws://127.0.0.1:9910" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama"}] } }')" \
-          10000000000 \
-          10000000 \
+          100000000000 \
+          250000000000 \
           "$BOB_SOVEREIGN_ACCOUNT_AT_POLKADOT"
       # create foreign assets for native Kusama token (governance call on Polkadot)
       force_create_foreign_asset \
@@ -437,14 +437,14 @@ case "$1" in
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot" }] } }')"
-      # Create liquidity in the pool
+      # Create liquidity in the pool @ 1 KSM = 4 DOT.
       add_liquidity \
           "ws://127.0.0.1:9010" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot"}] } }')" \
-          10000000000 \
-          10000000 \
+          1000000000000 \
+          400000000000 \
           "$BOB_SOVEREIGN_ACCOUNT_AT_KUSAMA"
       force_create_foreign_asset \
           "ws://127.0.0.1:9945" \
@@ -543,7 +543,7 @@ case "$1" in
               "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } }')" \
               $XCM_VERSION
       echo "Creating asset for KSM token on IntegriteeKusama"
-      # create asset for KSM token
+      # create sufficient asset for KSM token
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9144" \
           --seed "//Alice" \
@@ -551,7 +551,7 @@ case "$1" in
           tx.assets.forceCreate \
               "0" \
               "2L44Bkyt9uJDvu1HE71So8DiJcZxLzG6euhLBApX6TQK71kZ" \
-              "false" \
+              "true" \
               "$AHP_KSM_ED" \
       # force metadata KSM token
       call_polkadot_js_api \
@@ -657,7 +657,7 @@ init-integritee-polkadot-local)
               "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } }')" \
               $XCM_VERSION
       echo "Creating asset for DOT token on IntegriteePolkadot"
-      # create asset for DOT token
+      # create sufficient asset for DOT token
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9244" \
           --seed "//Alice" \
@@ -665,7 +665,7 @@ init-integritee-polkadot-local)
           tx.assets.forceCreate \
               "0" \
               "2Li4fsP2bHBbSwpa2rgaswP22Kpqpr4uLyzbuym2Kc82v6oG" \
-              "false" \
+              "true" \
               "$AHK_DOT_ED" \
       # force metadata DOT token
       call_polkadot_js_api \
