@@ -161,7 +161,8 @@ main();
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
-    await check_hrmp_channels()
+    await checkHrmpChannels()
+    await checkBalances()
     await itkClient.destroy();
     await kahClient.destroy();
     await pahClient.destroy();
@@ -170,15 +171,30 @@ async function main() {
     await ksmClient.destroy();
 }
 
-async function check_hrmp_channels() {
-    const channels = await ksmApi.query.Hrmp.HrmpChannels.getEntries();
-    const expectedChannels = [
+async function checkHrmpChannels() {
+    console.log("Checking HRMP channels on KSM...");
+    const ksmActualChannels = await ksmApi.query.Hrmp.HrmpChannels.getEntries();
+    const ksmExpectedChannels: [number, number][] = [
         [1000, 1002],
         [1002, 1000],
         [1000, 2015],
         [2015, 1000],
         [2222, 1000]
     ];
+    checkHrmpChannelsResults(ksmActualChannels, ksmExpectedChannels);
+    console.log("Checking HRMP channels on DOT...");
+    const dotActualChannels = await dotApi.query.Hrmp.HrmpChannels.getEntries();
+    const dotExpectedChannels: [number, number][] = [
+        [1000, 1002],
+        [1002, 1000],
+        [1000, 2039],
+        [2039, 1000],
+        [2222, 1000]
+    ];
+    checkHrmpChannelsResults(dotActualChannels, dotExpectedChannels);
+}
+
+function checkHrmpChannelsResults(channels: any[], expectedChannels: [number, number][]) {
     for (const [from, to] of expectedChannels) {
         const found = channels.some(({keyArgs}) =>
             Array.isArray(keyArgs) &&
@@ -194,6 +210,34 @@ async function check_hrmp_channels() {
             console.log(`✅ Channel [${from}, ${to}] exists`);
         } else {
             console.log(`❌ Channel [${from}, ${to}] missing`);
+        }
+    }
+}
+
+
+async function checkBalances() {
+    await Promise.all([
+        checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 10_000_000_000_000n, "ITK Sovereign Local on ITK [TEER]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(TEER_FROM_SIBLING), 10_000_000_000_000n, "ITK Sovereign on KAH [KSM]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(TEER_FROM_COUSIN), 10_0_000_000_000n, "ITK Sovereign on PAH [DOT]"),
+    ])
+
+}
+
+async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
+    const accountIdResult = await api.apis.LocationToAccountApi.convert_location(location);
+    if (accountIdResult.success) {
+        const accountId = accountIdResult.value
+        const accountInfoResult = await api.query.System.Account.getValue(accountId);
+        if (accountInfoResult.data) {
+            const balance = accountInfoResult.data.free || 0n;
+            if (balance >= expectedBalance) {
+                console.log(`✅ ${label} balance: ${balance} is at least ${expectedBalance}`);
+            } else {
+                console.log(`❌ ${label} balance: ${balance} is less than expected ${expectedBalance}`);
+            }
+        } else {
+            console.log(`❌ ${label} Account not found`);
         }
     }
 }
