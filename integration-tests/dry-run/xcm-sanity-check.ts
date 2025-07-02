@@ -115,13 +115,30 @@ const TEER_FROM_SELF = {
     parents: 0,
     interior: XcmV5Junctions.Here(),
 };
-const TEER_FROM_SIBLING = {
+const ITK_FROM_SIBLING = {
     parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(2015)),
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
 };
-const TEER_FROM_COUSIN = {
+const KAH_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
+};
+const PAH_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
+};
+
+const ITK_FROM_COUSIN = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IK_PARA_ID)]),
+};
+const ITP_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
+};
+const ITP_FROM_COUSIN = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IP_PARA_ID)]),
 };
 
 // Setup clients...
@@ -179,7 +196,6 @@ async function checkHrmpChannels() {
         [1002, 1000],
         [1000, 2015],
         [2015, 1000],
-        [2222, 1000]
     ];
     checkHrmpChannelsResults(ksmActualChannels, ksmExpectedChannels);
     console.log("Checking HRMP channels on DOT...");
@@ -189,7 +205,6 @@ async function checkHrmpChannels() {
         [1002, 1000],
         [1000, 2039],
         [2039, 1000],
-        [2222, 1000]
     ];
     checkHrmpChannelsResults(dotActualChannels, dotExpectedChannels);
 }
@@ -217,11 +232,18 @@ function checkHrmpChannelsResults(channels: any[], expectedChannels: [number, nu
 
 async function checkBalances() {
     await Promise.all([
+        // ITK sovereign
         checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 10_000_000_000_000n, "ITK Sovereign Local on ITK [TEER]"),
-        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(TEER_FROM_SIBLING), 10_000_000_000_000n, "ITK Sovereign on KAH [KSM]"),
-        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(TEER_FROM_COUSIN), 10_0_000_000_000n, "ITK Sovereign on PAH [DOT]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITK_FROM_SIBLING), 10_000_000_000_000n, "ITK Sovereign on KAH [KSM]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 10_0_000_000_000n, "ITK Sovereign on PAH [DOT]"),
+        // ITP sovereign
+        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 10_000_000_000_000n, "ITP Sovereign Local on ITK [TEER]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITP_FROM_SIBLING), 10_0_000_000_000n, "ITP Sovereign on PAH [DOT]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 10_000_000_000_000n, "ITP Sovereign on KAH [KSM]"),
+        // AH sovereign
+        checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(KAH_FROM_SIBLING), 10_000_000_000_000n, "KAH Sovereign on ITK [TEER]"),
+        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(PAH_FROM_SIBLING), 10_000_000_000_000n, "PAH Sovereign on ITP [TEER]"),
     ])
-
 }
 
 async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
@@ -232,9 +254,9 @@ async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, 
         if (accountInfoResult.data) {
             const balance = accountInfoResult.data.free || 0n;
             if (balance >= expectedBalance) {
-                console.log(`✅ ${label} balance: ${balance} is at least ${expectedBalance}`);
+                console.log(`✅ ${label} (${accountId}) balance: ${balance} is at least ${expectedBalance}`);
             } else {
-                console.log(`❌ ${label} balance: ${balance} is less than expected ${expectedBalance}`);
+                console.log(`❌ ${label} (${accountId}) balance: ${balance} is less than expected ${expectedBalance}`);
             }
         } else {
             console.log(`❌ ${label} Account not found`);
