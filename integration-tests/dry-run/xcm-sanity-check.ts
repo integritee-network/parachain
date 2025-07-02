@@ -107,7 +107,15 @@ const KSM_FROM_POLKADOT_PARACHAINS = {
     parents: 2,
     interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
 };
+const DOT_FROM_KUSAMA_PARACHAINS = {
+    parents: 2,
+    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
+};
 const DOT_FROM_SIBLING_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.Here(),
+};
+const KSM_FROM_SIBLING_PARACHAINS = {
     parents: 1,
     interior: XcmV5Junctions.Here(),
 };
@@ -232,6 +240,7 @@ function checkHrmpChannelsResults(channels: any[], expectedChannels: [number, nu
 
 
 async function checkBalances() {
+    console.log("checking sovereign balances")
     await Promise.all([
         // ITK sovereign
         checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 10_000_000_000_000n, "ITK Sovereign Local on ITK [TEER]"),
@@ -267,46 +276,25 @@ async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, 
 
 
 async function checkAssetConversions() {
-    const referenceAmountKsm = 1000000000n;
-    const remote3FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, referenceAmountKsm, true);
-    const ksmPerDot = Number(remote3FeesHighEstimateKsmConverted) / Number(referenceAmountKsm)
-    if (ksmPerDot > 0.5 && ksmPerDot < 5) {
-        console.log(`✅ KSM per DOT on PAH is ${ksmPerDot} within expected limits`);
+    console.log("Checking asset conversions on various DEXes...");
+    const usdPerDot = 4.0
+    const usdPerKsm = 10.0
+    const usdPerTeer = 0.20
+    console.log(`reference prices: USD per DOT: ${usdPerDot}, USD per KSM: ${usdPerKsm}, USD per TEER: ${usdPerTeer}`);
+    await Promise.all([
+        checkAssetConversionOn(pahApi, KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, 1_000_000_000n, usdPerDot / usdPerKsm, Number(KSM_UNITS) / Number(DOT_UNITS), 10, "KSM per DOT on PAH"),
+        checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, 1_000_000_000n, usdPerKsm / usdPerTeer, 1.0, 10, "TEER PER KSM on KAH"),
+        checkAssetConversionOn(kahApi, DOT_FROM_KUSAMA_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, 1_000_000_000n, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), 10, "DOT per KSM on KAH"),
+        checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_POLKADOT_PARACHAINS, 1_000_000n, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), 10, "TEER PER DOT on PAH"),
+    ]);
+}
+
+async function checkAssetConversionOn(api: any, inLocation: any, outLocation: any, inAmount: bigint, refPrice: number, scalingFactor: number, toleranceFactor: number = 2, label: string) {
+    const outAmount = await api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(inLocation, outLocation, inAmount, true);
+    const actualPrice = Number(outAmount) / Number(inAmount) / scalingFactor;
+    if (actualPrice > refPrice / toleranceFactor && actualPrice < refPrice * toleranceFactor) {
+        console.log(`✅ ${label} price ${actualPrice} within expected tolerance from ${refPrice} (factor ${toleranceFactor})`);
     } else {
-        console.log(`❌ KSM per DOT on PAH is ${ksmPerDot} violating expected limits`);
+        console.log(`❌ ${label} price ${actualPrice} violates tolerance from ${refPrice} (factor ${toleranceFactor})`);
     }
-    // TODO: abstract to also check other conversions on other apis
-}
-
-// async function checkAssetConversionOn(api: any, in: any, out: any, )
-
-// Helper function to convert bigints to strings and binaries to hex strings in objects.
-function converter(_: string, value: any): string {
-    if (typeof value === "bigint") {
-        return value.toString();
-    } else if (typeof value === "object" && value.asHex !== undefined) {
-        return value.asHex();
-    } else {
-        return value;
-    }
-}
-
-// Helper function to stringify an object using `converter` to also show bigints and binaries.
-function stringify(obj: any): string {
-    return JSON.stringify(obj, converter, 2);
-}
-
-
-// Just a helper function to get a signer for ALICE.
-function getAliceSigner(): PolkadotSigner {
-    const entropy = mnemonicToEntropy(DEV_PHRASE);
-    const miniSecret = entropyToMiniSecret(entropy);
-    const derive = sr25519CreateDerive(miniSecret);
-    const hdkdKeyPair = derive("//Alice");
-    const aliceSigner = getPolkadotSigner(
-        hdkdKeyPair.publicKey,
-        "Sr25519",
-        hdkdKeyPair.sign,
-    );
-    return aliceSigner;
 }

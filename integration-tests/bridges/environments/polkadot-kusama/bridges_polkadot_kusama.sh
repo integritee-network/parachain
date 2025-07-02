@@ -699,7 +699,7 @@ init-integritee-polkadot-local)
           "//Alice" \
           "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } } }')" \
           "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
+          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
           0 \
           "Unlimited"
       # send 100 TEER to PAH Alice for pool
@@ -719,7 +719,7 @@ init-integritee-polkadot-local)
           tx.assetConversion.addLiquidity \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2039 }]}}')" \
-              "400000000000" \
+              "40000000000" \
               "90000000000000" \
               "1" \
               "1" \
