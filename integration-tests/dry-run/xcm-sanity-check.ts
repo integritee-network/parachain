@@ -180,6 +180,7 @@ main();
 async function main() {
     await checkHrmpChannels()
     await checkBalances()
+    await checkAssetConversions();
     await itkClient.destroy();
     await kahClient.destroy();
     await pahClient.destroy();
@@ -263,6 +264,21 @@ async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, 
         }
     }
 }
+
+
+async function checkAssetConversions() {
+    const referenceAmountKsm = 1000000000n;
+    const remote3FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, referenceAmountKsm, true);
+    const ksmPerDot = Number(remote3FeesHighEstimateKsmConverted) / Number(referenceAmountKsm)
+    if (ksmPerDot > 0.5 && ksmPerDot < 5) {
+        console.log(`✅ KSM per DOT on PAH is ${ksmPerDot} within expected limits`);
+    } else {
+        console.log(`❌ KSM per DOT on PAH is ${ksmPerDot} violating expected limits`);
+    }
+    // TODO: abstract to also check other conversions on other apis
+}
+
+// async function checkAssetConversionOn(api: any, in: any, out: any, )
 
 // Helper function to convert bigints to strings and binaries to hex strings in objects.
 function converter(_: string, value: any): string {
