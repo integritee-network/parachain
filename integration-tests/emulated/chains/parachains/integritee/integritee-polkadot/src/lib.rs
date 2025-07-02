@@ -15,6 +15,8 @@
 
 pub mod genesis;
 
+pub use integritee_polkadot_runtime;
+
 // Substrate
 use frame_support::traits::OnInitialize;
 

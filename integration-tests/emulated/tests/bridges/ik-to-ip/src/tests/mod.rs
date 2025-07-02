@@ -18,10 +18,19 @@ use crate::*;
 // mod asset_transfers;
 mod register_bridged_assets;
 mod send_xcm;
+mod ik_to_ip_xcm;
 
 mod snowbridge {
 	pub const CHAIN_ID: u64 = 1;
 	pub const WETH: [u8; 20] = hex_literal::hex!("87d1f7fdfEe7f651FaBc8bFCB6E086C278b77A7d");
+}
+
+pub (crate) fn teer_on_self() -> Location {
+	Location::new(0, Here)
+}
+
+pub (crate) fn ik_on_ahk() -> Location {
+  Location::new(1, [Parachain(2015)])
 }
 
 pub(crate) fn asset_hub_polkadot_location() -> Location {

@@ -15,6 +15,8 @@
 
 pub mod genesis;
 
+pub use integritee_kusama_runtime;
+
 // Substrate
 use frame_support::traits::OnInitialize;
 

@@ -36,7 +36,7 @@ cumulus-pallet-xcmp-queue = { workspace = true, default-features = true }
 bp-messages = { workspace = true, default-features = true }
 pallet-bridge-messages = { workspace = true, default-features = true }
 
-# Local
+# Runtimes Repo
 bp-bridge-hub-kusama = { workspace = true, default-features = true }
 bridge-hub-kusama-runtime = { workspace = true }
 integration-tests-helpers = { workspace = true }
@@ -50,6 +50,10 @@ snowbridge-inbound-queue-primitives = { workspace = true, default-features = tru
 snowbridge-pallet-system = { workspace = true, default-features = true }
 snowbridge-pallet-outbound-queue = { workspace = true, default-features = true }
 snowbridge-pallet-inbound-queue-fixtures = { workspace = true }
+
+# Local
+#integritee-kusama-runtime = { workspace = true, default-features = true}
+#integritee-polkadot-runtime = { workspace = true, default-features = true}
 
 [features]
 runtime-benchmarks = [

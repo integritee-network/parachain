@@ -1,0 +1,128 @@
+use crate::{tests::teer_on_self, *};
+use emulated_integration_tests_common::{xcm_emulator::ConvertLocation, USDT_ID};
+use frame_support::{
+	assert_ok,
+	dispatch::RawOrigin,
+	traits::{fungible::Mutate as M, fungibles::Mutate},
+};
+use integration_tests_helpers::asset_test_utils::GovernanceOrigin::Origin;
+use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::{
+	integritee_kusama_runtime, integritee_kusama_runtime::TEER,
+};
+use sp_runtime::traits::Bounded;
+use xcm::{v3::Error::WeightLimitReached, v5::AssetTransferFilter::Teleport};
+use crate::tests::{asset_hub_polkadot_location, ik_on_ahk};
+
+#[test]
+fn ik_to_ip_xcm_works() {
+	const SPEND_AMOUNT: u128 = 10_000_000;
+	const INITIAL_BALANCE: u128 = 100 * TEER;
+	let recipient = AccountId::new([5u8; 32]);
+
+	let ahk = (Parent, Parachain(1000));
+
+	let root_on_local =
+		integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(
+			&teer_on_self(),
+		).unwrap();
+
+    let ik_on_ahk_account = 	integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(
+        &ik_on_ahk(),
+    ).unwrap();
+
+	<AssetHubKusama as TestExt>::execute_with(|| {
+		type Assets = <AssetHubKusama as AssetHubKusamaPallet>::Assets;
+		type Balances = <AssetHubKusama as AssetHubKusamaPallet>::Balances;
+
+		assert_ok!(<Balances as M<_>>::mint_into(
+			&ik_on_ahk_account,
+			INITIAL_BALANCE
+		));
+
+		assert_eq!(Assets::balance(USDT_ID, &recipient), 0);
+	});
+
+	<IntegriteeKusama as TestExt>::execute_with(|| {
+        type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
+        type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
+        assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_BALANCE));
+
+		let xcm = ik_xcm();
+		<IntegriteeKusama as IntegriteeKusamaPallet>::PolkadotXcm::execute(
+			RawOrigin::Root.into(),
+			bx!(VersionedXcm::from(xcm)),
+			Weight::max_value(),
+		)
+		.unwrap();
+
+        assert_expected_events!(
+			IntegriteeKusama,
+			vec![
+				RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+			]
+		);
+
+	});
+
+	<AssetHubKusama as TestExt>::execute_with(|| {
+        type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
+
+        type Assets = <AssetHubKusama as AssetHubKusamaPallet>::Assets;
+		type Balances = <AssetHubKusama as AssetHubKusamaPallet>::Balances;
+
+        assert_expected_events!(
+				AssetHubKusama,
+				vec![
+					// message processed successfully
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+				]
+			);
+	});
+}
+
+fn ik_xcm<Call>() -> Xcm<Call> {
+    Xcm(vec![
+        // Assume that we always pay in native for now
+        WithdrawAsset((Here, Fungible(34849094374679)).into()),
+        SetAppendix(Xcm(vec![
+            RefundSurplus,
+            DepositAsset {
+                assets: AssetFilter::Wild(WildAsset::All),
+                beneficiary: Here.into(),
+            },
+        ])),
+        InitiateTransfer {
+            destination: (Parent, Parachain(1000)).into(),
+            remote_fees: Some(Teleport(AssetFilter::Definite(
+                Asset { id: Here.into(), fun: Fungible(33849094374679) }.into(),
+            ))),
+            preserve_origin: true,
+            assets: Default::default(),
+            remote_xcm: ahk_xcm(),
+        },
+    ])
+}
+
+fn ahk_xcm<Call>() -> Xcm<Call> {
+    Xcm(vec![
+        SetAppendix(Xcm(vec![
+            RefundSurplus,
+            DepositAsset {
+                assets: AssetFilter::Wild(WildAsset::All),
+                beneficiary: (Parent, Parachain(2015)).into(),
+            },
+        ])),
+        WithdrawAsset((Parent, Fungible(100000000000)).into()),
+        InitiateTransfer {
+            destination: asset_hub_polkadot_location(),
+            remote_fees: Some(Teleport(AssetFilter::Definite(
+                Asset { id: Parent.into(), fun: Fungible(100000000000) }.into(),
+            ))),
+            preserve_origin: true,
+            assets: Default::default(),
+            remote_xcm: Default::default(),
+        },
+    ])
+}

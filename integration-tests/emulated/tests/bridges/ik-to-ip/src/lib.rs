@@ -60,13 +60,22 @@ pub use kusama_polkadot_system_emulated_network::{
 		kusama_runtime::{xcm_config::UniversalLocation as KusamaRelayUniversalLocation, Dmp},
 		KusamaRelayPallet as KusamaPallet,
 	},
-	// penpal_emulated_chain::{
-	// 	penpal_runtime::xcm_config::{
-	// 		CustomizableAssetFromSystemAssetHub as PenpalCustomizableAssetFromSystemAssetHub,
-	// 		UniversalLocation as PenpalUniversalLocation,
-	// 	},
-	// 	PenpalAParaPallet as PenpalAPallet, PenpalAssetOwner,
-	// },
+	integritee_kusama_emulated_chain::{
+		genesis::ED as IK_ED,
+		integritee_kusama_runtime::xcm_config::{
+			UniversalLocation as IntegriteeKusamaUniversalLocation,
+		},
+		IntegriteeKusamaParaPallet as IntegriteeKusamaPallet,
+	},
+	integritee_polkadot_emulated_chain::{
+		genesis::ED as IP_ED,
+		integritee_polkadot_runtime::xcm_config::{
+			UniversalLocation as IntegriteePolkadotUniversalLocation,
+		},
+		IntegriteePolkadotParaPallet as IntegriteePolkadotPallet,
+	},
+	IntegriteeKusamaPara as IntegriteeKusama,
+	IntegriteePolkadotPara as IntegriteePolkadot,
 	AssetHubKusamaPara as AssetHubKusama, AssetHubKusamaParaReceiver as AssetHubKusamaReceiver,
 	AssetHubKusamaParaSender as AssetHubKusamaSender, AssetHubPolkadotPara as AssetHubPolkadot,
 	AssetHubPolkadotParaReceiver as AssetHubPolkadotReceiver,
