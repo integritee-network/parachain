@@ -588,6 +588,9 @@ case "$1" in
           "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
           0 \
           "Unlimited"
+      # here we need to wait until funds arrive, not only until inBlock
+      echo "Waiting for funds to arrive on IK"
+      sleep 30
       # send 100 TEER to KAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9144" \
@@ -598,6 +601,9 @@ case "$1" in
               "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '100000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
               "1" \
               "Unlimited"
+      # here we need to wait until funds arrive, not only until inBlock
+      echo "Waiting for funds to arrive on KAH"
+      sleep 30
       # provide liquidity to TEER/KSM pool on KAH
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9010" \
@@ -628,8 +634,8 @@ case "$1" in
       transfer_balance \
           "ws://127.0.0.1:9010" \
           "//Alice" \
-          "1626x6zX5RFZH41vmfRAtYD4WWM7T5jcRUrpUhqp5bYpHeTX" \
-          $((100 * $KSM))
+          "J4jPjaphmo2vzeEWEKaXfB1u3W2VWxDTNwyFuSMvStoQb4F" \
+          $((10 * $KSM))
       # set XCM version of remote IntegriteeKusama for relay and AH
       force_xcm_version \
           "ws://127.0.0.1:9942" \
@@ -701,6 +707,9 @@ case "$1" in
           "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
           0 \
           "Unlimited"
+      # here we need to wait until funds arrive, not only until inBlock
+      echo "Waiting for funds to arrive on IP"
+      sleep 30
       # send 100 TEER to PAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9244" \
@@ -711,6 +720,9 @@ case "$1" in
               "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '100000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
               "1" \
               "Unlimited"
+      # here we need to wait until funds arrive, not only until inBlock
+      echo "Waiting for funds to arrive on PAH"
+      sleep 30
       # provide liquidity to TEER/DOT pool on PAH
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9910" \

@@ -146,7 +146,7 @@ const ITP_FROM_SIBLING = {
 };
 const ITP_FROM_COUSIN = {
     parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IP_PARA_ID)]),
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
 };
 
 // Setup clients...
@@ -243,16 +243,16 @@ async function checkBalances() {
     console.log("checking sovereign balances")
     await Promise.all([
         // ITK sovereign
-        checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 10_000_000_000_000n, "ITK Sovereign Local on ITK [TEER]"),
-        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITK_FROM_SIBLING), 10_000_000_000_000n, "ITK Sovereign on KAH [KSM]"),
-        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 10_0_000_000_000n, "ITK Sovereign on PAH [DOT]"),
+        checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 5n * TEER_UNITS, "ITK Sovereign Local on ITK [TEER]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITK_FROM_SIBLING), 5n * KSM_UNITS, "ITK Sovereign on KAH [KSM]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 5n * DOT_UNITS, "ITK Sovereign on PAH [DOT]"),
         // ITP sovereign
-        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 10_000_000_000_000n, "ITP Sovereign Local on ITK [TEER]"),
-        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITP_FROM_SIBLING), 10_0_000_000_000n, "ITP Sovereign on PAH [DOT]"),
-        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 10_000_000_000_000n, "ITP Sovereign on KAH [KSM]"),
+        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 5n * TEER_UNITS, "ITP Sovereign Local on ITK [TEER]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITP_FROM_SIBLING), 5n * DOT_UNITS, "ITP Sovereign on PAH [DOT]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 5n * KSM_UNITS, "ITP Sovereign on KAH [KSM]"),
         // AH sovereign
-        checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(KAH_FROM_SIBLING), 10_000_000_000_000n, "KAH Sovereign on ITK [TEER]"),
-        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(PAH_FROM_SIBLING), 10_000_000_000_000n, "PAH Sovereign on ITP [TEER]"),
+        checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(KAH_FROM_SIBLING), 5n * TEER_UNITS, "KAH Sovereign on ITK [TEER]"),
+        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(PAH_FROM_SIBLING), 5n * TEER_UNITS, "PAH Sovereign on ITP [TEER]"),
     ])
 }
 
