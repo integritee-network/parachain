@@ -30,8 +30,10 @@ cp ./target/release/substrate-relay ~/local_bridge_testing/bin/
 cd 
 git clone https://github.com/polkadot-fellows/runtimes.git
 cd runtimes
-git checkout v1.6.0
-# actually, a patch is needed, use this instead until the patch is released: https://github.com/encointer/runtimes/tree/ab/trusted-aliaser-patch
+git checkout v1.6.1
+# a pending PR is needed
+curl -L https://github.com/polkadot-fellows/runtimes/pull/794.patch | git apply -
+# sudo must be enabled for relaychains
 git apply ./integration-tests/bridges/sudo-relay.patch
 cargo +nightly build --release -p chain-spec-generator --no-default-features --features fast-runtime,polkadot,kusama,bridge-hub-kusama,bridge-hub-polkadot,asset-hub-kusama,asset-hub-polkadot
 
@@ -66,6 +68,19 @@ then you can point your browser to
 * Integritee Network (Polkadot) https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9244#
 * Asset Hub Kusama https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9010#
 * Asset Hub Polkadot https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9910#
+* Bridge Hub Kusama https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A8945#
+* Bridge Hub Polkadot https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A8943#
+
+the setup is quite brittle. You should run the sanity check before testing other things:
+
+```bash
+cd ../dry-run
+bun xcm-sanity-check.ts
+```
+
+If any check fails, you may want to re-run one of the init steps manually, e.g.
+`./helper.sh init-asset-hub-polkadot-local` or `./helper.sh init-asset-hub-kusama-local`. See interventions section
+below.
 
 ### a few calls to try
 
