@@ -259,33 +259,41 @@ async function checkBalances() {
 async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
     const accountIdResult = await api.apis.LocationToAccountApi.convert_location(location);
     if (accountIdResult.success) {
-        const accountId = accountIdResult.value
-        const accountInfoResult = await api.query.System.Account.getValue(accountId);
-        if (accountInfoResult.data) {
-            const balance = accountInfoResult.data.free || 0n;
-            if (balance >= expectedBalance) {
-                console.log(`✅ ${label} (${accountId}) balance: ${balance} is at least ${expectedBalance}`);
-            } else {
-                console.log(`❌ ${label} (${accountId}) balance: ${balance} is less than expected ${expectedBalance}`);
-            }
+        await checkAccountIdBalanceOn(api, accountIdResult.value, expectedBalance, label);
+    } else {
+        console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+    }
+}
+
+async function checkAccountIdBalanceOn(api: any, accountId: string, expectedBalance: bigint, label: string) {
+    const accountInfoResult = await api.query.System.Account.getValue(accountId);
+    if (accountInfoResult.data) {
+        const balance = accountInfoResult.data.free || 0n;
+        if (balance >= expectedBalance) {
+            console.log(`✅ ${label} (${accountId}) balance: ${balance} is at least ${expectedBalance}`);
         } else {
-            console.log(`❌ ${label} Account not found`);
+            console.log(`❌ ${label} (${accountId}) balance: ${balance} is less than expected ${expectedBalance}`);
         }
+    } else {
+        console.log(`❌ ${label} Account not found`);
     }
 }
 
 
 async function checkAssetConversions() {
     console.log("Checking asset conversions on various DEXes...");
+    // lazily update these prices not to deviate too much from actual market prices
     const usdPerDot = 4.0
     const usdPerKsm = 10.0
     const usdPerTeer = 0.20
+    const referenceAmount = 1_000_000n; // should be small enough not to care about 10 or 12 decimals
+    const toleranceFactor = 10;
     console.log(`reference prices: USD per DOT: ${usdPerDot}, USD per KSM: ${usdPerKsm}, USD per TEER: ${usdPerTeer}`);
     await Promise.all([
-        checkAssetConversionOn(pahApi, KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, 1_000_000_000n, usdPerDot / usdPerKsm, Number(KSM_UNITS) / Number(DOT_UNITS), 10, "KSM per DOT on PAH"),
-        checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, 1_000_000_000n, usdPerKsm / usdPerTeer, 1.0, 10, "TEER PER KSM on KAH"),
-        checkAssetConversionOn(kahApi, DOT_FROM_KUSAMA_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, 1_000_000_000n, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), 10, "DOT per KSM on KAH"),
-        checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_POLKADOT_PARACHAINS, 1_000_000n, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), 10, "TEER PER DOT on PAH"),
+        checkAssetConversionOn(pahApi, KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerDot / usdPerKsm, Number(KSM_UNITS) / Number(DOT_UNITS), toleranceFactor, "KSM per DOT on PAH"),
+        checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on KAH"),
+        checkAssetConversionOn(kahApi, DOT_FROM_KUSAMA_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), toleranceFactor, "DOT per KSM on KAH"),
+        checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_POLKADOT_PARACHAINS, referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on PAH"),
     ]);
 }
 

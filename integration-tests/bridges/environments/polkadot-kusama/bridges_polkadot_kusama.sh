@@ -270,21 +270,21 @@ function run_messages_relay() {
 
 case "$1" in
   run-relay)
-    init_kusama_polkadot
-    init_polkadot_kusama
-    run_relay
-    ;;
+      init_kusama_polkadot
+      init_polkadot_kusama
+      run_relay
+      ;;
   run-finality-relay)
-    init_kusama_polkadot
-    init_polkadot_kusama
-    run_finality_relay
-    ;;
+      init_kusama_polkadot
+      init_polkadot_kusama
+      run_finality_relay
+      ;;
   run-parachains-relay)
-    run_parachains_relay
-    ;;
+      run_parachains_relay
+      ;;
   run-messages-relay)
-    run_messages_relay
-    ;;
+      run_messages_relay
+      ;;
   init-polkadot-local)
       ensure_polkadot_js_api
       # HRMP
@@ -329,14 +329,14 @@ case "$1" in
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama" }] } }')"
-      # Create liquidity in the pool @ 1 DOT = 0.25 KSM
+      # Create liquidity in the pool @ 10 DOT = 4 KSM
       add_liquidity \
           "ws://127.0.0.1:9910" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama"}] } }')" \
           100000000000 \
-          250000000000 \
+          4000000000000 \
           "$BOB_SOVEREIGN_ACCOUNT_AT_POLKADOT"
       # create foreign assets for native Kusama token (governance call on Polkadot)
       force_create_foreign_asset \
@@ -437,14 +437,14 @@ case "$1" in
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot" }] } }')"
-      # Create liquidity in the pool @ 1 KSM = 4 DOT.
+      # Create liquidity in the pool @ 1 KSM = 2.5 DOT.
       add_liquidity \
           "ws://127.0.0.1:9010" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot"}] } }')" \
           1000000000000 \
-          400000000000 \
+          25000000000 \
           "$BOB_SOVEREIGN_ACCOUNT_AT_KUSAMA"
       force_create_foreign_asset \
           "ws://127.0.0.1:9945" \
@@ -611,8 +611,7 @@ case "$1" in
               "1" \
               "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"
       ;;
-
-init-integritee-polkadot-local)
+  init-integritee-polkadot-local)
       # SA of sibling asset hub pays for the inwards execution
       transfer_balance \
           "ws://127.0.0.1:9244" \
@@ -725,7 +724,6 @@ init-integritee-polkadot-local)
               "1" \
               "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5"
       ;;
-
   reserve-transfer-assets-from-asset-hub-polkadot-local)
       amount=$2
       ensure_polkadot_js_api
@@ -779,20 +777,20 @@ init-integritee-polkadot-local)
           "Unlimited"
       ;;
   *)
-    echo "A command is require. Supported commands for:
-    Local (zombienet) run:
-          - run-relay
-          - run-finality-relay
-          - run-parachains-relay
-          - run-messages-relay
-          - init-asset-hub-polkadot-local
-          - init-bridge-hub-polkadot-local
-          - init-asset-hub-kusama-local
-          - init-bridge-hub-kusama-local
-          - reserve-transfer-assets-from-asset-hub-polkadot-local
-          - withdraw-reserve-assets-from-asset-hub-polkadot-local
-          - reserve-transfer-assets-from-asset-hub-kusama-local
-          - withdraw-reserve-assets-from-asset-hub-kusama-local";
-    exit 1
-    ;;
+      echo "A command is require. Supported commands for:
+      Local (zombienet) run:
+            - run-relay
+            - run-finality-relay
+            - run-parachains-relay
+            - run-messages-relay
+            - init-asset-hub-polkadot-local
+            - init-bridge-hub-polkadot-local
+            - init-asset-hub-kusama-local
+            - init-bridge-hub-kusama-local
+            - reserve-transfer-assets-from-asset-hub-polkadot-local
+            - withdraw-reserve-assets-from-asset-hub-polkadot-local
+            - reserve-transfer-assets-from-asset-hub-kusama-local
+            - withdraw-reserve-assets-from-asset-hub-kusama-local";
+      exit 1
+      ;;
 esac
