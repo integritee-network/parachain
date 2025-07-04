@@ -54,18 +54,23 @@ const PAH_PARA_ID = 1000;
 const IK_PARA_ID = 2015;
 const IP_PARA_ID = 2039;
 
+// if false, we assum zombienet
+const CHOPSTICKS: boolean = true;
+
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
-// const KAH_WS_URL = "ws://localhost:8000";
-// const IK_WS_URL = "ws://localhost:8001";
-// const PAH_WS_URL = "ws://localhost:8002";
-// const IP_WS_URL = "ws://localhost:8003";
-
-// if running against the bridge zombienet instead, use these:
-const KAH_WS_URL = "ws://localhost:9010";
-const IK_WS_URL = "ws://localhost:9144";
-const PAH_WS_URL = "ws://localhost:9910";
-const IP_WS_URL = "ws://localhost:9244";
+const KAH_WS_URL = CHOPSTICKS
+    ? "ws://localhost:8000"
+    : "ws://localhost:9010";
+const IK_WS_URL = CHOPSTICKS
+    ? "ws://localhost:8001"
+    : "ws://localhost:9144"
+const PAH_WS_URL = CHOPSTICKS
+    ? "ws://localhost:8002"
+    : "ws://localhost:9910"
+const IP_WS_URL = CHOPSTICKS
+    ? "ws://localhost:8003"
+    : "ws://localhost:9244"
 
 const IP_FROM_PAH = {
     parents: 1,
@@ -155,14 +160,16 @@ async function main() {
     const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
     const remote3FeesHighEstimateDot = 10n * DOT_UNITS;
 
-    // const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
-    // const signer = getAliceSigner();
-    // await stx.signAndSubmit(signer);
-    // const stx2 = await itpApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
-    // await stx2.signAndSubmit(signer);
-    // console.log("triggered state migrations if necessary. waiting for a bit....")
-    // // wait for chopsticks api's to catch up
-    // await new Promise(resolve => setTimeout(resolve, 5000));
+    if (CHOPSTICKS) {
+        const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
+        const signer = getAliceSigner();
+        await stx.signAndSubmit(signer);
+        const stx2 = await itpApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
+        await stx2.signAndSubmit(signer);
+        console.log("triggered state migrations if necessary. waiting for a bit....")
+        // wait for chopsticks api's to catch up
+        await new Promise(resolve => setTimeout(resolve, 5000));
+    }
 
     const referenceAmountTeer = 1000000000n;
     const remote2FeesHighEstimateTeerConverted = await kahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(TEER_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, referenceAmountTeer, true);
@@ -259,11 +266,42 @@ async function main() {
         const result = await stx.signAndSubmit(signer);
         console.dir(stringify(result.txHash));
         console.log("Await System.Remarked event on destination chain...this can take a few minutes")
-        await itpApi.event.System.Remarked.watch()
-            .pipe(take(1))
-            .forEach((event) => {
-                console.log("Event received: System.Remarked from ", event.payload.sender, " with hash ", event.payload.hash.asHex());
-            });
+        if (CHOPSTICKS) {
+            console.error("Chopsticks doesn't emulate the bridge yet. the following will stall after KAH")
+        }
+        const startTime = Date.now();
+        await Promise.all([
+            itkApi.event.PolkadotXcm.Sent.watch()
+                .pipe(take(1))
+                .forEach((event) => {
+                    const elapsedTime = Date.now() - startTime;
+                    console.log(`ITK Event received after ${elapsedTime}ms: PolkadotXcm.Sent id `, event.payload.message_id.asHex(), " to ", event.payload.destination);
+                }),
+            kahApi.event.AssetConversion.SwapCreditExecuted.watch()
+                .pipe(take(1))
+                .forEach((event) => {
+                    const elapsedTime = Date.now() - startTime;
+                    console.log(`KAH Event received after ${elapsedTime}ms: AssetConversion.SwapCreditExecuted `, event.payload);
+                }),
+            kahApi.event.PolkadotXcm.Sent.watch()
+                .pipe(take(1))
+                .forEach((event) => {
+                    const elapsedTime = Date.now() - startTime;
+                    console.log(`KAH Event received after ${elapsedTime}ms: PolkadotXcm.Sent id `, event.payload.message_id.asHex(), " to ", event.payload.destination);
+                }),
+            pahApi.event.PolkadotXcm.Sent.watch()
+                .pipe(take(1))
+                .forEach((event) => {
+                    const elapsedTime = Date.now() - startTime;
+                    console.log(`PAH Event received after ${elapsedTime}ms: PolkadotXcm.Sent id `, event.payload.message_id.asHex(), " to ", event.payload.destination);
+                }),
+            itpApi.event.System.Remarked.watch()
+                .pipe(take(1))
+                .forEach((event) => {
+                    const elapsedTime = Date.now() - startTime;
+                    console.log(`ITP Event received after ${elapsedTime}ms: System.Remarked from `, event.payload.sender, " with hash ", event.payload.hash.asHex());
+                })
+        ])
     }
     await itkClient.destroy();
     await kahClient.destroy();
@@ -737,7 +775,7 @@ async function estimateFees(
         console.error("remote3FeesInDot failed: ", resultRemote3FeesInDot);
         return;
     }
-    const remote3FeesInDot = 4580824760n //TODO: weight_2_fee on ITP seems off:  resultRemote3FeesInDot.value;
+    const remote3FeesInDot = 4580824760n //TODO: weight_2_fee on ITP seems off:  resultRemote3FeesInDot.value. See: https://github.com/integritee-network/parachain/issues/329
 
     console.log("API: localExecutionFees (virtual) [TEER]: ", localExecutionFees);
     console.log("API: deliveryFeesToRemote1Teer    [TEER]: ", deliveryFeesToRemote1Teer);
