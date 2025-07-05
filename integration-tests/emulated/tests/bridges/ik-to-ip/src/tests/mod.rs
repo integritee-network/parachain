@@ -117,7 +117,6 @@ pub(crate) fn foreign_balance_on_ah_polkadot(id: xcm::v4::Location, who: &Accoun
 	})
 }
 
-// set up pool
 pub(crate) fn set_up_pool_with_dot_on_ah_polkadot(asset: xcm::v4::Location, is_foreign: bool) {
 	let dot: xcm::v4::Location = xcm::v4::Parent.into();
 	AssetHubPolkadot::execute_with(|| {
@@ -173,6 +172,64 @@ pub(crate) fn set_up_pool_with_dot_on_ah_polkadot(asset: xcm::v4::Location, is_f
 		);
 	});
 }
+
+// set up pool
+pub(crate) fn set_up_pool_with_ksm_on_ah_kusama(asset: xcm::v4::Location, is_foreign: bool) {
+	let dot: xcm::v4::Location = xcm::v4::Parent.into();
+	AssetHubKusama::execute_with(|| {
+		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
+		let owner = AssetHubKusamaSender::get();
+		let signed_owner = <AssetHubKusama as Chain>::RuntimeOrigin::signed(owner.clone());
+
+		if is_foreign {
+			assert_ok!(<AssetHubKusama as AssetHubKusamaPallet>::ForeignAssets::mint(
+				signed_owner.clone(),
+				asset.clone(),
+				owner.clone().into(),
+				3_000_000_000_000,
+			));
+		} else {
+			let asset_id = match asset.interior.last() {
+				Some(xcm::v4::Junction::GeneralIndex(id)) => *id as u32,
+				_ => unreachable!(),
+			};
+			assert_ok!(<AssetHubKusama as AssetHubKusamaPallet>::Assets::mint(
+				signed_owner.clone(),
+				asset_id.into(),
+				owner.clone().into(),
+				3_000_000_000_000,
+			));
+		}
+		assert_ok!(<AssetHubKusama as AssetHubKusamaPallet>::AssetConversion::create_pool(
+			signed_owner.clone(),
+			Box::new(dot.clone()),
+			Box::new(asset.clone()),
+		));
+		assert_expected_events!(
+			AssetHubKusama,
+			vec![
+				RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::PoolCreated { .. }) => {},
+			]
+		);
+		assert_ok!(<AssetHubKusama as AssetHubKusamaPallet>::AssetConversion::add_liquidity(
+			signed_owner.clone(),
+			Box::new(dot),
+			Box::new(asset),
+			1_000_000_000_000,
+			2_000_000_000_000,
+			1,
+			1,
+			owner,
+		));
+		assert_expected_events!(
+			AssetHubKusama,
+			vec![
+				RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::LiquidityAdded {..}) => {},
+			]
+		);
+	});
+}
+
 
 pub(crate) fn send_assets_from_asset_hub_kusama(
 	destination: Location,
