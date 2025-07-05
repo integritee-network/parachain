@@ -29,8 +29,12 @@ pub (crate) fn teer_on_self() -> Location {
 	Location::new(0, Here)
 }
 
-pub (crate) fn ik_on_ahk() -> Location {
-  Location::new(1, [Parachain(2015)])
+pub (crate) fn ik_on_ahk() -> xcm::v4::Location {
+  xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(2015)])
+}
+
+pub (crate) fn ik_on_ahk_v5() -> Location {
+	Location::new(1, [Parachain(2015)])
 }
 
 pub(crate) fn asset_hub_polkadot_location() -> Location {
@@ -175,7 +179,7 @@ pub(crate) fn set_up_pool_with_dot_on_ah_polkadot(asset: xcm::v4::Location, is_f
 
 // set up pool
 pub(crate) fn set_up_pool_with_ksm_on_ah_kusama(asset: xcm::v4::Location, is_foreign: bool) {
-	let dot: xcm::v4::Location = xcm::v4::Parent.into();
+	let ksm: xcm::v4::Location = xcm::v4::Parent.into();
 	AssetHubKusama::execute_with(|| {
 		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
 		let owner = AssetHubKusamaSender::get();
@@ -202,7 +206,7 @@ pub(crate) fn set_up_pool_with_ksm_on_ah_kusama(asset: xcm::v4::Location, is_for
 		}
 		assert_ok!(<AssetHubKusama as AssetHubKusamaPallet>::AssetConversion::create_pool(
 			signed_owner.clone(),
-			Box::new(dot.clone()),
+			Box::new(ksm.clone()),
 			Box::new(asset.clone()),
 		));
 		assert_expected_events!(
@@ -213,7 +217,7 @@ pub(crate) fn set_up_pool_with_ksm_on_ah_kusama(asset: xcm::v4::Location, is_for
 		);
 		assert_ok!(<AssetHubKusama as AssetHubKusamaPallet>::AssetConversion::add_liquidity(
 			signed_owner.clone(),
-			Box::new(dot),
+			Box::new(ksm),
 			Box::new(asset),
 			1_000_000_000_000,
 			2_000_000_000_000,

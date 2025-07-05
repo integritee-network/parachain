@@ -1,6 +1,6 @@
 use crate::{
 	tests::{
-		asset_hub_polkadot_location, create_foreign_on_ah_kusama, ik_on_ahk,
+		asset_hub_polkadot_location, create_foreign_on_ah_kusama, ik_on_ahk, ik_on_ahk_v5,
 		set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
 	},
 	*,
@@ -22,15 +22,9 @@ use xcm::{
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
-fn setup_teer_ksm_pool_for_paying_fees_on_ahk() {
-	let ik = ik_on_ahk();
-	create_foreign_on_ah_kusama(ik.clone().into(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
-
-	set_up_pool_with_ksm_on_ah_kusama(ik.into(), true);
-}
-
 fn ik_on_ahk_account() -> AccountId {
-	integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(&ik_on_ahk())
+	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
+	integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(&ik_on_ahk_v5())
 		.unwrap()
 }
 
@@ -57,8 +51,11 @@ fn ik_to_ip_xcm_works() {
 
 		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahk_acc, INITIAL_KSM_BALANCE));
 
-		setup_teer_ksm_pool_for_paying_fees_on_ahk()
 	});
+
+	create_foreign_on_ah_kusama(ik_on_ahk(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
+
+	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk(), true);
 
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type Runtime = <IntegriteeKusama as Chain>::Runtime;
