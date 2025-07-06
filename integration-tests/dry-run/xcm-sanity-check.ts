@@ -1,4 +1,4 @@
-// sanity check for a zombienet, chopsticks or live chain setup requires a running IK-KAH chopsticks
+// sanity check for a zombienet, chopsticks or live chain setup
 
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
@@ -20,24 +20,20 @@ import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
 
 const LIVE: number = 0;
+
+// for chopsticks we assume this setup:
+// Kusama and Polkadot side must be run separately:
+// npx @acala-network/chopsticks@latest xcm --p=./configs/kusama-asset-hub.yml --p=./configs/integritee-kusama.yml
+// should be ports 8000 and 8001 respectively.
+// npx @acala-network/chopsticks@latest xcm --p=./configs/polkadot-asset-hub.yml --p=./configs/integritee-polkadot.yml
+// should be ports 8002 and 8003 respectively.
 const CHOPSTICKS: number = 1;
+
+// for zombienet we assume the setup described in ../bridges/README.md:
 const ZOMBIENET: number = 2;
 
+// use this constant to select your endpoint set
 const ENDPOINTS = CHOPSTICKS;
-
-// Useful constants.
-const KAH_PARA_ID = 1000;
-const PAH_PARA_ID = 1000;
-const IK_PARA_ID = 2015;
-const IP_PARA_ID = 2039;
-
-// We're running against chopsticks with wasm-override to get XCMv5 support.
-// `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
-
-// const KAH_WS_URL = "ws://localhost:8000";
-// const IK_WS_URL = "ws://localhost:8001";
-// const PAH_WS_URL = "ws://localhost:8002";
-// const IP_WS_URL = "ws://localhost:8003";
 
 const KAH_WS_URL = ENDPOINTS === LIVE
     ? "wss://sys.ibp.network/asset-hub-kusama"
@@ -70,23 +66,21 @@ const DOT_WS_URL = ENDPOINTS === LIVE
         ? "skipped"
         : "ws://localhost:9942";
 
+// Useful constants.
+const KAH_PARA_ID = 1000;
+const PAH_PARA_ID = 1000;
+const IK_PARA_ID = 2015;
+const IP_PARA_ID = 2039;
+
 const TEER_UNITS = 1_000_000_000_000n;
 const KSM_UNITS = 1_000_000_000_000n;
 const DOT_UNITS = 10_000_000_000n;
 
-const KSM_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const DOT_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const KSM_FROM_POLKADOT_PARACHAINS = {
+const KSM_FROM_COUSIN_PARACHAINS = {
     parents: 2,
     interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
 };
-const DOT_FROM_KUSAMA_PARACHAINS = {
+const DOT_FROM_COUSIN_PARACHAINS = {
     parents: 2,
     interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
 };
@@ -102,10 +96,6 @@ const TEER_FROM_SELF = {
     parents: 0,
     interior: XcmV5Junctions.Here(),
 };
-const ITK_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
-};
 const KAH_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
@@ -114,7 +104,10 @@ const PAH_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
 };
-
+const ITK_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
+};
 const ITK_FROM_COUSIN = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IK_PARA_ID)]),
@@ -286,10 +279,10 @@ async function checkAssetConversions() {
     const toleranceFactor = 10;
     console.log(`reference prices: USD per DOT: ${usdPerDot}, USD per KSM: ${usdPerKsm}, USD per TEER: ${usdPerTeer}`);
     await Promise.all([
-        checkAssetConversionOn(pahApi, KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerDot / usdPerKsm, Number(KSM_UNITS) / Number(DOT_UNITS), toleranceFactor, "KSM per DOT on PAH"),
-        checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on KAH"),
-        checkAssetConversionOn(kahApi, DOT_FROM_KUSAMA_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), toleranceFactor, "DOT per KSM on KAH"),
-        checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_POLKADOT_PARACHAINS, referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on PAH"),
+        checkAssetConversionOn(pahApi, KSM_FROM_COUSIN_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerDot / usdPerKsm, Number(KSM_UNITS) / Number(DOT_UNITS), toleranceFactor, "KSM per DOT on PAH"),
+        checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on KAH"),
+        checkAssetConversionOn(kahApi, DOT_FROM_COUSIN_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), toleranceFactor, "DOT per KSM on KAH"),
+        checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on PAH"),
     ]);
 }
 
