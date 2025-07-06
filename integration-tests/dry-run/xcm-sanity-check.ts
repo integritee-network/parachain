@@ -1,15 +1,4 @@
-// requires a running IK-KAH chopsticks
-// for setup, refer to
-// https://github.com/integritee-network/parachain/issues/323
-//
-// Kusama and Polkadot side must be run separately:
-// npx @acala-network/chopsticks@latest xcm --p=./configs/kusama-asset-hub.yml --p=./configs/integritee-kusama.yml
-// should be ports 8000 and 8001 respectively.
-// npx @acala-network/chopsticks@latest xcm --p=./configs/polkadot-asset-hub.yml --p=./configs/integritee-polkadot.yml
-// should be ports 8002 and 8003 respectively.
-//
-// As IK sovereign, we will send a xcm to KAH to transact/execute a system.remark_with_event
-// all fees will be paid in TEER and converted to KSM on KAH as needed
+// sanity check for a zombienet, chopsticks or live chain setup requires a running IK-KAH chopsticks
 
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
@@ -19,36 +8,22 @@ import {
     pah, // bun papi add pah -w http://localhost:8002
     dot,
     ksm,
-    DispatchRawOrigin,
     XcmV5Junction,
     XcmV5Junctions,
     XcmV5NetworkId,
-    XcmV3MultiassetFungibility,
-    XcmV5Instruction,
-    XcmVersionedAssetId,
     XcmVersionedLocation,
-    XcmVersionedXcm,
-    XcmV2OriginKind,
-    XcmV5AssetFilter, XcmV5WildAsset
 } from "@polkadot-api/descriptors";
 import {
     createClient,
-    Enum,
-    Binary,
-    type PolkadotSigner,
 } from "polkadot-api";
-// import from "polkadot-api/ws-provider/node"
-// if you are running in a NodeJS environment
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
-import {getPolkadotSigner} from "polkadot-api/signer";
-import {
-    DEV_PHRASE,
-    entropyToMiniSecret,
-    mnemonicToEntropy,
-} from "@polkadot-labs/hdkd-helpers";
-import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
-import {take} from "rxjs"
+
+const LIVE: number = 0;
+const CHOPSTICKS: number = 1;
+const ZOMBIENET: number = 2;
+
+const ENDPOINTS = CHOPSTICKS;
 
 // Useful constants.
 const KAH_PARA_ID = 1000;
@@ -58,38 +33,42 @@ const IP_PARA_ID = 2039;
 
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
+
 // const KAH_WS_URL = "ws://localhost:8000";
 // const IK_WS_URL = "ws://localhost:8001";
 // const PAH_WS_URL = "ws://localhost:8002";
 // const IP_WS_URL = "ws://localhost:8003";
 
-// if running against the bridge zombienet instead, use these:
-const KAH_WS_URL = "ws://localhost:9010";
-const IK_WS_URL = "ws://localhost:9144";
-const PAH_WS_URL = "ws://localhost:9910";
-const IP_WS_URL = "ws://localhost:9244";
-const KSM_WS_URL = "ws://localhost:9945";
-const DOT_WS_URL = "ws://localhost:9942";
-
-const IP_FROM_PAH = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
-};
-const KAH_FROM_IK = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
-};
-const PAH_FROM_KAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-const KAH_FROM_PAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
-
-// XCM.
-const XCM_VERSION = 5;
+const KAH_WS_URL = ENDPOINTS === LIVE
+    ? "wss://sys.ibp.network/asset-hub-kusama"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8000"
+        : "ws://localhost:9010";
+const IK_WS_URL = ENDPOINTS === LIVE
+    ? "wss://kusama.api.integritee.network"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8001"
+        : "ws://localhost:9144";
+const PAH_WS_URL = ENDPOINTS === LIVE
+    ? "wss://sys.ibp.network/asset-hub-polkadot"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8002"
+        : "ws://localhost:9910";
+const IP_WS_URL = ENDPOINTS === LIVE
+    ? "wss://polkadot.api.integritee.network"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8003"
+        : "ws://localhost:9244";
+const KSM_WS_URL = ENDPOINTS === LIVE
+    ? "wss://rpc.ibp.network/kusama"
+    : ENDPOINTS === CHOPSTICKS
+        ? "skipped"
+        : "ws://localhost:9945";
+const DOT_WS_URL = ENDPOINTS === LIVE
+    ? "wss://rpc.ibp.network/polkadot"
+    : ENDPOINTS === CHOPSTICKS
+        ? "skipped"
+        : "ws://localhost:9942";
 
 const TEER_UNITS = 1_000_000_000_000n;
 const KSM_UNITS = 1_000_000_000_000n;
@@ -180,13 +159,25 @@ const dotClient = createClient(
 );
 const dotApi = dotClient.getTypedApi(dot);
 
-// The whole execution of the script.
 main();
 
-// We'll teleport KSM from Asset Hub to People.
-// Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
-    await checkHrmpChannels()
+    switch (ENDPOINTS) {
+        case LIVE:
+            console.log("Running against live chains...");
+            break;
+        case CHOPSTICKS:
+            console.log("Running against chopsticks...");
+            break;
+        case ZOMBIENET:
+            console.log("Running against zombienet...");
+            break;
+        default:
+            throw new Error(`Unknown ENDPOINTS value: ${ENDPOINTS}`);
+    }
+    if (ENDPOINTS !== CHOPSTICKS) {
+        await checkHrmpChannels()
+    }
     await checkBalances()
     await checkAssetConversions();
     await itkClient.destroy();
@@ -257,12 +248,17 @@ async function checkBalances() {
 }
 
 async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
-    const accountIdResult = await api.apis.LocationToAccountApi.convert_location(location);
-    if (accountIdResult.success) {
-        await checkAccountIdBalanceOn(api, accountIdResult.value, expectedBalance, label);
-    } else {
-        console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(location);
+        if (accountIdResult.success) {
+            await checkAccountIdBalanceOn(api, accountIdResult.value, expectedBalance, label);
+        } else {
+            console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
     }
+
 }
 
 async function checkAccountIdBalanceOn(api: any, accountId: string, expectedBalance: bigint, label: string) {
@@ -298,11 +294,15 @@ async function checkAssetConversions() {
 }
 
 async function checkAssetConversionOn(api: any, inLocation: any, outLocation: any, inAmount: bigint, refPrice: number, scalingFactor: number, toleranceFactor: number = 2, label: string) {
-    const outAmount = await api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(inLocation, outLocation, inAmount, true);
-    const actualPrice = Number(outAmount) / Number(inAmount) / scalingFactor;
-    if (actualPrice > refPrice / toleranceFactor && actualPrice < refPrice * toleranceFactor) {
-        console.log(`✅ ${label} price ${actualPrice} within expected tolerance from ${refPrice} (factor ${toleranceFactor})`);
-    } else {
-        console.log(`❌ ${label} price ${actualPrice} violates tolerance from ${refPrice} (factor ${toleranceFactor})`);
+    try {
+        const outAmount = await api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(inLocation, outLocation, inAmount, true);
+        const actualPrice = Number(outAmount) / Number(inAmount) / scalingFactor;
+        if (actualPrice > refPrice / toleranceFactor && actualPrice < refPrice * toleranceFactor) {
+            console.log(`✅ ${label} price ${actualPrice} within expected tolerance from ${refPrice} (factor ${toleranceFactor})`);
+        } else {
+            console.log(`❌ ${label} price ${actualPrice} violates tolerance from ${refPrice} (factor ${toleranceFactor})`);
+        }
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
     }
 }

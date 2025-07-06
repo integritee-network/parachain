@@ -54,7 +54,7 @@ const PAH_PARA_ID = 1000;
 const IK_PARA_ID = 2015;
 const IP_PARA_ID = 2039;
 
-// if false, we assum zombienet
+// if false, we assume zombienet
 const CHOPSTICKS: boolean = true;
 
 // We're running against chopsticks with wasm-override to get XCMv5 support.
