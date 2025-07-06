@@ -66,7 +66,7 @@ You may need to edit the script and set `CHOPSTICKS = true` to enable the correc
 ports
 
 ```
-bun xcm-v5-remark_on_itp_as_itk.ts
+bun xcm-v5-bridge-remark_on_itp_as_itk.ts
 ```
 
 ## with local zombienet
