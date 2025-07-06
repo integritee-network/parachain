@@ -80,7 +80,8 @@ cd ../bridges
 ./run-test.sh 0000-manual
 ```
 
-once you see `Zombienet is ready for manual testing.` you should run sanity checks and fix issues if any:
+once you see `Zombienet is ready for manual testing.` you should run sanity checks and fix issues if any. Make sure you
+set `const ENDPOINTS = ZOMBIENET`:
 
 ```
 bun xcm-sanity-checks.ts
