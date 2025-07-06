@@ -7,6 +7,9 @@ Install PAPI and bun
 
 ```
 npm i -g polkadot-api
+// case you already had polkadot-api installed, but some @polkadot/ dependencies fail to update you
+// will get tons of warnings about duplicate deps. 
+npm update -g
 npm install -g bun
 ```
 
