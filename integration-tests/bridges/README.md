@@ -36,6 +36,8 @@ curl -L https://github.com/polkadot-fellows/runtimes/pull/794.patch | git apply 
 # sudo must be enabled for relaychains
 git apply ./integration-tests/bridges/sudo-relay.patch
 cargo +nightly build --release -p chain-spec-generator --no-default-features --features fast-runtime,polkadot,kusama,bridge-hub-kusama,bridge-hub-polkadot,asset-hub-kusama,asset-hub-polkadot
+cp ./target/release/chain-spec-generator ~/local_bridge_testing/bin/chain-spec-generator-kusama
+cp ./target/release/chain-spec-generator ~/local_bridge_testing/bin/chain-spec-generator-polkadot
 
 # in another folder of your choice, build the integritee-collator with sudo
 cd
