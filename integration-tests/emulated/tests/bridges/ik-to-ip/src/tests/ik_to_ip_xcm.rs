@@ -62,25 +62,29 @@ fn ik_to_ip_xcm_works() {
 		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahk_acc, INITIAL_KSM_BALANCE));
 	});
 
-	create_foreign_on_ah_kusama(ik_on_ahk(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
-
-	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk(), true);
+	let ik_on_ahk = ik_on_ahk();
+	create_foreign_on_ah_kusama(ik_on_ahk.clone(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
+	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk, true);
 
 	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
 
 	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
 	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
 
+	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the
+	// weight is queried
+	let xcm1 = ik_xcm();
+	let xcm2 = ik_xcm();
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type Runtime = <IntegriteeKusama as Chain>::Runtime;
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
 		type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
 		assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_TEER_BALANCE));
 
-		let weight = Runtime::query_xcm_weight(VersionedXcm::from(ik_xcm())).unwrap();
+		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
 		<IntegriteeKusama as IntegriteeKusamaPallet>::PolkadotXcm::execute(
 			RawOrigin::Root.into(),
-			bx!(VersionedXcm::from(ik_xcm())),
+			bx!(VersionedXcm::from(xcm2)),
 			weight,
 		)
 		.unwrap();
