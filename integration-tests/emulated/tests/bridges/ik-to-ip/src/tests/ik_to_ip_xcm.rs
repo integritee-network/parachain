@@ -21,7 +21,7 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::tests::{ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5};
+use crate::tests::{bridge_hub_polkadot_location, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5};
 
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
@@ -45,6 +45,13 @@ fn ik_to_ip_xcm_works() {
 		.unwrap();
 
 	let ik_on_ahk_acc = ik_on_ahk_account();
+
+	// fund the KAH's SA on KBH for paying bridge transport fees
+	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10_000_000_000_000u128);
+
+	// set XCM versions
+	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
+	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
 
 	<AssetHubKusama as TestExt>::execute_with(|| {
 		type Assets = <AssetHubKusama as AssetHubKusamaPallet>::Assets;
@@ -115,7 +122,7 @@ fn ik_xcm<Call>() -> Xcm<Call> {
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: Default::default(),
+			remote_xcm: ahk_xcm(),
 		},
 	])
 }
@@ -137,7 +144,7 @@ fn ahk_xcm<Call>() -> Xcm<Call> {
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: ahp_xcm(),
+			remote_xcm: Default::default(),
 		},
 	])
 }
