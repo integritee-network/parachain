@@ -21,7 +21,7 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::tests::{assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received, bridge_hub_polkadot_location, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5};
+use crate::tests::{assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot, create_foreign_on_ah_polkadot, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5, set_up_pool_with_dot_on_ah_polkadot};
 
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
@@ -64,6 +64,11 @@ fn ik_to_ip_xcm_works() {
 
 	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk(), true);
 
+	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
+
+	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
+	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
+
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type Runtime = <IntegriteeKusama as Chain>::Runtime;
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
@@ -105,6 +110,20 @@ fn ik_to_ip_xcm_works() {
 
 	assert_bridge_hub_kusama_message_accepted(true);
 	assert_bridge_hub_polkadot_message_received();
+
+	AssetHubPolkadot::execute_with(|| {
+		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubPolkadot,
+			vec![
+				// Todo! verify other events
+				// message processed successfully
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+			]
+		);
+	});
 }
 
 /// XCM as it is being sent from IK all the way to the IP.
