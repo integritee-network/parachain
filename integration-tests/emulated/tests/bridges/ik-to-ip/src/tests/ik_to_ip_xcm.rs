@@ -18,6 +18,9 @@ use integration_tests_helpers::asset_test_utils::GovernanceOrigin::Origin;
 use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::{
 	integritee_kusama_runtime, integritee_kusama_runtime::TEER,
 };
+use kusama_polkadot_system_emulated_network::integritee_polkadot_emulated_chain::{
+	integritee_polkadot_runtime,
+};
 use sp_runtime::traits::Bounded;
 use xcm::{
 	latest::AssetTransferFilter::ReserveDeposit, v3::Error::WeightLimitReached,
@@ -28,13 +31,21 @@ use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
 	integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(&ik_on_ahk_v5())
-		.unwrap()
+		.expect("can convert ik_on_ahk_v5 to AccountId")
 }
+
+fn ik_on_ahp_account() -> AccountId {
+	// Todo: replace with polkadot_hub_kusama_runtime, but the emulated network doesn't expose it.
+	integritee_polkadot_runtime::xcm_config::LocationToAccountId::convert_location(&ik_on_ahp_v5())
+		.expect("can convert ik_on_ahp_v5 to AccountId")
+}
+
 
 #[test]
 fn ik_to_ip_xcm_works() {
 	const INITIAL_TEER_BALANCE: u128 = 100 * TEER;
 	const ONE_KSM: u128 = 1_000_000_000_000;
+	const ONE_DOT: u128 = 10_000_000_000;
 	const INITIAL_KSM_BALANCE: u128 = 100 * ONE_KSM;
 	let recipient = AccountId::new([5u8; 32]);
 
@@ -68,7 +79,13 @@ fn ik_to_ip_xcm_works() {
 
 	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
 
-	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
+	<AssetHubPolkadot as TestExt>::execute_with(|| {
+		type Balances = <AssetHubPolkadot as AssetHubPolkadotPallet>::Balances;
+
+		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahp_account(), 100 * ONE_DOT));
+	});
+
+	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![(ik_on_ahp_account(), 100 * ONE_KSM)]);
 	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
 
 	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the

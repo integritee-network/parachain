@@ -16,36 +16,36 @@
 use crate::*;
 
 // mod asset_transfers;
+mod ik_to_ip_xcm;
 mod register_bridged_assets;
 mod send_xcm;
-mod ik_to_ip_xcm;
 
 mod snowbridge {
 	pub const CHAIN_ID: u64 = 1;
 	pub const WETH: [u8; 20] = hex_literal::hex!("87d1f7fdfEe7f651FaBc8bFCB6E086C278b77A7d");
 }
 
-pub (crate) fn teer_on_self() -> Location {
+pub(crate) fn teer_on_self() -> Location {
 	Location::new(0, Here)
 }
 
-pub (crate) fn ik_on_ahk() -> xcm::v4::Location {
-  xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(IntegriteeKusama::para_id().into())])
+pub(crate) fn ik_on_ahk() -> xcm::v4::Location {
+	xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(IntegriteeKusama::para_id().into())])
 }
 
-pub (crate) fn ik_on_ahk_v5() -> Location {
+pub(crate) fn ik_on_ahk_v5() -> Location {
 	Location::new(1, [Parachain(IntegriteeKusama::para_id().into())])
 }
 
-pub (crate) fn ik_on_ahp_v5() -> Location {
-	Location::new(2, [GlobalConsensus(Polkadot), Parachain(IntegriteeKusama::para_id().into())])
+pub(crate) fn ik_on_ahp_v5() -> Location {
+	Location::new(2, [GlobalConsensus(NetworkId::Kusama), Parachain(IntegriteeKusama::para_id().into())])
 }
 
-pub (crate) fn ip_on_ahp() -> xcm::v4::Location {
+pub(crate) fn ip_on_ahp() -> xcm::v4::Location {
 	xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(IntegriteePolkadot::para_id().into())])
 }
 
-pub (crate) fn ip_on_ahp_v5() -> Location {
+pub(crate) fn ip_on_ahp_v5() -> Location {
 	Location::new(1, [Parachain(IntegriteePolkadot::para_id().into())])
 }
 
@@ -115,9 +115,19 @@ pub(crate) fn create_foreign_on_ah_kusama(
 	AssetHubKusama::force_create_foreign_asset(id, owner, sufficient, min, prefund_accounts);
 }
 
-pub(crate) fn create_foreign_on_ah_polkadot(id: xcm::v4::Location, sufficient: bool) {
+pub(crate) fn create_foreign_on_ah_polkadot(
+	id: xcm::v4::Location,
+	sufficient: bool,
+	prefund_accounts: Vec<(AccountId, u128)>,
+) {
 	let owner = AssetHubPolkadot::account_id_of(ALICE);
-	AssetHubPolkadot::force_create_foreign_asset(id, owner, sufficient, ASSET_MIN_BALANCE, vec![]);
+	AssetHubPolkadot::force_create_foreign_asset(
+		id,
+		owner,
+		sufficient,
+		ASSET_MIN_BALANCE,
+		prefund_accounts,
+	);
 }
 
 pub(crate) fn foreign_balance_on_ah_kusama(id: xcm::v4::Location, who: &AccountId) -> u128 {
@@ -245,7 +255,6 @@ pub(crate) fn set_up_pool_with_ksm_on_ah_kusama(asset: xcm::v4::Location, is_for
 		);
 	});
 }
-
 
 pub(crate) fn send_assets_from_asset_hub_kusama(
 	destination: Location,
