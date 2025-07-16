@@ -21,7 +21,7 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::tests::{bridge_hub_polkadot_location, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5};
+use crate::tests::{assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received, bridge_hub_polkadot_location, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5};
 
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
@@ -102,8 +102,12 @@ fn ik_to_ip_xcm_works() {
 			]
 		);
 	});
+
+	assert_bridge_hub_kusama_message_accepted(true);
+	assert_bridge_hub_polkadot_message_received();
 }
 
+/// XCM as it is being sent from IK all the way to the IP.
 fn ik_xcm<Call>() -> Xcm<Call> {
 	const ALAIN_WITHDRAW: u128 = 34849094374679;
 	const ALAIN_REMOTE_FEE: u128 = 33849094374679;
@@ -127,6 +131,7 @@ fn ik_xcm<Call>() -> Xcm<Call> {
 	])
 }
 
+/// Nested XCM to be executed as `remote_xcm` from within `ik_xcm` on AHK.
 fn ahk_xcm<Call>() -> Xcm<Call> {
 	Xcm(vec![
 		SetAppendix(Xcm(vec![
@@ -149,6 +154,7 @@ fn ahk_xcm<Call>() -> Xcm<Call> {
 	])
 }
 
+/// Nested XCM to be executed as `remote_xcm` from within `ahk_xcm` on AHP.
 fn ahp_xcm<Call>() -> Xcm<Call> {
 	type RuntimeCall = <IntegriteeKusama as Chain>::RuntimeCall;
 
