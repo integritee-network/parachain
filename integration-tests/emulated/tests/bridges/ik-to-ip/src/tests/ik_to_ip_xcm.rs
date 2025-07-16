@@ -21,6 +21,7 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use crate::tests::{ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5};
 
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
@@ -131,6 +132,30 @@ fn ahk_xcm<Call>() -> Xcm<Call> {
 		WithdrawAsset((Parent, Fungible(300000000000)).into()),
 		InitiateTransfer {
 			destination: asset_hub_polkadot_location(),
+			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
+				Asset { id: Parent.into(), fun: Fungible(200000000000) }.into(),
+			))),
+			preserve_origin: true,
+			assets: Default::default(),
+			remote_xcm: ahp_xcm(),
+		},
+	])
+}
+
+fn ahp_xcm<Call>() -> Xcm<Call> {
+	type RuntimeCall = <IntegriteeKusama as Chain>::RuntimeCall;
+
+	Xcm(vec![
+		SetAppendix(Xcm(vec![
+			RefundSurplus,
+			DepositAsset {
+				assets: AssetFilter::Wild(WildAsset::All),
+				beneficiary: ik_on_ahp_v5()
+			},
+		])),
+		WithdrawAsset((Parent, Fungible(300000000000)).into()),
+		InitiateTransfer {
+			destination: ip_on_ahp_v5(),
 			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
 				Asset { id: Parent.into(), fun: Fungible(200000000000) }.into(),
 			))),

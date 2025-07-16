@@ -37,6 +37,18 @@ pub (crate) fn ik_on_ahk_v5() -> Location {
 	Location::new(1, [Parachain(2015)])
 }
 
+pub (crate) fn ik_on_ahp_v5() -> Location {
+	Location::new(2, [GlobalConsensus(Polkadot), Parachain(2015)])
+}
+
+pub (crate) fn ip_on_ahp() -> xcm::v4::Location {
+	xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(2039)])
+}
+
+pub (crate) fn ip_on_ahp_v5() -> Location {
+	Location::new(1, [Parachain(2039)])
+}
+
 pub(crate) fn asset_hub_polkadot_location() -> Location {
 	Location::new(2, [GlobalConsensus(Polkadot), Parachain(AssetHubPolkadot::para_id().into())])
 }
