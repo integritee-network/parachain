@@ -1,6 +1,9 @@
 use crate::{
 	tests::{
-		asset_hub_polkadot_location, create_foreign_on_ah_kusama, ik_on_ahk, ik_on_ahk_v5,
+		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
+		asset_hub_polkadot_location, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot,
+		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, ik_on_ahk, ik_on_ahk_v5,
+		ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5, set_up_pool_with_dot_on_ah_polkadot,
 		set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
 	},
 	*,
@@ -21,7 +24,6 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::tests::{assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot, create_foreign_on_ah_polkadot, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5, set_up_pool_with_dot_on_ah_polkadot};
 
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
@@ -124,6 +126,17 @@ fn ik_to_ip_xcm_works() {
 			]
 		);
 	});
+
+	<IntegriteePolkadot as TestExt>::execute_with(|| {
+		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			IntegriteePolkadot,
+			vec![
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},			]
+		);
+	});
 }
 
 /// XCM as it is being sent from IK all the way to the IP.
@@ -168,7 +181,7 @@ fn ahk_xcm<Call>() -> Xcm<Call> {
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: Default::default(),
+			remote_xcm: ahp_xcm(),
 		},
 	])
 }
@@ -180,10 +193,7 @@ fn ahp_xcm<Call>() -> Xcm<Call> {
 	Xcm(vec![
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
-			DepositAsset {
-				assets: AssetFilter::Wild(WildAsset::All),
-				beneficiary: ik_on_ahp_v5()
-			},
+			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
 		])),
 		WithdrawAsset((Parent, Fungible(300000000000)).into()),
 		InitiateTransfer {
