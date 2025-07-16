@@ -50,7 +50,6 @@ fn ik_to_ip_xcm_works() {
 		type Balances = <AssetHubKusama as AssetHubKusamaPallet>::Balances;
 
 		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahk_acc, INITIAL_KSM_BALANCE));
-
 	});
 
 	create_foreign_on_ah_kusama(ik_on_ahk(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
@@ -90,12 +89,7 @@ fn ik_to_ip_xcm_works() {
 			vec![
 				// message processed successfully
 				RuntimeEvent::MessageQueue(
-				// Todo: This fails with the following logs:
-				// 2025-07-02T17:44:35.387562Z  INFO events::IntegriteeKusama: PolkadotXcm(Event::Attempted { outcome: Complete { used: Weight { ref_time: 5000000, proof_size: 5120 } } })
-				// 2025-07-02T17:44:35.388641Z DEBUG xcm::weight: Failed to substract from payment error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: X1([Parachain(2015)]) }): 67698188749358}, non_fungible: {} }
-				// 2025-07-02T17:44:35.389271Z DEBUG xcm::process: XCM execution failed at instruction index=1 error=TooExpensive
-				// 2025-07-02T17:44:35.389874Z  INFO xcm::hrmp::KusamaMockNet: Horizontal messages processed by para_id 1000: [(Id(2015), 6, "0x00050c02040101007d1f000b2e0a7e36923d300101007d1f000b2e0a7e36923d2ca89957eec6987309afe892785bbcdc1c00decc106f94c3216b71a2dff0def246")]
-					pallet_message_queue::Event::Processed { success: true, .. }
+						pallet_message_queue::Event::Processed { success: true, .. }
 				) => {},
 			]
 		);
