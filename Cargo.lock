@@ -1968,6 +1968,7 @@ dependencies = [
  "integration-tests-helpers",
  "kusama-polkadot-system-emulated-network",
  "pallet-asset-conversion",
+ "pallet-asset-registry",
  "pallet-assets",
  "pallet-balances",
  "pallet-bridge-messages",

@@ -27,6 +27,7 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use crate::tests::create_reserve_asset_on_ip;
 
 fn ik_on_ahk_account() -> AccountId {
 	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
@@ -74,8 +75,6 @@ fn ik_to_ip_xcm_works() {
 	create_foreign_on_ah_kusama(ik_on_ahk.clone(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
 	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk, true);
 
-	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
-
 	let mut ik_on_ahp_acc = None;
 	<AssetHubPolkadot as TestExt>::execute_with(|| {
 		type Balances = <AssetHubPolkadot as AssetHubPolkadotPallet>::Balances;
@@ -84,8 +83,11 @@ fn ik_to_ip_xcm_works() {
 		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahp_account(), 100 * ONE_DOT));
 	});
 
-	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![(ik_on_ahp_acc.unwrap(), 100 * ONE_KSM)]);
+	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
+	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![(ik_on_ahp_acc.clone().unwrap(), 100 * ONE_KSM)]);
 	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
+
+	create_reserve_asset_on_ip(0, Parent.into(), true, vec![(ik_on_ahp_acc.clone().unwrap(), 100* ONE_DOT)]);
 
 	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the
 	// weight is queried

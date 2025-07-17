@@ -38,7 +38,10 @@ pub(crate) fn ik_on_ahk_v5() -> Location {
 }
 
 pub(crate) fn ik_on_ahp_v5() -> Location {
-	Location::new(2, [GlobalConsensus(NetworkId::Kusama), Parachain(IntegriteeKusama::para_id().into())])
+	Location::new(
+		2,
+		[GlobalConsensus(NetworkId::Kusama), Parachain(IntegriteeKusama::para_id().into())],
+	)
 }
 
 pub(crate) fn ip_on_ahp() -> xcm::v4::Location {
@@ -128,6 +131,43 @@ pub(crate) fn create_foreign_on_ah_polkadot(
 		ASSET_MIN_BALANCE,
 		prefund_accounts,
 	);
+}
+
+pub(crate) fn create_reserve_asset_on_ip(
+	id: u32,
+	reserve_asset_location: Location,
+	sufficient: bool,
+	prefund_accounts: Vec<(AccountId, u128)>,
+) {
+	let owner = IntegriteePolkadot::account_id_of(ALICE);
+	IntegriteePolkadot::force_create_asset(
+		id,
+		owner,
+		sufficient,
+		ASSET_MIN_BALANCE,
+		prefund_accounts,
+	);
+
+	IntegriteePolkadot::execute_with(|| {
+		type AssetRegistry = <IntegriteePolkadot as IntegriteePolkadotPallet>::AssetRegistry;
+
+		let sudo_origin = <IntegriteePolkadot as Chain>::RuntimeOrigin::root();
+
+		AssetRegistry::register_reserve_asset(sudo_origin, id, reserve_asset_location)
+			.expect("Failed to register reserve asset");
+
+		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			IntegriteePolkadot,
+			vec![
+				RuntimeEvent::AssetRegistry(
+				pallet_asset_registry::Event::ReserveAssetRegistered {
+						asset_id, ..
+					}
+				) => { asset_id: *asset_id == id, },
+			]
+		);
+	})
 }
 
 pub(crate) fn foreign_balance_on_ah_kusama(id: xcm::v4::Location, who: &AccountId) -> u128 {

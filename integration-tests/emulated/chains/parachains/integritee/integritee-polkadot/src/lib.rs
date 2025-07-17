@@ -21,10 +21,7 @@ pub use integritee_polkadot_runtime;
 use frame_support::traits::OnInitialize;
 
 // Cumulus
-use emulated_integration_tests_common::{
-	impl_accounts_helpers_for_parachain, impl_assert_events_helpers_for_parachain,
-	impl_xcm_helpers_for_parachain, impls::Parachain, xcm_emulator::decl_test_parachains,
-};
+use emulated_integration_tests_common::{impl_accounts_helpers_for_parachain, impl_assert_events_helpers_for_parachain, impl_assets_helpers_for_parachain, impl_xcm_helpers_for_parachain, impls::Parachain, xcm_emulator::decl_test_parachains};
 
 // integriteeKusama Parachain declaration
 decl_test_parachains! {
@@ -43,6 +40,8 @@ decl_test_parachains! {
 		pallets = {
 			PolkadotXcm: integritee_polkadot_runtime::PolkadotXcm,
 			Balances: integritee_polkadot_runtime::Balances,
+			Assets: integritee_polkadot_runtime::Assets,
+			AssetRegistry: integritee_polkadot_runtime::AssetRegistry,
 		}
 	},
 }
@@ -51,3 +50,4 @@ decl_test_parachains! {
 impl_accounts_helpers_for_parachain!(IntegriteePolkadot);
 impl_assert_events_helpers_for_parachain!(IntegriteePolkadot);
 impl_xcm_helpers_for_parachain!(IntegriteePolkadot);
+impl_assets_helpers_for_parachain!(IntegriteePolkadot);
