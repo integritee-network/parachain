@@ -47,9 +47,6 @@ fn ik_to_ip_xcm_works() {
 	const ONE_KSM: u128 = 1_000_000_000_000;
 	const ONE_DOT: u128 = 10_000_000_000;
 	const INITIAL_KSM_BALANCE: u128 = 100 * ONE_KSM;
-	let recipient = AccountId::new([5u8; 32]);
-
-	let ahk = (Parent, Parachain(1000));
 
 	let root_on_local =
 		integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(
@@ -79,13 +76,15 @@ fn ik_to_ip_xcm_works() {
 
 	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
 
+	let mut ik_on_ahp_acc = None;
 	<AssetHubPolkadot as TestExt>::execute_with(|| {
 		type Balances = <AssetHubPolkadot as AssetHubPolkadotPallet>::Balances;
 
+		ik_on_ahp_acc = Some(ik_on_ahp_account());
 		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahp_account(), 100 * ONE_DOT));
 	});
 
-	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![(ik_on_ahp_account(), 100 * ONE_KSM)]);
+	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![(ik_on_ahp_acc.unwrap(), 100 * ONE_KSM)]);
 	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
 
 	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the
