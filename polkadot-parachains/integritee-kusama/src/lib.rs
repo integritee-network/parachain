@@ -75,6 +75,7 @@ use pallet_balances::WeightInfo;
 pub use pallet_claims;
 pub use pallet_collective;
 pub use pallet_enclave_bridge;
+use pallet_porteer::PortTokens;
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
@@ -84,21 +85,24 @@ use parachains_common::{message_queue::NarrowOriginToSibling, AssetIdForTrustBac
 use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, ConstU128, ConstU32, OpaqueMetadata};
+use sp_core::{
+	crypto::{AccountId32, KeyTypeId},
+	ConstU128, ConstU32, OpaqueMetadata,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchError, RuntimeDebug,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm::{
+use xcm::{
 	latest::prelude::AssetId, Version as XcmVersion, VersionedAssetId, VersionedAssets,
 	VersionedLocation, VersionedXcm,
 };
@@ -111,6 +115,7 @@ mod helpers;
 mod weights;
 
 mod migrations;
+mod porteer;
 pub mod xcm_config;
 
 pub type SessionHandlers = ();
@@ -518,9 +523,9 @@ impl pallet_message_queue::Config for Runtime {
 		cumulus_primitives_core::AggregateMessageOrigin,
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+	type MessageProcessor = xcm_builder::ProcessXcmMessage<
 		AggregateMessageOrigin,
-		staging_xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
+		xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
 		RuntimeCall,
 	>;
 	type Size = u32;
@@ -776,6 +781,35 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
+
+use sp_core::hex2array;
+ord_parameter_types! {
+	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
+}
+
+pub struct MockPortTokens;
+
+impl PortTokens for MockPortTokens {
+	type AccountId = AccountId;
+	type Balance = Balance;
+	type Error = DispatchError;
+
+	fn port_tokens(_who: &Self::AccountId, _amount: Self::Balance) -> Result<(), Self::Error> {
+		Ok(())
+	}
+}
+
+impl pallet_porteer::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+	type PorteerAdmin =
+		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	// Todo: Do we want to allow to transfer tokens back?
+	type TokenSenderLocationOrigin =
+		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type PortTokensToDestination = MockPortTokens;
+	type Fungible = Balances;
+}
 
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
@@ -1104,6 +1138,7 @@ construct_runtime!(
 		Sidechain: pallet_sidechain= 53,
 		EnclaveBridge: pallet_enclave_bridge = 54,
 		TeerDays: pallet_teerdays = 55,
+		Porteer: pallet_porteer = 56,
 	}
 );
 
@@ -1179,6 +1214,7 @@ mod benches {
 		[pallet_message_queue, MessageQueue]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
+		[pallet_porteer, Porteer]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
 		[pallet_session, SessionBench::<Runtime>]
@@ -1350,7 +1386,7 @@ impl_runtime_apis! {
 	}
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
-		fn query_acceptable_payment_assets(xcm_version: staging_xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
+		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
 			let acceptable_assets = vec![AssetId(xcm_config::SelfLocation::get())];
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}

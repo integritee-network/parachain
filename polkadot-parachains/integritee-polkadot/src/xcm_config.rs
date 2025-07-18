@@ -49,19 +49,22 @@ use sp_std::{
 	convert::{From, Into},
 	prelude::*,
 };
-use staging_xcm::latest::prelude::*;
-use staging_xcm_builder::{
+use xcm::latest::prelude::*;
+use xcm_builder::{
 	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
 	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
 	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
-	DescribeTerminus, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
-	GlobalConsensusParachainConvertsFor, HashedDescription, NoChecking, ParentAsSuperuser,
-	ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
+	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue, TakeWeightCredit,
 	TrailingSetTopicAsId, WithComputedOrigin,
 };
-use staging_xcm_executor::{traits::JustTry, XcmExecutor};
+use xcm_executor::{
+	traits::{JustTry, TransactAsset},
+	XcmExecutor,
+};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
@@ -141,7 +144,7 @@ pub type LocationToAccountId = (
 	HashedDescription<AccountId, DescribeFamily<DescribeAllTerminal>>,
 	// Different global consensus parachain sovereign account.
 	// (Used for over-bridge transfers and reserve processing)
-	GlobalConsensusParachainConvertsFor<UniversalLocation, AccountId>,
+	ExternalConsensusLocationsConverterFor<UniversalLocation, AccountId>,
 );
 
 /// Means for transacting TEER only.
@@ -318,9 +321,37 @@ pub type Traders = (
 	// for DOT aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
-		XcmFeesTo32ByteAccount<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
+		XcmFeesTo32ByteAccountCustom<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
 	>,
 );
+
+// Fixme: The integration test fails because it can't deposit the DOT to the Treasury with:
+//  Error Depositing Asset: AssetNotFound
+//
+// Ignoring this error with the below hack will lead to:
+// `PolkadotXcm(Event::AssetsTrapped { hash: 0xb225b0f34edb281841f89c7237884f1e41746c8d1874770fca38a95845ca41ae, origin: Location { parents: 2, interior: X2([GlobalConsensus(Kusama), Parachain(2015)]) }, assets: V5(Assets([Asset { id: AssetId(Location { parents: 1, interior: Here }), fun: Fungible(16724748580) }])) })`
+pub struct XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>(
+	PhantomData<(FungiblesMutateAdapter, AccountId, ReceiverAccount)>,
+);
+impl<
+		FungiblesMutateAdapter: TransactAsset,
+		AccountId: Clone + Into<[u8; 32]>,
+		ReceiverAccount: Get<Option<AccountId>>,
+	> TakeRevenue
+	for XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>
+{
+	fn take_revenue(revenue: Asset) {
+		if let Some(receiver) = ReceiverAccount::get() {
+			if let Err(e) = FungiblesMutateAdapter::deposit_asset(
+				&revenue,
+				&([AccountId32 { network: None, id: receiver.into() }].into()),
+				None,
+			) {
+				log::error!("Error Depositing Asset: {:?}", e);
+			}
+		}
+	}
+}
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
@@ -385,7 +416,7 @@ pub type TrustedAliasers = (
 
 pub struct XcmConfig;
 
-impl staging_xcm_executor::Config for XcmConfig {
+impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	// How to withdraw and deposit an asset.
