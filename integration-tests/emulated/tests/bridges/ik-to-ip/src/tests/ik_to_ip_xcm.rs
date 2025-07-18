@@ -65,7 +65,7 @@ fn ik_to_ip_xcm_works() {
 	let ik_on_ahp_acc = ik_on_ahp_account();
 
 	// fund the KAH's SA on KBH for paying bridge transport fees
-	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10_000_000_000_000u128);
+	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10 * ONE_KSM);
 
 	// Fund accounts
 	let ip_treasury = integritee_polkadot_runtime::TreasuryAccount::get();
@@ -210,22 +210,36 @@ fn ahk_xcm<Call>() -> Xcm<Call> {
 
 /// Nested XCM to be executed as `remote_xcm` from within `ahk_xcm` on AHP.
 fn ahp_xcm<Call>() -> Xcm<Call> {
-	type RuntimeCall = <IntegriteeKusama as Chain>::RuntimeCall;
-
 	Xcm(vec![
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
 		])),
-		WithdrawAsset((Parent, Fungible(3000000000000)).into()),
+		WithdrawAsset((Parent, Fungible(30000000000)).into()),
 		InitiateTransfer {
 			destination: ip_on_ahp_v5(),
 			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
-				Asset { id: Parent.into(), fun: Fungible(2000000000000) }.into(),
+				Asset { id: Parent.into(), fun: Fungible(20000000000) }.into(),
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: Default::default(),
+			remote_xcm: ip_xcm(),
+		},
+	])
+}
+
+fn ip_xcm<Call>() -> Xcm<Call> {
+	type RuntimeCall = <IntegriteePolkadot as Chain>::RuntimeCall;
+
+	Xcm(vec![
+		Transact {
+			origin_kind: OriginKind::SovereignAccount,
+			fallback_max_weight: None,
+			call: RuntimeCall::System(frame_system::Call::remark {
+				remark: "Hello".encode(),
+			})
+				.encode()
+				.into(),
 		},
 	])
 }
