@@ -50,9 +50,21 @@ use sp_std::{
 	prelude::*,
 };
 use xcm::latest::prelude::*;
-use xcm_builder::{AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses, AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case, DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily, DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter, HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue, TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin};
-use xcm_executor::{traits::JustTry, XcmExecutor};
-use xcm_executor::traits::TransactAsset;
+use xcm_builder::{
+	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
+	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
+	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
+	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
+	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue, TakeWeightCredit,
+	TrailingSetTopicAsId, WithComputedOrigin,
+};
+use xcm_executor::{
+	traits::{JustTry, TransactAsset},
+	XcmExecutor,
+};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
@@ -322,10 +334,11 @@ pub struct XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, Recei
 	PhantomData<(FungiblesMutateAdapter, AccountId, ReceiverAccount)>,
 );
 impl<
-	FungiblesMutateAdapter: TransactAsset,
-	AccountId: Clone + Into<[u8; 32]>,
-	ReceiverAccount: Get<Option<AccountId>>,
-> TakeRevenue for XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>
+		FungiblesMutateAdapter: TransactAsset,
+		AccountId: Clone + Into<[u8; 32]>,
+		ReceiverAccount: Get<Option<AccountId>>,
+	> TakeRevenue
+	for XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>
 {
 	fn take_revenue(revenue: Asset) {
 		if let Some(receiver) = ReceiverAccount::get() {
