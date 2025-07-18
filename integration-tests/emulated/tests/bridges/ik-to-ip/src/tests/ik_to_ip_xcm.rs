@@ -217,11 +217,11 @@ fn ahp_xcm<Call>() -> Xcm<Call> {
 			RefundSurplus,
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
 		])),
-		WithdrawAsset((Parent, Fungible(300000000000)).into()),
+		WithdrawAsset((Parent, Fungible(3000000000000)).into()),
 		InitiateTransfer {
 			destination: ip_on_ahp_v5(),
 			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
-				Asset { id: Parent.into(), fun: Fungible(200000000000) }.into(),
+				Asset { id: Parent.into(), fun: Fungible(2000000000000) }.into(),
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
