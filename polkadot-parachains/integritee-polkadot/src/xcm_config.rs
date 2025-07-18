@@ -313,7 +313,11 @@ pub type Traders = (
 	>,
 );
 
-// Fixme: The integration test fails because it can't deposit the DOT to the Treasury.
+// Fixme: The integration test fails because it can't deposit the DOT to the Treasury with:
+//  Error Depositing Asset: AssetNotFound
+//
+// Ignoring this error with the below hack will lead to:
+// `PolkadotXcm(Event::AssetsTrapped { hash: 0xb225b0f34edb281841f89c7237884f1e41746c8d1874770fca38a95845ca41ae, origin: Location { parents: 2, interior: X2([GlobalConsensus(Kusama), Parachain(2015)]) }, assets: V5(Assets([Asset { id: AssetId(Location { parents: 1, interior: Here }), fun: Fungible(16724748580) }])) })`
 pub struct XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>(
 	PhantomData<(FungiblesMutateAdapter, AccountId, ReceiverAccount)>,
 );
