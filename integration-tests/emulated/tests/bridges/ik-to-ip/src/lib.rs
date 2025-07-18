@@ -14,8 +14,8 @@
 // limitations under the License.
 
 // Substrate
-pub use parity_scale_codec::Encode;
 pub use frame_support::{assert_err, assert_ok, pallet_prelude::DispatchResult};
+pub use parity_scale_codec::Encode;
 pub use sp_runtime::{traits::Dispatchable, DispatchError};
 
 // Polkadot
@@ -55,33 +55,28 @@ pub use kusama_polkadot_system_emulated_network::{
 	bridge_hub_kusama_emulated_chain::{
 		genesis::ED as BRIDGE_HUB_KUSAMA_ED, BridgeHubKusamaParaPallet as BridgeHubKusamaPallet,
 	},
+	integritee_kusama_emulated_chain::{
+		genesis::ED as IK_ED,
+		integritee_kusama_runtime::xcm_config::UniversalLocation as IntegriteeKusamaUniversalLocation,
+		IntegriteeKusamaParaPallet as IntegriteeKusamaPallet,
+	},
+	integritee_polkadot_emulated_chain::{
+		genesis::ED as IP_ED,
+		integritee_polkadot_runtime::xcm_config::UniversalLocation as IntegriteePolkadotUniversalLocation,
+		IntegriteePolkadotParaPallet as IntegriteePolkadotPallet,
+	},
 	kusama_emulated_chain::{
 		genesis::ED as KUSAMA_ED,
 		kusama_runtime::{xcm_config::UniversalLocation as KusamaRelayUniversalLocation, Dmp},
 		KusamaRelayPallet as KusamaPallet,
 	},
-	integritee_kusama_emulated_chain::{
-		genesis::ED as IK_ED,
-		integritee_kusama_runtime::xcm_config::{
-			UniversalLocation as IntegriteeKusamaUniversalLocation,
-		},
-		IntegriteeKusamaParaPallet as IntegriteeKusamaPallet,
-	},
-	integritee_polkadot_emulated_chain::{
-		genesis::ED as IP_ED,
-		integritee_polkadot_runtime::xcm_config::{
-			UniversalLocation as IntegriteePolkadotUniversalLocation,
-		},
-		IntegriteePolkadotParaPallet as IntegriteePolkadotPallet,
-	},
-	IntegriteeKusamaPara as IntegriteeKusama,
-	IntegriteePolkadotPara as IntegriteePolkadot,
 	AssetHubKusamaPara as AssetHubKusama, AssetHubKusamaParaReceiver as AssetHubKusamaReceiver,
 	AssetHubKusamaParaSender as AssetHubKusamaSender, AssetHubPolkadotPara as AssetHubPolkadot,
 	AssetHubPolkadotParaReceiver as AssetHubPolkadotReceiver,
 	AssetHubPolkadotParaSender as AssetHubPolkadotSender, BridgeHubKusamaPara as BridgeHubKusama,
 	BridgeHubKusamaParaReceiver as BridgeHubKusamaReceiver,
 	BridgeHubKusamaParaSender as BridgeHubKusamaSender, BridgeHubPolkadotPara as BridgeHubPolkadot,
+	IntegriteeKusamaPara as IntegriteeKusama, IntegriteePolkadotPara as IntegriteePolkadot,
 	KusamaRelay as Kusama, KusamaRelayReceiver as KusamaReceiver,
 	KusamaRelaySender as KusamaSender,
 };

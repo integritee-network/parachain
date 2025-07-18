@@ -8,9 +8,11 @@ use crate::{
 	},
 	*,
 };
-use emulated_integration_tests_common::impls::Parachain;
-use emulated_integration_tests_common::{xcm_emulator::ConvertLocation, USDT_ID};
-use emulated_integration_tests_common::xcm_emulator::log;
+use emulated_integration_tests_common::{
+	impls::Parachain,
+	xcm_emulator::{log, ConvertLocation},
+	USDT_ID,
+};
 use frame_support::{
 	assert_ok,
 	dispatch::RawOrigin,
@@ -31,15 +33,13 @@ use xcm::{
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 fn ik_on_ahk_account() -> AccountId {
-	AssetHubKusama::sovereign_account_id_of(
-		ik_on_ahk_v5()
-	)
+	AssetHubKusama::sovereign_account_id_of(ik_on_ahk_v5())
 }
 
 fn ik_on_ahp_account() -> AccountId {
 	AssetHubPolkadot::sovereign_account_of_parachain_on_other_global_consensus(
 		KusamaId,
-		IntegriteeKusama::para_id()
+		IntegriteeKusama::para_id(),
 	)
 }
 
@@ -57,10 +57,8 @@ fn ik_to_ip_xcm_works() {
 	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
 
 	let root_on_local =
-		<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(
-			&teer_on_self(),
-		)
-		.unwrap();
+		<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self())
+			.unwrap();
 	let ik_on_ahk_acc = ik_on_ahk_account();
 	let ik_on_ahp_acc = ik_on_ahp_account();
 
@@ -231,15 +229,11 @@ fn ahp_xcm<Call>() -> Xcm<Call> {
 fn ip_xcm<Call>() -> Xcm<Call> {
 	type RuntimeCall = <IntegriteePolkadot as Chain>::RuntimeCall;
 
-	Xcm(vec![
-		Transact {
-			origin_kind: OriginKind::SovereignAccount,
-			fallback_max_weight: None,
-			call: RuntimeCall::System(frame_system::Call::remark {
-				remark: "Hello".encode(),
-			})
-				.encode()
-				.into(),
-		},
-	])
+	Xcm(vec![Transact {
+		origin_kind: OriginKind::SovereignAccount,
+		fallback_max_weight: None,
+		call: RuntimeCall::System(frame_system::Call::remark { remark: "Hello".encode() })
+			.encode()
+			.into(),
+	}])
 }
