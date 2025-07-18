@@ -2,24 +2,26 @@ use crate::{
 	tests::{
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		asset_hub_polkadot_location, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot,
-		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, ik_on_ahk, ik_on_ahk_v5,
-		ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5, set_up_pool_with_dot_on_ah_polkadot,
-		set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
+		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, create_reserve_asset_on_ip,
+		ik_on_ahk, ik_on_ahk_v5, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5,
+		set_up_pool_with_dot_on_ah_polkadot, set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
 	},
 	*,
 };
+use emulated_integration_tests_common::impls::Parachain;
 use emulated_integration_tests_common::{xcm_emulator::ConvertLocation, USDT_ID};
+use emulated_integration_tests_common::xcm_emulator::log;
 use frame_support::{
 	assert_ok,
 	dispatch::RawOrigin,
 	traits::{fungible::Mutate as M, fungibles::Mutate},
 };
 use integration_tests_helpers::asset_test_utils::GovernanceOrigin::Origin;
-use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::{
-	integritee_kusama_runtime, integritee_kusama_runtime::TEER,
-};
-use kusama_polkadot_system_emulated_network::integritee_polkadot_emulated_chain::{
-	integritee_polkadot_runtime,
+use kusama_polkadot_system_emulated_network::{
+	integritee_kusama_emulated_chain::{
+		integritee_kusama_runtime, integritee_kusama_runtime::TEER,
+	},
+	integritee_polkadot_emulated_chain::integritee_polkadot_runtime,
 };
 use sp_runtime::traits::Bounded;
 use xcm::{
@@ -27,20 +29,19 @@ use xcm::{
 	v5::AssetTransferFilter::Teleport,
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::tests::create_reserve_asset_on_ip;
 
 fn ik_on_ahk_account() -> AccountId {
-	// Todo: replace with asset_hub_kusama_runtime, but the emulated network doesn't expose it.
-	integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(&ik_on_ahk_v5())
-		.expect("can convert ik_on_ahk_v5 to AccountId")
+	AssetHubKusama::sovereign_account_id_of(
+		ik_on_ahk_v5()
+	)
 }
 
 fn ik_on_ahp_account() -> AccountId {
-	// Todo: replace with polkadot_hub_kusama_runtime, but the emulated network doesn't expose it.
-	integritee_polkadot_runtime::xcm_config::LocationToAccountId::convert_location(&ik_on_ahp_v5())
-		.expect("can convert ik_on_ahp_v5 to AccountId")
+	AssetHubPolkadot::sovereign_account_of_parachain_on_other_global_consensus(
+		KusamaId,
+		IntegriteeKusama::para_id()
+	)
 }
-
 
 #[test]
 fn ik_to_ip_xcm_works() {
@@ -49,45 +50,50 @@ fn ik_to_ip_xcm_works() {
 	const ONE_DOT: u128 = 10_000_000_000;
 	const INITIAL_KSM_BALANCE: u128 = 100 * ONE_KSM;
 
+	// // set XCM versions
+	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
+	AssetHubPolkadot::force_xcm_version(ip_on_ahp_v5(), XCM_VERSION);
+	AssetHubPolkadot::force_xcm_version(ik_on_ahp_v5(), XCM_VERSION);
+	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
+
 	let root_on_local =
-		integritee_kusama_runtime::xcm_config::LocationToAccountId::convert_location(
+		<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(
 			&teer_on_self(),
 		)
 		.unwrap();
-
 	let ik_on_ahk_acc = ik_on_ahk_account();
+	let ik_on_ahp_acc = ik_on_ahp_account();
 
 	// fund the KAH's SA on KBH for paying bridge transport fees
 	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10_000_000_000_000u128);
 
-	// set XCM versions
-	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
-	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
+	// Fund accounts
+	let ip_treasury = integritee_polkadot_runtime::TreasuryAccount::get();
+	IntegriteePolkadot::fund_accounts(vec![(ip_treasury.clone(), 100 * TEER)]);
 
-	<AssetHubKusama as TestExt>::execute_with(|| {
-		type Assets = <AssetHubKusama as AssetHubKusamaPallet>::Assets;
-		type Balances = <AssetHubKusama as AssetHubKusamaPallet>::Balances;
-
-		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahk_acc, INITIAL_KSM_BALANCE));
-	});
+	AssetHubKusama::fund_accounts(vec![(ik_on_ahk_acc, INITIAL_KSM_BALANCE)]);
+	AssetHubPolkadot::fund_accounts(vec![(ik_on_ahp_acc.clone(), 100 * ONE_DOT)]);
 
 	let ik_on_ahk = ik_on_ahk();
 	create_foreign_on_ah_kusama(ik_on_ahk.clone(), false, vec![(ik_on_ahk_account(), 100 * TEER)]);
 	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk, true);
 
-	let mut ik_on_ahp_acc = None;
-	<AssetHubPolkadot as TestExt>::execute_with(|| {
-		type Balances = <AssetHubPolkadot as AssetHubPolkadotPallet>::Balances;
-
-		ik_on_ahp_acc = Some(ik_on_ahp_account());
-		assert_ok!(<Balances as M<_>>::mint_into(&ik_on_ahp_account(), 100 * ONE_DOT));
-	});
-
 	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
-	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![(ik_on_ahp_acc.clone().unwrap(), 100 * ONE_KSM)]);
+	create_foreign_on_ah_polkadot(
+		bridged_ksm_at_ah_polkadot.clone(),
+		true,
+		vec![(ik_on_ahp_acc.clone(), 100 * ONE_KSM)],
+	);
 	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
 
-	create_reserve_asset_on_ip(0, Parent.into(), true, vec![(ik_on_ahp_acc.clone().unwrap(), 100* ONE_DOT)]);
+	create_reserve_asset_on_ip(
+		0,
+		Parent.into(),
+		true,
+		vec![(ik_on_ahp_acc.clone(), 100 * ONE_DOT), (ip_treasury, 100 * ONE_DOT)],
+	);
+
+	log::info!("Setup Done! Sending XCM.");
 
 	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the
 	// weight is queried
@@ -97,15 +103,13 @@ fn ik_to_ip_xcm_works() {
 		type Runtime = <IntegriteeKusama as Chain>::Runtime;
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
 		type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
+		type PolkadotXcm = <IntegriteeKusama as IntegriteeKusamaPallet>::PolkadotXcm;
+
 		assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_TEER_BALANCE));
 
 		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
-		<IntegriteeKusama as IntegriteeKusamaPallet>::PolkadotXcm::execute(
-			RawOrigin::Root.into(),
-			bx!(VersionedXcm::from(xcm2)),
-			weight,
-		)
-		.unwrap();
+		PolkadotXcm::execute(RawOrigin::Root.into(), bx!(VersionedXcm::from(xcm2)), weight)
+			.unwrap();
 
 		assert_expected_events!(
 			IntegriteeKusama,
@@ -117,10 +121,6 @@ fn ik_to_ip_xcm_works() {
 
 	<AssetHubKusama as TestExt>::execute_with(|| {
 		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
-
-		type Assets = <AssetHubKusama as AssetHubKusamaPallet>::Assets;
-		type Balances = <AssetHubKusama as AssetHubKusamaPallet>::Balances;
-
 		assert_expected_events!(
 			AssetHubKusama,
 			vec![
@@ -217,11 +217,11 @@ fn ahp_xcm<Call>() -> Xcm<Call> {
 			RefundSurplus,
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
 		])),
-		WithdrawAsset((Parent, Fungible(300000000000)).into()),
+		WithdrawAsset((Parent, Fungible(30000000000)).into()),
 		InitiateTransfer {
 			destination: ip_on_ahp_v5(),
 			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
-				Asset { id: Parent.into(), fun: Fungible(200000000000) }.into(),
+				Asset { id: Parent.into(), fun: Fungible(20000000000) }.into(),
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
