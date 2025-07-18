@@ -50,18 +50,9 @@ use sp_std::{
 	prelude::*,
 };
 use xcm::latest::prelude::*;
-use xcm_builder::{
-	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
-	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
-	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
-	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
-	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
-	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
-	WithComputedOrigin,
-};
+use xcm_builder::{AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses, AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case, DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily, DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible, FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter, HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue, TakeWeightCredit, TrailingSetTopicAsId, WithComputedOrigin};
 use xcm_executor::{traits::JustTry, XcmExecutor};
+use xcm_executor::traits::TransactAsset;
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
@@ -318,9 +309,32 @@ pub type Traders = (
 	// for DOT aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
-		XcmFeesTo32ByteAccount<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
+		XcmFeesTo32ByteAccountCustom<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
 	>,
 );
+
+// Fixme: The integration test fails because it can't deposit the DOT to the Treasury.
+pub struct XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>(
+	PhantomData<(FungiblesMutateAdapter, AccountId, ReceiverAccount)>,
+);
+impl<
+	FungiblesMutateAdapter: TransactAsset,
+	AccountId: Clone + Into<[u8; 32]>,
+	ReceiverAccount: Get<Option<AccountId>>,
+> TakeRevenue for XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>
+{
+	fn take_revenue(revenue: Asset) {
+		if let Some(receiver) = ReceiverAccount::get() {
+			if let Err(e) = FungiblesMutateAdapter::deposit_asset(
+				&revenue,
+				&([AccountId32 { network: None, id: receiver.into() }].into()),
+				None,
+			) {
+				log::error!("Error Depositing Asset: {:?}", e);
+			}
+		}
+	}
+}
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;

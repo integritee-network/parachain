@@ -67,7 +67,10 @@ fn ik_to_ip_xcm_works() {
 
 	// Fund accounts
 	let ip_treasury = integritee_polkadot_runtime::TreasuryAccount::get();
-	IntegriteePolkadot::fund_accounts(vec![(ip_treasury.clone(), 100 * TEER)]);
+	IntegriteePolkadot::fund_accounts(vec![
+		(ip_treasury.clone(), 100 * TEER),
+		(ik_on_ahp_acc.clone(), 100 * TEER),
+	]);
 
 	AssetHubKusama::fund_accounts(vec![(ik_on_ahk_acc, INITIAL_KSM_BALANCE)]);
 	AssetHubPolkadot::fund_accounts(vec![(ik_on_ahp_acc.clone(), 100 * ONE_DOT)]);
