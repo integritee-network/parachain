@@ -202,6 +202,8 @@ fn ahp_xcm<Call>() -> Xcm<Call> {
 	Xcm(vec![
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
+			// Fixme: Our XCM Config seems broken currently. It fails to deposit the asset and traps it.
+			// I guess that it fails to convert the Location to our local AssetId.
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
 		])),
 		WithdrawAsset((Parent, Fungible(30000000000)).into()),
