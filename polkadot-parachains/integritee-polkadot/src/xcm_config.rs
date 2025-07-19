@@ -321,7 +321,7 @@ pub type Traders = (
 	// for DOT aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
-		XcmFeesTo32ByteAccountCustom<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
+		XcmFeesTo32ByteAccountCustom<ReservedFungiblesTransactor, AccountId, TreasuryAccount>,
 	>,
 );
 
@@ -341,6 +341,7 @@ impl<
 	for XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>
 {
 	fn take_revenue(revenue: Asset) {
+		log::error!("Asset: {:?}", revenue);
 		if let Some(receiver) = ReceiverAccount::get() {
 			if let Err(e) = FungiblesMutateAdapter::deposit_asset(
 				&revenue,
