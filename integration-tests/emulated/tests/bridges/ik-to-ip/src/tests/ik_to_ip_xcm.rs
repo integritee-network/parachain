@@ -11,25 +11,13 @@ use crate::{
 use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
-	USDT_ID,
 };
-use frame_support::{
-	assert_ok,
-	dispatch::RawOrigin,
-	traits::{fungible::Mutate as M, fungibles::Mutate},
-};
-use integration_tests_helpers::asset_test_utils::GovernanceOrigin::Origin;
+use frame_support::{assert_ok, dispatch::RawOrigin, traits::fungible::Mutate as M};
 use kusama_polkadot_system_emulated_network::{
-	integritee_kusama_emulated_chain::{
-		integritee_kusama_runtime, integritee_kusama_runtime::TEER,
-	},
+	integritee_kusama_emulated_chain::integritee_kusama_runtime::TEER,
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime,
 };
-use sp_runtime::traits::Bounded;
-use xcm::{
-	latest::AssetTransferFilter::ReserveDeposit, v3::Error::WeightLimitReached,
-	v5::AssetTransferFilter::Teleport,
-};
+use xcm::{latest::AssetTransferFilter::ReserveDeposit, v5::AssetTransferFilter::Teleport};
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 fn ik_on_ahk_account() -> AccountId {

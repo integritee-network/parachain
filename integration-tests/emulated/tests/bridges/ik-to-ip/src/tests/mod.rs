@@ -20,11 +20,6 @@ mod ik_to_ip_xcm;
 mod register_bridged_assets;
 mod send_xcm;
 
-mod snowbridge {
-	pub const CHAIN_ID: u64 = 1;
-	pub const WETH: [u8; 20] = hex_literal::hex!("87d1f7fdfEe7f651FaBc8bFCB6E086C278b77A7d");
-}
-
 pub(crate) fn teer_on_self() -> Location {
 	Location::new(0, Here)
 }
@@ -91,19 +86,6 @@ pub(crate) fn bridged_usdt_at_ah_kusama() -> xcm::v4::Location {
 			xcm::v4::Junction::Parachain(AssetHubPolkadot::para_id().into()),
 			xcm::v4::Junction::PalletInstance(ASSETS_PALLET_ID),
 			xcm::v4::Junction::GeneralIndex(USDT_ID.into()),
-		],
-	)
-}
-
-// wETH has same relative location on both Kusama and Polkadot AssetHubs
-pub(crate) fn weth_at_asset_hubs() -> xcm::v4::Location {
-	xcm::v4::Location::new(
-		2,
-		[
-			xcm::v4::Junction::GlobalConsensus(xcm::v4::NetworkId::Ethereum {
-				chain_id: snowbridge::CHAIN_ID,
-			}),
-			xcm::v4::Junction::AccountKey20 { network: None, key: snowbridge::WETH },
 		],
 	)
 }
