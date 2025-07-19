@@ -58,13 +58,10 @@ use xcm_builder::{
 	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
 	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation, TakeRevenue, TakeWeightCredit,
-	TrailingSetTopicAsId, WithComputedOrigin,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
+	WithComputedOrigin,
 };
-use xcm_executor::{
-	traits::{JustTry, TransactAsset},
-	XcmExecutor,
-};
+use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
 use xcm_transactor_primitives::*;
 
@@ -321,38 +318,9 @@ pub type Traders = (
 	// for DOT aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
-		XcmFeesTo32ByteAccountCustom<ReservedFungiblesTransactor, AccountId, TreasuryAccount>,
+		XcmFeesTo32ByteAccount<ReservedFungiblesTransactor, AccountId, TreasuryAccount>,
 	>,
 );
-
-// Fixme: The integration test fails because it can't deposit the DOT to the Treasury with:
-//  Error Depositing Asset: AssetNotFound
-//
-// Ignoring this error with the below hack will lead to:
-// `PolkadotXcm(Event::AssetsTrapped { hash: 0xb225b0f34edb281841f89c7237884f1e41746c8d1874770fca38a95845ca41ae, origin: Location { parents: 2, interior: X2([GlobalConsensus(Kusama), Parachain(2015)]) }, assets: V5(Assets([Asset { id: AssetId(Location { parents: 1, interior: Here }), fun: Fungible(16724748580) }])) })`
-pub struct XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>(
-	PhantomData<(FungiblesMutateAdapter, AccountId, ReceiverAccount)>,
-);
-impl<
-		FungiblesMutateAdapter: TransactAsset,
-		AccountId: Clone + Into<[u8; 32]>,
-		ReceiverAccount: Get<Option<AccountId>>,
-	> TakeRevenue
-	for XcmFeesTo32ByteAccountCustom<FungiblesMutateAdapter, AccountId, ReceiverAccount>
-{
-	fn take_revenue(revenue: Asset) {
-		log::error!("Asset: {:?}", revenue);
-		if let Some(receiver) = ReceiverAccount::get() {
-			if let Err(e) = FungiblesMutateAdapter::deposit_asset(
-				&revenue,
-				&([AccountId32 { network: None, id: receiver.into() }].into()),
-				None,
-			) {
-				log::error!("Error Depositing Asset: {:?}", e);
-			}
-		}
-	}
-}
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
