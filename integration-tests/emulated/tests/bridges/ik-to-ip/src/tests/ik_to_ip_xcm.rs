@@ -3,8 +3,8 @@ use crate::{
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		asset_hub_polkadot_location, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot,
 		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, create_reserve_asset_on_ip,
-		ik_on_ahk, ik_on_ahk_v5, ik_on_ahp_v5, ip_on_ahp, ip_on_ahp_v5,
-		set_up_pool_with_dot_on_ah_polkadot, set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
+		ik_on_ahk, ik_on_ahk_v5, ik_on_ahp_v5, ip_on_ahp_v5, set_up_pool_with_dot_on_ah_polkadot,
+		set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
 	},
 	*,
 };
@@ -138,6 +138,9 @@ fn ik_to_ip_xcm_works() {
 		);
 	});
 
+	// We can see the following logs, but these are expected, as the first 2 traders fail until
+	// we get the right one:
+	// 2025-07-19T18:42:17.124871Z ERROR xcm::weight: FixedRateOfFungible::buy_weight Failed to substract from payment amount=3275251420 error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: Here }): 20000000000}, non_fungible: {} }
 	<IntegriteePolkadot as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
 		assert_expected_events!(
@@ -204,6 +207,8 @@ fn ahp_xcm<Call>() -> Xcm<Call> {
 			RefundSurplus,
 			// Fixme: Our XCM Config seems broken currently. It fails to deposit the asset and traps it.
 			// I guess that it fails to convert the Location to our local AssetId.
+			// Log observed:
+			//  PolkadotXcm(Event::AssetsTrapped { hash: 0xb225b0f34edb281841f89c7237884f1e41746c8d1874770fca38a95845ca41ae, origin: Location { parents: 2, interior: X2([GlobalConsensus(Kusama), Parachain(2015)]) }, assets: V5(Assets([Asset { id: AssetId(Location { parents: 1, interior: Here }), fun: Fungible(16724748580) }])) })
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
 		])),
 		WithdrawAsset((Parent, Fungible(30000000000)).into()),

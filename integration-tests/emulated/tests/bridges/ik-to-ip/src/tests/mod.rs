@@ -68,28 +68,6 @@ pub(crate) fn bridged_dot_at_ah_kusama() -> xcm::v4::Location {
 	xcm::v4::Location::new(2, [xcm::v4::Junction::GlobalConsensus(xcm::v4::NetworkId::Polkadot)])
 }
 
-// USDT and wUSDT
-pub(crate) fn usdt_at_ah_polkadot() -> xcm::v4::Location {
-	xcm::v4::Location::new(
-		0,
-		[
-			xcm::v4::Junction::PalletInstance(ASSETS_PALLET_ID),
-			xcm::v4::Junction::GeneralIndex(USDT_ID.into()),
-		],
-	)
-}
-pub(crate) fn bridged_usdt_at_ah_kusama() -> xcm::v4::Location {
-	xcm::v4::Location::new(
-		2,
-		[
-			xcm::v4::Junction::GlobalConsensus(xcm::v4::NetworkId::Polkadot),
-			xcm::v4::Junction::Parachain(AssetHubPolkadot::para_id().into()),
-			xcm::v4::Junction::PalletInstance(ASSETS_PALLET_ID),
-			xcm::v4::Junction::GeneralIndex(USDT_ID.into()),
-		],
-	)
-}
-
 pub(crate) fn create_foreign_on_ah_kusama(
 	id: xcm::v4::Location,
 	sufficient: bool,
