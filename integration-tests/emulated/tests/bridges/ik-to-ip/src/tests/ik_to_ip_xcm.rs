@@ -14,10 +14,12 @@ use emulated_integration_tests_common::{
 };
 use frame_support::{assert_ok, dispatch::RawOrigin, traits::fungible::Mutate as M};
 use kusama_polkadot_system_emulated_network::{
-	integritee_kusama_emulated_chain::integritee_kusama_runtime::TEER,
+	integritee_kusama_emulated_chain::integritee_kusama_runtime::{
+		porteer::{ik_xcm, integritee_polkadot_system_remark},
+		TEER,
+	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime,
 };
-use xcm::{latest::AssetTransferFilter::ReserveDeposit, v5::AssetTransferFilter::Teleport};
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 fn ik_on_ahk_account() -> AccountId {
@@ -86,8 +88,8 @@ fn ik_to_ip_xcm_works() {
 
 	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the
 	// weight is queried
-	let xcm1 = ik_xcm();
-	let xcm2 = ik_xcm();
+	let xcm1 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
+	let xcm2 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type Runtime = <IntegriteeKusama as Chain>::Runtime;
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
@@ -151,87 +153,4 @@ fn ik_to_ip_xcm_works() {
 				) => {},			]
 		);
 	});
-}
-
-/// XCM as it is being sent from IK all the way to the IP.
-fn ik_xcm<Call>() -> Xcm<Call> {
-	const ALAIN_WITHDRAW: u128 = 34849094374679;
-	const ALAIN_REMOTE_FEE: u128 = 33849094374679;
-
-	Xcm(vec![
-		// Assume that we always pay in native for now
-		WithdrawAsset((Here, Fungible(ALAIN_WITHDRAW * 2)).into()),
-		SetAppendix(Xcm(vec![
-			RefundSurplus,
-			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: Here.into() },
-		])),
-		InitiateTransfer {
-			destination: (Parent, Parachain(1000)).into(),
-			remote_fees: Some(Teleport(AssetFilter::Definite(
-				Asset { id: Here.into(), fun: Fungible(ALAIN_REMOTE_FEE * 2) }.into(),
-			))),
-			preserve_origin: true,
-			assets: Default::default(),
-			remote_xcm: ahk_xcm(),
-		},
-	])
-}
-
-/// Nested XCM to be executed as `remote_xcm` from within `ik_xcm` on AHK.
-fn ahk_xcm<Call>() -> Xcm<Call> {
-	Xcm(vec![
-		SetAppendix(Xcm(vec![
-			RefundSurplus,
-			DepositAsset {
-				assets: AssetFilter::Wild(WildAsset::All),
-				beneficiary: (Parent, Parachain(2015)).into(),
-			},
-		])),
-		WithdrawAsset((Parent, Fungible(300000000000)).into()),
-		InitiateTransfer {
-			destination: asset_hub_polkadot_location(),
-			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
-				Asset { id: Parent.into(), fun: Fungible(200000000000) }.into(),
-			))),
-			preserve_origin: true,
-			assets: Default::default(),
-			remote_xcm: ahp_xcm(),
-		},
-	])
-}
-
-/// Nested XCM to be executed as `remote_xcm` from within `ahk_xcm` on AHP.
-fn ahp_xcm<Call>() -> Xcm<Call> {
-	Xcm(vec![
-		SetAppendix(Xcm(vec![
-			RefundSurplus,
-			// Fixme: Our XCM Config seems broken currently. It fails to deposit the asset and traps it.
-			// I guess that it fails to convert the Location to our local AssetId.
-			// Log observed:
-			//  PolkadotXcm(Event::AssetsTrapped { hash: 0xb225b0f34edb281841f89c7237884f1e41746c8d1874770fca38a95845ca41ae, origin: Location { parents: 2, interior: X2([GlobalConsensus(Kusama), Parachain(2015)]) }, assets: V5(Assets([Asset { id: AssetId(Location { parents: 1, interior: Here }), fun: Fungible(16724748580) }])) })
-			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: ik_on_ahp_v5() },
-		])),
-		WithdrawAsset((Parent, Fungible(30000000000)).into()),
-		InitiateTransfer {
-			destination: ip_on_ahp_v5(),
-			remote_fees: Some(ReserveDeposit(AssetFilter::Definite(
-				Asset { id: Parent.into(), fun: Fungible(20000000000) }.into(),
-			))),
-			preserve_origin: true,
-			assets: Default::default(),
-			remote_xcm: ip_xcm(),
-		},
-	])
-}
-
-fn ip_xcm<Call>() -> Xcm<Call> {
-	type RuntimeCall = <IntegriteePolkadot as Chain>::RuntimeCall;
-
-	Xcm(vec![Transact {
-		origin_kind: OriginKind::SovereignAccount,
-		fallback_max_weight: None,
-		call: RuntimeCall::System(frame_system::Call::remark { remark: "Hello".encode() })
-			.encode()
-			.into(),
-	}])
 }
