@@ -59,7 +59,7 @@ pub fn ik_xcm<Call, IntegriteePolkadotCall: Encode>(
 ) -> Xcm<Call> {
 	Xcm(vec![
 		// Assume that we always pay in native for now
-		WithdrawAsset((Here, Fungible(ik_fee+ahk_fee)).into()),
+		WithdrawAsset((Here, Fungible(ik_fee + ahk_fee)).into()),
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: Here.into() },

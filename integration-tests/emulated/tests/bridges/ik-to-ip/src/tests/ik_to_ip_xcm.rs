@@ -29,8 +29,7 @@ fn ik_cousin_account() -> AccountId {
 }
 
 fn root_on_ik() -> AccountId {
-	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self())
-		.unwrap()
+	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self()).unwrap()
 }
 
 #[test]
