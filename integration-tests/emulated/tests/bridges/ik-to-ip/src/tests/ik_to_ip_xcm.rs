@@ -28,20 +28,23 @@ fn ik_cousin_account() -> AccountId {
 	)
 }
 
+fn root_on_ik() -> AccountId {
+	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self())
+		.unwrap()
+}
+
 #[test]
 fn ik_to_ip_xcm_works() {
 	const KSM: u128 = 1_000_000_000_000;
 	const DOT: u128 = 10_000_000_000;
 
-	// set XCM versions
+	// Set XCM versions
 	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
 	AssetHubPolkadot::force_xcm_version(ip_sibling_v5(), XCM_VERSION);
 	AssetHubPolkadot::force_xcm_version(ik_cousin_v5(), XCM_VERSION);
 	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
 
-	let root_on_local =
-		<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self())
-			.unwrap();
+	let root_on_ik = root_on_ik();
 	let ik_sibling_acc = ik_sibling_account();
 	let ik_cousin_acc = ik_cousin_account();
 
@@ -85,7 +88,7 @@ fn ik_to_ip_xcm_works() {
 		type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
 		type Porteer = <IntegriteeKusama as IntegriteeKusamaPallet>::Porteer;
 
-		assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, 100 * TEER));
+		assert_ok!(<Balances as M<_>>::mint_into(&root_on_ik, 100 * TEER));
 
 		Porteer::port_tokens(
 			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
