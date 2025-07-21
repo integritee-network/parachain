@@ -800,15 +800,15 @@ ord_parameter_types! {
 	pub const IntegriteeKusamaSovereignAccount: AccountId = AccountId::new(hex2array!("8e420f365988e859988375baa048faf25a88de7ddd979425ccaad93fea6b244d"));
 }
 
-pub struct MockPortTokens;
+pub struct NeverPortTokens;
 
-impl PortTokens for MockPortTokens {
+impl PortTokens for NeverPortTokens {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Error = DispatchError;
 
 	fn port_tokens(_who: &Self::AccountId, _amount: Self::Balance) -> Result<(), Self::Error> {
-		Ok(())
+		Err(DispatchError::Other("porteer: Porting Tokens disabled"))
 	}
 }
 
@@ -821,7 +821,7 @@ impl pallet_porteer::Config for Runtime {
 		EnsureSignedBy<IntegriteeKusamaSovereignAccount, AccountId32>,
 		EnsureRoot<AccountId32>,
 	>;
-	type PortTokensToDestination = MockPortTokens;
+	type PortTokensToDestination = NeverPortTokens;
 	type Fungible = Balances;
 }
 

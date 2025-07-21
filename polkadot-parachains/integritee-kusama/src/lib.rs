@@ -785,7 +785,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 
 use sp_core::hex2array;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::porteer::{ik_xcm, integritee_polkadot_system_remark};
+use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint};
 
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
@@ -798,9 +798,10 @@ impl PortTokens for PortTokensToPolkadot {
 	type Balance = Balance;
 	type Error = DispatchError;
 
-	fn port_tokens(_who: &Self::AccountId, _amount: Self::Balance) -> Result<(), Self::Error> {
-		let xcm1 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
-		let xcm2 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
+	// Todo: Passed owned account id
+	fn port_tokens(who: &Self::AccountId, amount: Self::Balance) -> Result<(), Self::Error> {
+		let xcm1 = ik_xcm(integritee_polkadot_porteer_mint(who.clone(), amount));
+		let xcm2 = ik_xcm(integritee_polkadot_porteer_mint(who.clone(), amount));
 
 		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
 

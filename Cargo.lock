@@ -1974,6 +1974,7 @@ dependencies = [
  "pallet-balances",
  "pallet-bridge-messages",
  "pallet-message-queue",
+ "pallet-porteer",
  "pallet-xcm",
  "parachains-common",
  "parity-scale-codec",

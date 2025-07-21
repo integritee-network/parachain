@@ -82,6 +82,9 @@ fn ik_to_ip_xcm_works() {
 
 	log::info!("Setup Done! Sending XCM.");
 
+	let token_owner = Alice::get();
+	let port_tokens_amount = 100 * TEER;
+
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
 		type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
@@ -90,8 +93,8 @@ fn ik_to_ip_xcm_works() {
 		assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_TEER_BALANCE));
 
 		Porteer::port_tokens(
-			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(Alice::get()),
-			100 * TEER,
+			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner),
+			port_tokens_amount,
 		)
 		.unwrap();
 
@@ -99,6 +102,7 @@ fn ik_to_ip_xcm_works() {
 			IntegriteeKusama,
 			vec![
 				RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+				RuntimeEvent::Porteer(pallet_porteer::Event::PortedTokens { .. }) => {},
 			]
 		);
 	});
@@ -143,7 +147,11 @@ fn ik_to_ip_xcm_works() {
 			vec![
 				RuntimeEvent::MessageQueue(
 					pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},			]
+				) => {},
+				RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
+					who: token_owner, amount: port_tokens_amount,
+				}) => {},
+			]
 		);
 	});
 }

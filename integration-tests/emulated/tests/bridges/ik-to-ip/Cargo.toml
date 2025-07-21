@@ -56,6 +56,7 @@ snowbridge-pallet-system = { workspace = true, default-features = true }
 # Local
 #integritee-kusama-runtime = { workspace = true, default-features = true}
 #integritee-polkadot-runtime = { workspace = true, default-features = true}
+pallet-porteer = { workspace = true, default-features = true }
 
 [features]
 runtime-benchmarks = [
