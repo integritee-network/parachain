@@ -44,7 +44,9 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 use frame_support::{
-	derive_impl, ord_parameter_types,
+	derive_impl,
+	dispatch::RawOrigin,
+	ord_parameter_types,
 	traits::{
 		fungible::{Credit, HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
 		tokens::{
@@ -56,7 +58,6 @@ use frame_support::{
 	},
 	weights::ConstantMultiplier,
 };
-use frame_support::dispatch::RawOrigin;
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
@@ -783,9 +784,9 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
+use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
 use sp_core::hex2array;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint};
 
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
@@ -800,8 +801,20 @@ impl PortTokens for PortTokensToPolkadot {
 
 	// Todo: Passed owned account id
 	fn port_tokens(who: &Self::AccountId, amount: Self::Balance) -> Result<(), Self::Error> {
-		let xcm1 = ik_xcm(integritee_polkadot_porteer_mint(who.clone(), amount));
-		let xcm2 = ik_xcm(integritee_polkadot_porteer_mint(who.clone(), amount));
+		let xcm1 = ik_xcm(
+			integritee_polkadot_porteer_mint(who.clone(), amount),
+			IK_FEE,
+			AHK_FEE,
+			AHP_FEE,
+			IP_FEE,
+		);
+		let xcm2 = ik_xcm(
+			integritee_polkadot_porteer_mint(who.clone(), amount),
+			IK_FEE,
+			AHK_FEE,
+			AHP_FEE,
+			IP_FEE,
+		);
 
 		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
 
