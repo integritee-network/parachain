@@ -45,9 +45,6 @@ fn ik_to_ip_xcm_works() {
 	let ik_sibling_acc = ik_sibling_account();
 	let ik_cousin_acc = ik_cousin_account();
 
-	// fund the KAH's SA on KBH for paying bridge transport fees
-	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10 * KSM);
-
 	// Fund accounts
 
 	// Note: First we thought that these accounts need to exist on IP, but no.
@@ -56,6 +53,9 @@ fn ik_to_ip_xcm_works() {
 	// 	(ip_treasury.clone(), 100 * TEER),
 	// 	(ik_cousin_acc.clone(), 100 * TEER),
 	// ]);
+
+	// fund the KAH's SA on KBH for paying bridge transport fees
+	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10 * KSM);
 
 	AssetHubKusama::fund_accounts(vec![(ik_sibling_acc, 100 * KSM)]);
 	AssetHubPolkadot::fund_accounts(vec![(ik_cousin_acc.clone(), 100 * DOT)]);
