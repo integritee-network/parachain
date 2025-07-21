@@ -85,6 +85,11 @@ fn ik_to_ip_xcm_works() {
 	let token_owner = Alice::get();
 	let port_tokens_amount = 100 * TEER;
 
+	let token_owner_balance_before_kusama =
+		IntegriteeKusama::account_data_of(token_owner.clone()).free;
+	let token_owner_balance_before_polkadot =
+		IntegriteePolkadot::account_data_of(token_owner.clone()).free;
+
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
 		type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
@@ -93,7 +98,7 @@ fn ik_to_ip_xcm_works() {
 		assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_TEER_BALANCE));
 
 		Porteer::port_tokens(
-			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner),
+			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
 			port_tokens_amount,
 		)
 		.unwrap();
@@ -128,8 +133,6 @@ fn ik_to_ip_xcm_works() {
 		assert_expected_events!(
 			AssetHubPolkadot,
 			vec![
-				// Todo! verify other events
-				// message processed successfully
 				RuntimeEvent::MessageQueue(
 					pallet_message_queue::Event::Processed { success: true, .. }
 				) => {},
@@ -149,9 +152,24 @@ fn ik_to_ip_xcm_works() {
 					pallet_message_queue::Event::Processed { success: true, .. }
 				) => {},
 				RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-					who: token_owner, amount: port_tokens_amount,
-				}) => {},
+					who, amount,
+				}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
 			]
 		);
 	});
+
+	// Assert before and after balances
+
+	// Note: XCM fees are taken from the Integritee's sovereign account
+	// Todo: Assert Sovereign Account balances on the different chains
+
+	assert_eq!(
+		IntegriteeKusama::account_data_of(token_owner.clone()).free,
+		token_owner_balance_before_kusama - port_tokens_amount
+	);
+
+	assert_eq!(
+		IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+		token_owner_balance_before_polkadot + port_tokens_amount
+	);
 }
