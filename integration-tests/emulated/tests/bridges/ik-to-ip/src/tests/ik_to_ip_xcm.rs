@@ -3,7 +3,7 @@ use crate::{
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		asset_hub_polkadot_location, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot,
 		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, create_reserve_asset_on_ip,
-		ik_on_ahk, ik_on_ahk_v5, ik_on_ahp_v5, ip_on_ahp_v5, set_up_pool_with_dot_on_ah_polkadot,
+		ik_sibling, ik_sibling_v5, ik_cousin_v5, ip_sibling_v5, set_up_pool_with_dot_on_ah_polkadot,
 		set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
 	},
 	*,
@@ -17,11 +17,11 @@ use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::integritee_kusama_runtime::{Alice, TEER},
 };
 
-fn ik_on_ahk_account() -> AccountId {
-	AssetHubKusama::sovereign_account_id_of(ik_on_ahk_v5())
+fn ik_sibling_account() -> AccountId {
+	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
 }
 
-fn ik_on_ahp_account() -> AccountId {
+fn ik_cousin_account() -> AccountId {
 	AssetHubPolkadot::sovereign_account_of_parachain_on_other_global_consensus(
 		KusamaId,
 		IntegriteeKusama::para_id(),
@@ -35,15 +35,15 @@ fn ik_to_ip_xcm_works() {
 
 	// set XCM versions
 	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
-	AssetHubPolkadot::force_xcm_version(ip_on_ahp_v5(), XCM_VERSION);
-	AssetHubPolkadot::force_xcm_version(ik_on_ahp_v5(), XCM_VERSION);
+	AssetHubPolkadot::force_xcm_version(ip_sibling_v5(), XCM_VERSION);
+	AssetHubPolkadot::force_xcm_version(ik_cousin_v5(), XCM_VERSION);
 	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
 
 	let root_on_local =
 		<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self())
 			.unwrap();
-	let ik_on_ahk_acc = ik_on_ahk_account();
-	let ik_on_ahp_acc = ik_on_ahp_account();
+	let ik_sibling_acc = ik_sibling_account();
+	let ik_cousin_acc = ik_cousin_account();
 
 	// fund the KAH's SA on KBH for paying bridge transport fees
 	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10 * KSM);
@@ -57,12 +57,12 @@ fn ik_to_ip_xcm_works() {
 	// 	(ik_cousin_acc.clone(), 100 * TEER),
 	// ]);
 
-	AssetHubKusama::fund_accounts(vec![(ik_on_ahk_acc, 100 * KSM)]);
-	AssetHubPolkadot::fund_accounts(vec![(ik_on_ahp_acc.clone(), 100 * DOT)]);
+	AssetHubKusama::fund_accounts(vec![(ik_sibling_acc, 100 * KSM)]);
+	AssetHubPolkadot::fund_accounts(vec![(ik_cousin_acc.clone(), 100 * DOT)]);
 
-	let ik_on_ahk = ik_on_ahk();
-	create_foreign_on_ah_kusama(ik_on_ahk.clone(), false, vec![]);
-	set_up_pool_with_ksm_on_ah_kusama(ik_on_ahk, true);
+	let ik_sibling = ik_sibling();
+	create_foreign_on_ah_kusama(ik_sibling.clone(), false, vec![]);
+	set_up_pool_with_ksm_on_ah_kusama(ik_sibling, true);
 
 	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
 	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![]);

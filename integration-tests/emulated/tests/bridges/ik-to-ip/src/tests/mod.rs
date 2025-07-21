@@ -24,26 +24,26 @@ pub(crate) fn teer_on_self() -> Location {
 	Location::new(0, Here)
 }
 
-pub(crate) fn ik_on_ahk() -> xcm::v4::Location {
+pub(crate) fn ik_sibling() -> xcm::v4::Location {
 	xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(IntegriteeKusama::para_id().into())])
 }
 
-pub(crate) fn ik_on_ahk_v5() -> Location {
+pub(crate) fn ik_sibling_v5() -> Location {
 	Location::new(1, [Parachain(IntegriteeKusama::para_id().into())])
 }
 
-pub(crate) fn ik_on_ahp_v5() -> Location {
+pub(crate) fn ik_cousin_v5() -> Location {
 	Location::new(
 		2,
 		[GlobalConsensus(NetworkId::Kusama), Parachain(IntegriteeKusama::para_id().into())],
 	)
 }
 
-pub(crate) fn ip_on_ahp() -> xcm::v4::Location {
+pub(crate) fn ip_sibling() -> xcm::v4::Location {
 	xcm::v4::Location::new(1, [xcm::v4::Junction::Parachain(IntegriteePolkadot::para_id().into())])
 }
 
-pub(crate) fn ip_on_ahp_v5() -> Location {
+pub(crate) fn ip_sibling_v5() -> Location {
 	Location::new(1, [Parachain(IntegriteePolkadot::para_id().into())])
 }
 
