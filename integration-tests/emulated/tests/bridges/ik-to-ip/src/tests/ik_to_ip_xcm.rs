@@ -12,15 +12,11 @@ use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
 };
-use frame_support::{assert_ok, dispatch::RawOrigin, traits::fungible::Mutate as M};
+use frame_support::{assert_ok, traits::fungible::Mutate as M};
 use kusama_polkadot_system_emulated_network::{
-	integritee_kusama_emulated_chain::integritee_kusama_runtime::{
-		porteer::{ik_xcm, integritee_polkadot_system_remark},
-		TEER,
-	},
+	integritee_kusama_emulated_chain::integritee_kusama_runtime::{Alice, TEER},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime,
 };
-use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 fn ik_on_ahk_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_on_ahk_v5())
@@ -86,21 +82,18 @@ fn ik_to_ip_xcm_works() {
 
 	log::info!("Setup Done! Sending XCM.");
 
-	// need to declare the XCMs twice as the generic parameter is coerced to `()` when the
-	// weight is queried
-	let xcm1 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
-	let xcm2 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
 	<IntegriteeKusama as TestExt>::execute_with(|| {
-		type Runtime = <IntegriteeKusama as Chain>::Runtime;
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
 		type Balances = <IntegriteeKusama as IntegriteeKusamaPallet>::Balances;
-		type PolkadotXcm = <IntegriteeKusama as IntegriteeKusamaPallet>::PolkadotXcm;
+		type Porteer = <IntegriteeKusama as IntegriteeKusamaPallet>::Porteer;
 
 		assert_ok!(<Balances as M<_>>::mint_into(&root_on_local, INITIAL_TEER_BALANCE));
 
-		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
-		PolkadotXcm::execute(RawOrigin::Root.into(), bx!(VersionedXcm::from(xcm2)), weight)
-			.unwrap();
+		Porteer::port_tokens(
+			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(Alice::get()),
+			100 * TEER,
+		)
+		.unwrap();
 
 		assert_expected_events!(
 			IntegriteeKusama,

@@ -43,6 +43,7 @@ decl_test_parachains! {
 		pallets = {
 			PolkadotXcm: integritee_kusama_runtime::PolkadotXcm,
 			Balances: integritee_kusama_runtime::Balances,
+			Porteer: integritee_kusama_runtime::Porteer,
 		}
 	},
 }

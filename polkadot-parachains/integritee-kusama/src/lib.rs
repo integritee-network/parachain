@@ -56,6 +56,7 @@ use frame_support::{
 	},
 	weights::ConstantMultiplier,
 };
+use frame_support::dispatch::RawOrigin;
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
@@ -783,18 +784,29 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 use sp_core::hex2array;
+use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use crate::porteer::{ik_xcm, integritee_polkadot_system_remark};
+
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
 }
 
-pub struct MockPortTokens;
+pub struct PortTokensToPolkadot;
 
-impl PortTokens for MockPortTokens {
+impl PortTokens for PortTokensToPolkadot {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Error = DispatchError;
 
 	fn port_tokens(_who: &Self::AccountId, _amount: Self::Balance) -> Result<(), Self::Error> {
+		let xcm1 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
+		let xcm2 = ik_xcm(integritee_polkadot_system_remark("remark".as_bytes().to_vec()));
+
+		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
+
+		// Todo: don't use the dispatchable here, but send.
+		PolkadotXcm::execute(RawOrigin::Root.into(), Box::new(VersionedXcm::from(xcm2)), weight)
+			.unwrap();
 		Ok(())
 	}
 }
@@ -807,7 +819,7 @@ impl pallet_porteer::Config for Runtime {
 	// Todo: Do we want to allow to transfer tokens back?
 	type TokenSenderLocationOrigin =
 		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
-	type PortTokensToDestination = MockPortTokens;
+	type PortTokensToDestination = PortTokensToPolkadot;
 	type Fungible = Balances;
 }
 
