@@ -36,7 +36,7 @@ fn ik_to_ip_xcm_works() {
 	const ONE_DOT: u128 = 10_000_000_000;
 	const INITIAL_KSM_BALANCE: u128 = 100 * ONE_KSM;
 
-	// // set XCM versions
+	// set XCM versions
 	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
 	AssetHubPolkadot::force_xcm_version(ip_on_ahp_v5(), XCM_VERSION);
 	AssetHubPolkadot::force_xcm_version(ik_on_ahp_v5(), XCM_VERSION);
@@ -85,9 +85,9 @@ fn ik_to_ip_xcm_works() {
 	let token_owner = Alice::get();
 	let port_tokens_amount = 100 * TEER;
 
-	let token_owner_balance_before_kusama =
+	let token_owner_balance_before_on_ik =
 		IntegriteeKusama::account_data_of(token_owner.clone()).free;
-	let token_owner_balance_before_polkadot =
+	let token_owner_balance_before_on_ip =
 		IntegriteePolkadot::account_data_of(token_owner.clone()).free;
 
 	<IntegriteeKusama as TestExt>::execute_with(|| {
@@ -111,6 +111,8 @@ fn ik_to_ip_xcm_works() {
 			]
 		);
 	});
+
+	// Assert Events on all hops until the IP
 
 	<AssetHubKusama as TestExt>::execute_with(|| {
 		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
@@ -165,11 +167,11 @@ fn ik_to_ip_xcm_works() {
 
 	assert_eq!(
 		IntegriteeKusama::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_kusama - port_tokens_amount
+		token_owner_balance_before_on_ik - port_tokens_amount
 	);
 
 	assert_eq!(
 		IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_polkadot + port_tokens_amount
+		token_owner_balance_before_on_ip + port_tokens_amount
 	);
 }
