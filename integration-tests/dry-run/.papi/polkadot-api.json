@@ -1,0 +1,55 @@
+{
+  "version": 0,
+  "descriptorPath": ".papi/descriptors",
+  "entries": {
+    "dot": {
+      "wsUrl": "ws://localhost:9942",
+      "metadata": ".papi/metadata/dot.scale",
+      "genesis": "0x5323f62f5d1406dc3a23a46a7afc38d4eb4ea0288a14f580dbc9dbeb8549bbb8",
+      "codeHash": "0x2705b8a8fc608fd44912d23ebea8c4fbb3a9817c5bfc38bd4c89ae2126a29d82"
+    },
+    "ksm": {
+      "wsUrl": "ws://localhost:9945",
+      "metadata": ".papi/metadata/ksm.scale",
+      "genesis": "0x4f72b7848b2d44cb8f64beb990e801f4be47cff8573872e1a9821d6693135d5b",
+      "codeHash": "0x4df2db32490f85e6ec69d135faa8d96e6fa8e7087a39deed70710af62bdfebac"
+    },
+    "kah": {
+      "wsUrl": "http://localhost:8000",
+      "metadata": ".papi/metadata/kah.scale",
+      "genesis": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
+      "codeHash": "0x8356dd03a2a5521b9339ce0c6b2a56d3edf83f0ca7262e9edabb695df770a0f6"
+    },
+    "kbh": {
+      "wsUrl": "ws://localhost:8945",
+      "metadata": ".papi/metadata/kbh.scale",
+      "genesis": "0xcb80982f5b6756fc971d1ab6ea51011a57088452755ac6d7fb60ffc418b2bcfc",
+      "codeHash": "0xd5c30bef2c87523c97c7001fb90621cf85b5405389533a161138ae64378d0068"
+    },
+    "pah": {
+      "wsUrl": "http://localhost:8002",
+      "metadata": ".papi/metadata/pah.scale",
+      "genesis": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+      "codeHash": "0x895162f32905116ba8765aee474a9ab85702cf770047a6359e293d6d38e3364a"
+    },
+    "pbh": {
+      "wsUrl": "ws://localhost:8943",
+      "metadata": ".papi/metadata/pbh.scale",
+      "genesis": "0x29ff5fc579dbf43266b9ed1461d4d5f27f099beaea4060948fffd1c9ba1553eb",
+      "codeHash": "0xa5a334094175d2ce1a3efc7bbd4a49ca86cc44cc143c93e6319c04d8cc0c93c8"
+    },
+    "ppeople": {
+      "chain": "polkadot_people",
+      "metadata": ".papi/metadata/ppeople.scale"
+    },
+    "itk": {
+      "metadata": ".papi/metadata/itk.scale"
+    },
+    "itp": {
+      "wsUrl": "http://localhost:8003",
+      "metadata": ".papi/metadata/itp.scale",
+      "genesis": "0xe13e7af377c64e83f95e0d70d5e5c3c01d697a84538776c5b9bbe0e7d7b6034c",
+      "codeHash": "0x501c0ff54a3d15eaf44b7cf0f471875befdb952b4b86946a32d1f80d90a61985"
+    }
+  }
+}
