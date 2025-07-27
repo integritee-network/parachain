@@ -184,7 +184,9 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          rustup show
+
+      - name: Show rustup version
+        run: rustup show
 
       - name: Install protobuf
         run: |
