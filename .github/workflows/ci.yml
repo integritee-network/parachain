@@ -202,6 +202,7 @@ jobs:
           sudo rm -rf /opt/hostedtoolcache/Ruby
           sudo rm -rf /opt/hostedtoolcache/Java*
           sudo rm -rf /opt/hostedtoolcache/node
+          docker rmi $(docker images -q) || true
           sudo apt-get clean
           
           echo "After cleanup disk usage:"
