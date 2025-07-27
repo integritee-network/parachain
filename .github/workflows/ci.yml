@@ -186,7 +186,20 @@ jobs:
         run: |
           sudo apt update
           sudo apt install --assume-yes protobuf-compiler
-
+      - name: Free up disk space
+        run: |
+          echo "Initial disk usage:"
+          df -h
+          
+          # Remove unnecessary tools installed by default
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/android
+          sudo apt-get clean
+          
+          echo "After cleanup disk usage:"
+          df -h
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.rust-target }}-${{ matrix.check }}
