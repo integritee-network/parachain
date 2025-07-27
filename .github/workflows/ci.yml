@@ -162,8 +162,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # we need more disk space than GHAR provide
-        os: [ integritee-builder-sgx ]
+        os: [ ubuntu-latest ]
         rust: [ nightly-2024-04-14 ]
         rust-target: [ x86_64-unknown-linux-gnu ]
         #        check: [fmt --all -- --check, clippy -- -D warnings]
@@ -181,11 +180,6 @@ jobs:
       # With rustup's nice new toml format, we just need to run rustup show to install the toolchain
       # https://github.com/actions-rs/toolchain/issues/126#issuecomment-782989659
       - name: Setup Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Show rustup version
         run: rustup show
 
       - name: Install protobuf
