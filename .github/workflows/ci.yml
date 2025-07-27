@@ -190,22 +190,20 @@ jobs:
         run: |
           echo "Initial disk usage:"
           df -h
-          
-          # Remove unnecessary tools installed by default
+          # Remove unnecessary tools installed by default (frees ~9GB)
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/boost
           sudo rm -rf /usr/local/lib/android
+          # free another 4GB
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo rm -rf /opt/hostedtoolcache/go
           sudo rm -rf /opt/hostedtoolcache/Python
           sudo rm -rf /opt/hostedtoolcache/Ruby
           sudo rm -rf /opt/hostedtoolcache/Java*
           sudo rm -rf /opt/hostedtoolcache/node
-          docker rmi $(docker images -q) || true
           sudo apt-get clean
-          
-          echo "After cleanup disk usage:"
+          echo "After cleanup disk usage (expected to be >=40GB free):"
           df -h
       - uses: Swatinem/rust-cache@v2
         with:
