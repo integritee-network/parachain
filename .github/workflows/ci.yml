@@ -181,7 +181,10 @@ jobs:
       # With rustup's nice new toml format, we just need to run rustup show to install the toolchain
       # https://github.com/actions-rs/toolchain/issues/126#issuecomment-782989659
       - name: Setup Rust toolchain
-        run: rustup show
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          rustup show
 
       - name: Install protobuf
         run: |
