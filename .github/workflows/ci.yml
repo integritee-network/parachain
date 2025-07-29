@@ -250,8 +250,7 @@ jobs:
         # Fellowship is at v0.8.0 too.
         uses: chevdor/srtool-actions@v0.8.0
         with:
-          image:
-            paritytech/srtool:1.84.1
+          image: paritytech/srtool
           chain: ${{ matrix.runtime }}
           runtime_dir: polkadot-parachains/${{ matrix.runtime }}
 
