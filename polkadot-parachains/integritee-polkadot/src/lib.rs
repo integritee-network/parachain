@@ -817,7 +817,6 @@ impl PortTokens for NeverPortTokens {
 	}
 }
 
-
 impl ForwardPortedTokens for NeverPortTokens {
 	type AccountId = AccountId;
 	type Balance = Balance;

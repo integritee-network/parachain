@@ -802,7 +802,11 @@ impl PortTokens for PortTokensToPolkadot {
 	type Error = DispatchError;
 
 	// Todo: Passed owned account id
-	fn port_tokens(who: &Self::AccountId, amount: Self::Balance, _location: Option<Self::Location>) -> Result<(), Self::Error> {
+	fn port_tokens(
+		who: &Self::AccountId,
+		amount: Self::Balance,
+		_location: Option<Self::Location>,
+	) -> Result<(), Self::Error> {
 		let xcm1 = ik_xcm(
 			integritee_polkadot_porteer_mint(who.clone(), amount),
 			IK_FEE,
