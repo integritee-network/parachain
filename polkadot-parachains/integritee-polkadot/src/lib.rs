@@ -787,7 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 use sp_core::hex2array;
 use xcm::{
 	latest::{Location, NetworkId},
-	prelude::{GlobalConsensus, Parachain},
+	prelude::{GlobalConsensus, Junctions, Parachain},
 };
 
 ord_parameter_types! {
