@@ -787,6 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
 use sp_core::hex2array;
 use xcm::latest::Location;
+use xcm::prelude::{Parachain, Junctions};
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
@@ -870,9 +871,9 @@ impl pallet_porteer::Config for Runtime {
 pub struct PorteerBenchmarkHelper;
 
 #[cfg(feature = "runtime-benchmarks")]
-impl BenchmarkHelper<TestLocation> for PorteerBenchmarkHelper {
+impl pallet_porteer::BenchmarkHelper<Location> for PorteerBenchmarkHelper {
 	fn get_whitelisted_location() -> Location {
-		Location::new(1, Junctions::X1(ParaId::from(1000)))
+		Location::new(1, Junctions::X1([Parachain(1000u32.into())].into()))
 	}
 }
 
