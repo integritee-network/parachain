@@ -787,7 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 use sp_core::hex2array;
 use xcm::{
 	latest::{Location, NetworkId},
-	prelude::{GlobalConsensus, Junctions, Parachain},
+	prelude::{GlobalConsensus, Parachain},
 };
 
 ord_parameter_types! {
@@ -859,6 +859,7 @@ pub struct PorteerBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_porteer::BenchmarkHelper<Location> for PorteerBenchmarkHelper {
 	fn get_whitelisted_location() -> Location {
+		use xcm::prelude::{Junctions, Parachain};
 		Location::new(1, Junctions::X1([Parachain(1000u32.into())].into()))
 	}
 }
