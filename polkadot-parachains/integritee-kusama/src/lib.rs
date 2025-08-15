@@ -863,6 +863,17 @@ impl pallet_porteer::Config for Runtime {
 	type ForwardPortedTokensToDestinations = PortTokensToPolkadot;
 	type Location = Location;
 	type Fungible = Balances;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = PorteerBenchmarkHelper;
+}
+
+pub struct PorteerBenchmarkHelper;
+
+#[cfg(feature = "runtime-benchmarks")]
+impl BenchmarkHelper<TestLocation> for PorteerBenchmarkHelper {
+	fn get_whitelisted_location() -> Location {
+		Location::new(1, Junctions::X1(ParaId::from(1000)))
+	}
 }
 
 parameter_types! {
