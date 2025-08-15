@@ -17,6 +17,9 @@ pub const INTEGRITEE_KUSAMA_PARA_ID: u32 = 2015;
 pub const INTEGRITEE_POLKADOT_PARA_ID: u32 = 2039;
 pub const ASSET_HUB_POLKADOT_PARA_ID: u32 = 1000;
 
+pub const PALLET_PORTEER_INDEX: u32 = 56;
+pub const PALLET_PORTEER_MINT_PORTED_TOKENS: u32 = 56;
+
 // For testing
 pub fn integritee_polkadot_system_remark(remark: Vec<u8>) -> ([u8; 2], Vec<u8>) {
 	// ([pallet_index, call_index], remark)
@@ -26,9 +29,10 @@ pub fn integritee_polkadot_system_remark(remark: Vec<u8>) -> ([u8; 2], Vec<u8>) 
 pub fn integritee_polkadot_porteer_mint(
 	beneficiary: AccountId,
 	amount: Balance,
-) -> ([u8; 2], AccountId, Balance) {
+	location: Option<Location>,
+) -> ([u8; 2], AccountId, Balance, Option<Location>) {
 	// ([pallet_index, call_index], ...)
-	([56, 2], beneficiary, amount)
+	([56, 7], beneficiary, amount, location)
 }
 
 pub(crate) fn ip_on_ahp_v5() -> Location {

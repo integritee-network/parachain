@@ -805,17 +805,17 @@ impl PortTokens for PortTokensToPolkadot {
 	fn port_tokens(
 		who: &Self::AccountId,
 		amount: Self::Balance,
-		_location: Option<Self::Location>,
+		location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
 		let xcm1 = ik_xcm(
-			integritee_polkadot_porteer_mint(who.clone(), amount),
+			integritee_polkadot_porteer_mint(who.clone(), amount, location.clone()),
 			IK_FEE,
 			AHK_FEE,
 			AHP_FEE,
 			IP_FEE,
 		);
 		let xcm2 = ik_xcm(
-			integritee_polkadot_porteer_mint(who.clone(), amount),
+			integritee_polkadot_porteer_mint(who.clone(), amount, location),
 			IK_FEE,
 			AHK_FEE,
 			AHP_FEE,
