@@ -786,8 +786,10 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 
 use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
 use sp_core::hex2array;
-use xcm::latest::Location;
-use xcm::prelude::{Parachain, Junctions};
+use xcm::{
+	latest::Location,
+	prelude::{Junctions, Parachain},
+};
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
