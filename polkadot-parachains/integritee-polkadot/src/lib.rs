@@ -859,7 +859,7 @@ pub struct PorteerBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_porteer::BenchmarkHelper<Location> for PorteerBenchmarkHelper {
 	fn get_whitelisted_location() -> Location {
-		use xcm::prelude::{Junctions, Parachain};
+		use xcm::prelude::Junctions;
 		Location::new(1, Junctions::X1([Parachain(1000u32.into())].into()))
 	}
 }
