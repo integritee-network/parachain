@@ -25,7 +25,7 @@ use super::{
 };
 use crate::weights;
 use core::marker::PhantomData;
-use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
+use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus, ParaId};
 use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
@@ -63,7 +63,6 @@ use xcm_builder::{
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
-use xcm_transactor_primitives::*;
 
 /// Supported local Currencies. Keep this to TEER,
 /// other assets will be handled through AssetRegistry pallet

@@ -77,7 +77,7 @@ use pallet_balances::WeightInfo;
 pub use pallet_claims;
 pub use pallet_collective;
 pub use pallet_enclave_bridge;
-use pallet_porteer::PortTokens;
+use pallet_porteer::{ForwardPortedTokens, PortTokens};
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
@@ -786,6 +786,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 
 use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
 use sp_core::hex2array;
+use xcm::latest::Location;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
@@ -797,10 +798,11 @@ pub struct PortTokensToPolkadot;
 impl PortTokens for PortTokensToPolkadot {
 	type AccountId = AccountId;
 	type Balance = Balance;
+	type Location = Location;
 	type Error = DispatchError;
 
 	// Todo: Passed owned account id
-	fn port_tokens(who: &Self::AccountId, amount: Self::Balance) -> Result<(), Self::Error> {
+	fn port_tokens(who: &Self::AccountId, amount: Self::Balance, _location: Option<Self::Location>) -> Result<(), Self::Error> {
 		let xcm1 = ik_xcm(
 			integritee_polkadot_porteer_mint(who.clone(), amount),
 			IK_FEE,
@@ -825,15 +827,37 @@ impl PortTokens for PortTokensToPolkadot {
 	}
 }
 
+impl ForwardPortedTokens for PortTokensToPolkadot {
+	type AccountId = AccountId;
+	type Balance = Balance;
+	type Location = Location;
+	type Error = DispatchError;
+
+	fn forward_ported_tokens(
+		_who: &Self::AccountId,
+		_amount: Self::Balance,
+		_location: Self::Location,
+	) -> Result<(), Self::Error> {
+		Err(DispatchError::Other("porteer: Forwarding Ported Tokens disabled"))
+	}
+}
+
+parameter_types! {
+	pub const HeartBeatTimeout: BlockNumber = 10;
+}
+
 impl pallet_porteer::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type PorteerAdmin =
 		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type HeartBeatTimeout = HeartBeatTimeout;
 	// Todo: Do we want to allow to transfer tokens back?
 	type TokenSenderLocationOrigin =
 		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
 	type PortTokensToDestination = PortTokensToPolkadot;
+	type ForwardPortedTokensToDestinations = PortTokensToPolkadot;
+	type Location = Location;
 	type Fungible = Balances;
 }
 

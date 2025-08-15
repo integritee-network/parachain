@@ -71,7 +71,6 @@ pallet-treasury = { workspace = true }
 pallet-utility = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-xcm = { workspace = true }
-pallet-xcm-transactor = { workspace = true }
 parachains-common = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
@@ -95,7 +94,6 @@ xcm-builder = { workspace = true }
 xcm-executor = { workspace = true }
 xcm-primitives = { workspace = true }
 xcm-runtime-apis = { workspace = true }
-xcm-transactor-primitives = { workspace = true }
 
 # Benchmarking
 frame-benchmarking = { workspace = true, optional = true }
@@ -165,7 +163,6 @@ std = [
     "pallet-treasury/std",
     "pallet-utility/std",
     "pallet-vesting/std",
-    "pallet-xcm-transactor/std",
     "pallet-xcm/std",
     "parachains-common/std",
     "parity-scale-codec/std",
@@ -192,7 +189,6 @@ std = [
     "xcm-executor/std",
     "xcm/std",
     "substrate-wasm-builder",
-    "xcm-transactor-primitives/std",
     "polkadot-primitives/std",
     "xcm-primitives/std",
     "pallet-porteer/std",
@@ -233,7 +229,6 @@ runtime-benchmarks = [
     "pallet-treasury/runtime-benchmarks",
     "pallet-utility/runtime-benchmarks",
     "pallet-vesting/runtime-benchmarks",
-    "pallet-xcm-transactor/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
     "parachains-common/runtime-benchmarks",
     "polkadot-parachain-primitives/runtime-benchmarks",
@@ -290,7 +285,6 @@ try-runtime = [
     "pallet-treasury/try-runtime",
     "pallet-utility/try-runtime",
     "pallet-vesting/try-runtime",
-    "pallet-xcm-transactor/try-runtime",
     "pallet-xcm/try-runtime",
     "polkadot-runtime-common/try-runtime",
     "staging-parachain-info/try-runtime",

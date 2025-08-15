@@ -35,17 +35,15 @@ smallvec = "1.11.0"
 primitive-types = { version = "0.12.1", default-features = false, features = ["codec", "num-traits", "scale-info"] }
 
 # integritee pallets
-pallet-asset-registry = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-porteer = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-teerdays = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-pallet-xcm-transactor = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-xcm-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
-xcm-transactor-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
+pallet-asset-registry = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-enclave-bridge = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-porteer = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-teerdays = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
+xcm-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "cl/forward-tokens" }
 
 # Polkadot-sdk and ecosystem crates [no_std]
 prometheus-endpoint = { version = "0.17.2", default-features = false, package = "substrate-prometheus-endpoint" }
@@ -215,14 +213,12 @@ kusama-polkadot-system-emulated-network = { path = "integration-tests/emulated/n
 #pallet-teeracle = { path = '../pallets/teeracle' }
 #pallet-teerdays = { path = '../pallets/teerdays' }
 #pallet-teerex = { path = '../pallets/teerex' }
-#pallet-xcm-transactor = { path = '../pallets/xcm-transactor' }
 #sgx-verify = { path = '../pallets/teerex/sgx-verify' }
 #teeracle-primitives = { path = '../pallets/primitives/teeracle' }
 #teerdays-primitives = { path = '../pallets/primitives/teerdays' }
 #teerex-primitives = { path = '../pallets/primitives/teerex' }
 #test-utils = { path = '../pallets/test-utils' }
 #xcm-primitives = { path = '../pallets/primitives/xcm' }
-#xcm-transactor-primitives = { path = '../pallets/primitives/xcm-transactor' }
 
 [patch.crates-io]
 ring = { git = "https://github.com/integritee-network/ring-xous", branch = "0.16.20-hack1.84.1" }

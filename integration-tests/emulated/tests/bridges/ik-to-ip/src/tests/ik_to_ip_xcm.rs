@@ -92,6 +92,7 @@ fn ik_to_ip_xcm_works() {
 		Porteer::port_tokens(
 			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
 			port_tokens_amount,
+			None
 		)
 		.unwrap();
 
