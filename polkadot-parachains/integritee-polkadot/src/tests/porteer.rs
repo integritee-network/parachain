@@ -25,7 +25,7 @@ fn ik_porteer_sovereign_account_matches() {
 }
 
 #[test]
-fn porteer_mint_from_ik_works() {
+fn porteer_mint_from_ik_works_without_forwarding() {
 	// Need to run with `RUST_LOG=DEBUG` to see the logs.
 	sp_tracing::init_for_tests();
 	sp_io::TestExternalities::default().execute_with(|| {
@@ -65,6 +65,7 @@ fn porteer_mint_from_ik_works() {
 				call: RuntimeCall::Porteer(pallet_porteer::Call::mint_ported_tokens {
 					beneficiary: bob.clone(),
 					amount: mint_amount,
+					forward_tokens_to_location: None,
 				})
 				.encode()
 				.into(),
