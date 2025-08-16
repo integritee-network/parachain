@@ -44,7 +44,9 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 use frame_support::{
-	derive_impl, ord_parameter_types,
+	derive_impl,
+	dispatch::RawOrigin,
+	ord_parameter_types,
 	traits::{
 		fungible::{Credit, HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
 		tokens::{
@@ -75,6 +77,7 @@ use pallet_balances::WeightInfo;
 pub use pallet_claims;
 pub use pallet_collective;
 pub use pallet_enclave_bridge;
+use pallet_porteer::{ForwardPortedTokens, PortTokens};
 pub use pallet_sidechain;
 pub use pallet_teeracle;
 pub use pallet_teerex::Call as TeerexCall;
@@ -84,21 +87,24 @@ use parachains_common::{message_queue::NarrowOriginToSibling, AssetIdForTrustBac
 use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, ConstU128, ConstU32, OpaqueMetadata};
+use sp_core::{
+	crypto::{AccountId32, KeyTypeId},
+	ConstU128, ConstU32, OpaqueMetadata,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchError, RuntimeDebug,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm::{
+use xcm::{
 	latest::prelude::AssetId, Version as XcmVersion, VersionedAssetId, VersionedAssets,
 	VersionedLocation, VersionedXcm,
 };
@@ -111,6 +117,7 @@ mod helpers;
 mod weights;
 
 mod migrations;
+pub mod porteer;
 pub mod xcm_config;
 
 pub type SessionHandlers = ();
@@ -518,9 +525,9 @@ impl pallet_message_queue::Config for Runtime {
 		cumulus_primitives_core::AggregateMessageOrigin,
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+	type MessageProcessor = xcm_builder::ProcessXcmMessage<
 		AggregateMessageOrigin,
-		staging_xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
+		xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
 		RuntimeCall,
 	>;
 	type Size = u32;
@@ -776,6 +783,99 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
+
+use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
+use sp_core::hex2array;
+use xcm::latest::Location;
+use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+
+ord_parameter_types! {
+	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
+}
+
+pub struct PortTokensToPolkadot;
+
+impl PortTokens for PortTokensToPolkadot {
+	type AccountId = AccountId;
+	type Balance = Balance;
+	type Location = Location;
+	type Error = DispatchError;
+
+	// Todo: Passed owned account id
+	fn port_tokens(
+		who: &Self::AccountId,
+		amount: Self::Balance,
+		location: Option<Self::Location>,
+	) -> Result<(), Self::Error> {
+		let xcm1 = ik_xcm(
+			integritee_polkadot_porteer_mint(who.clone(), amount, location.clone()),
+			IK_FEE,
+			AHK_FEE,
+			AHP_FEE,
+			IP_FEE,
+		);
+		let xcm2 = ik_xcm(
+			integritee_polkadot_porteer_mint(who.clone(), amount, location),
+			IK_FEE,
+			AHK_FEE,
+			AHP_FEE,
+			IP_FEE,
+		);
+
+		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
+
+		// Todo: don't use the dispatchable here, but send.
+		PolkadotXcm::execute(RawOrigin::Root.into(), Box::new(VersionedXcm::from(xcm2)), weight)
+			.unwrap();
+		Ok(())
+	}
+}
+
+impl ForwardPortedTokens for PortTokensToPolkadot {
+	type AccountId = AccountId;
+	type Balance = Balance;
+	type Location = Location;
+	type Error = DispatchError;
+
+	fn forward_ported_tokens(
+		_who: &Self::AccountId,
+		_amount: Self::Balance,
+		_location: Self::Location,
+	) -> Result<(), Self::Error> {
+		Err(DispatchError::Other("porteer: Forwarding Ported Tokens disabled"))
+	}
+}
+
+parameter_types! {
+	pub const HeartBeatTimeout: BlockNumber = 10;
+}
+
+impl pallet_porteer::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+	type PorteerAdmin =
+		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type HeartBeatTimeout = HeartBeatTimeout;
+	// Todo: Do we want to allow to transfer tokens back?
+	type TokenSenderLocationOrigin =
+		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type PortTokensToDestination = PortTokensToPolkadot;
+	type ForwardPortedTokensToDestinations = PortTokensToPolkadot;
+	type Location = Location;
+	type Fungible = Balances;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = PorteerBenchmarkHelper;
+}
+
+pub struct PorteerBenchmarkHelper;
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_porteer::BenchmarkHelper<Location> for PorteerBenchmarkHelper {
+	fn get_whitelisted_location() -> Location {
+		use xcm::prelude::{Junctions, Parachain};
+		Location::new(1, Junctions::X1([Parachain(1000u32.into())].into()))
+	}
+}
 
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
@@ -1104,6 +1204,7 @@ construct_runtime!(
 		Sidechain: pallet_sidechain= 53,
 		EnclaveBridge: pallet_enclave_bridge = 54,
 		TeerDays: pallet_teerdays = 55,
+		Porteer: pallet_porteer = 56,
 	}
 );
 
@@ -1179,6 +1280,7 @@ mod benches {
 		[pallet_message_queue, MessageQueue]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
+		[pallet_porteer, Porteer]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
 		[pallet_session, SessionBench::<Runtime>]
@@ -1350,7 +1452,7 @@ impl_runtime_apis! {
 	}
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
-		fn query_acceptable_payment_assets(xcm_version: staging_xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
+		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
 			let acceptable_assets = vec![AssetId(xcm_config::SelfLocation::get())];
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
