@@ -70,7 +70,6 @@ pub fn ik_sibling_v5() -> Location {
 	Location::new(1, [Parachain(INTEGRITEE_KUSAMA_PARA_ID)])
 }
 
-
 pub fn ik_cousin_v5() -> Location {
 	Location::new(1, [Parachain(INTEGRITEE_KUSAMA_PARA_ID)])
 }
@@ -156,7 +155,10 @@ fn ah_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
 	Xcm(vec![
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
-			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: local_as_cousin },
+			DepositAsset {
+				assets: AssetFilter::Wild(WildAsset::All),
+				beneficiary: local_as_cousin,
+			},
 		])),
 		WithdrawAsset((Parent, Fungible(integritee_cousin_as_sibling.1)).into()),
 		InitiateTransfer {
@@ -171,7 +173,9 @@ fn ah_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
 	])
 }
 
-fn integritee_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(call: IntegriteePolkadotCall) -> Xcm<Call> {
+fn integritee_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
+	call: IntegriteePolkadotCall,
+) -> Xcm<Call> {
 	Xcm(vec![Transact {
 		origin_kind: OriginKind::SovereignAccount,
 		fallback_max_weight: None,

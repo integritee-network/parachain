@@ -107,7 +107,7 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 			port_tokens_amount,
 			forward_teer_location.clone(),
 		)
-			.unwrap();
+		.unwrap();
 
 		assert_expected_events!(
 			IntegriteeKusama,
@@ -181,16 +181,16 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 		AssetHubPolkadot::execute_with(|| {
 			type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
 			assert_expected_events!(
-			AssetHubPolkadot,
-			vec![
-				RuntimeEvent::MessageQueue(
-					pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-				RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
-					owner: *owner == token_owner,
-				},
-			]
-		);
+				AssetHubPolkadot,
+				vec![
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+					RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
+						owner: *owner == token_owner,
+					},
+				]
+			);
 		});
 
 		// Todo: Assert balances after forwarding
@@ -199,7 +199,6 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 		// 	IntegriteePolkadot::account_data_of(token_owner.clone()).free,
 		// 	token_owner_balance_before_on_ip + port_tokens_amount
 		// );
-
 	} else {
 		assert_eq!(
 			IntegriteePolkadot::account_data_of(token_owner.clone()).free,
