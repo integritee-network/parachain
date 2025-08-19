@@ -12,11 +12,12 @@ use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
 };
-use frame_support::{assert_ok, ord_parameter_types, traits::fungible::Mutate as M};
-use frame_support::dispatch::RawOrigin;
-use frame_support::traits::Currency;
-use sp_core::{hex2array, sr25519};
-use system_parachains_constants::genesis_presets::get_account_id_from_seed;
+use frame_support::{
+	assert_ok,
+	dispatch::RawOrigin,
+	ord_parameter_types,
+	traits::{fungible::Mutate as M, Currency},
+};
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
@@ -24,6 +25,8 @@ use kusama_polkadot_system_emulated_network::{
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
+use sp_core::{hex2array, sr25519};
+use system_parachains_constants::genesis_presets::get_account_id_from_seed;
 
 fn ik_sibling_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
@@ -39,7 +42,6 @@ fn ik_cousin_account() -> AccountId {
 fn root_on_ik() -> AccountId {
 	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self()).unwrap()
 }
-
 
 ord_parameter_types! {
 	pub const Ferdie: AccountId = AccountId::new(hex2array!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c"));
@@ -85,7 +87,10 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 
 	AssetHubKusama::fund_accounts(vec![(ik_sibling_acc, 100 * KSM)]);
 	// Token Owner needs to have some DOT on AssetHub
-	AssetHubPolkadot::fund_accounts(vec![(ik_cousin_acc.clone(), 100 * DOT), (token_owner.clone(), 100 * DOT)]);
+	AssetHubPolkadot::fund_accounts(vec![
+		(ik_cousin_acc.clone(), 100 * DOT),
+		(token_owner.clone(), 100 * DOT),
+	]);
 
 	let ik_sibling = ik_sibling();
 	create_foreign_on_ah_kusama(ik_sibling.clone(), false, vec![]);
@@ -123,7 +128,6 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 
 		Balances::set_balance(&token_owner, token_owner_balance_before_on_ik);
 		assert_eq!(Balances::free_balance(&token_owner), token_owner_balance_before_on_ik);
-
 
 		Porteer::port_tokens(
 			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
