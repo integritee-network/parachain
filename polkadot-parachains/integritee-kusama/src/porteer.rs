@@ -1,3 +1,4 @@
+use pallet_porteer::XcmFeeParams;
 use crate::*;
 
 use parity_scale_codec::Encode;
@@ -52,6 +53,12 @@ pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
 pub const AHP_FEE: u128 = 300000000000;
 pub const IP_FEE: u128 = 1000000000000;
+
+pub const DEFAULT_XCM_FEES_IK_PERSPECTIVE: XcmFeeParams<Balance> = XcmFeeParams {
+	hop1: AHK_FEE,
+	hop2: AHP_FEE,
+	hop3: IP_FEE,
+};
 
 /// XCM as it is being sent from IK all the way to the IP.
 pub fn ik_xcm<Call, IntegriteePolkadotCall: Encode>(

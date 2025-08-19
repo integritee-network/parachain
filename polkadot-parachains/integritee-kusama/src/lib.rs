@@ -807,19 +807,21 @@ impl PortTokens for PortTokensToPolkadot {
 		amount: Self::Balance,
 		location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
+		let fees = Porteer::xcm_fee_config();
+
 		let xcm1 = ik_xcm(
 			integritee_polkadot_porteer_mint(who.clone(), amount, location.clone()),
 			IK_FEE,
-			AHK_FEE,
-			AHP_FEE,
-			IP_FEE,
+			fees.hop1,
+			fees.hop2,
+			fees.hop3,
 		);
 		let xcm2 = ik_xcm(
 			integritee_polkadot_porteer_mint(who.clone(), amount, location),
 			IK_FEE,
-			AHK_FEE,
-			AHP_FEE,
-			IP_FEE,
+			fees.hop1,
+			fees.hop2,
+			fees.hop3,
 		);
 
 		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();

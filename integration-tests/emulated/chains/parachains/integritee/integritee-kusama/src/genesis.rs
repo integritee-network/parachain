@@ -21,6 +21,7 @@ use emulated_integration_tests_common::{
 };
 use parachains_common::Balance;
 use xcm::prelude::*;
+use integritee_kusama_runtime::porteer::DEFAULT_XCM_FEES_IK_PERSPECTIVE;
 
 pub const PARA_ID: u32 = 2015;
 pub const ED: Balance = integritee_kusama_runtime::ExistentialDeposit::get();
@@ -91,6 +92,7 @@ pub fn genesis() -> sp_core::storage::Storage {
 				send_enabled: true,
 				receive_enabled: true,
 			},
+			initial_xcm_fees: Some(DEFAULT_XCM_FEES_IK_PERSPECTIVE),
 			..Default::default()
 		},
 		..Default::default()
