@@ -12,7 +12,7 @@ use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
 };
-use frame_support::{assert_ok, ord_parameter_types, traits::fungible::Mutate as M};
+use frame_support::ord_parameter_types;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation, integritee_kusama_runtime::TEER,
@@ -35,10 +35,6 @@ fn ik_cousin_account() -> AccountId {
 
 fn ik_local_root() -> AccountId {
 	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self()).unwrap()
-}
-
-ord_parameter_types! {
-	pub const Ferdie: AccountId = AccountId::new(hex2array!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c"));
 }
 
 #[test]
@@ -114,67 +110,18 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	// Assert Events on all hops until the IP
 
-	<AssetHubKusama as TestExt>::execute_with(|| {
-		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
-		assert_expected_events!(
-			AssetHubKusama,
-			vec![
-				// message processed successfully
-				RuntimeEvent::MessageQueue(
-						pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-			]
-		);
-	});
+	assert_asset_hub_kusama_message_processed();
 
 	assert_bridge_hub_kusama_message_accepted(true);
 	assert_bridge_hub_polkadot_message_received();
 
-	AssetHubPolkadot::execute_with(|| {
-		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
-		assert_expected_events!(
-			AssetHubPolkadot,
-			vec![
-				RuntimeEvent::MessageQueue(
-					pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-			]
-		);
-	});
+	assert_asset_hub_polkadot_message_processed();
 
-	// We can see the following logs, but these are expected, as the first 2 traders fail until
-	// we get the right one:
-	// 2025-07-19T18:42:17.124871Z ERROR xcm::weight: FixedRateOfFungible::buy_weight Failed to substract from payment amount=3275251420 error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: Here }): 20000000000}, non_fungible: {} }
-	<IntegriteePolkadot as TestExt>::execute_with(|| {
-		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
-
-		if forward_teer_location.is_some() {
-			assert_expected_events!(
-				IntegriteePolkadot,
-				vec![
-					RuntimeEvent::MessageQueue(
-						pallet_message_queue::Event::Processed { success: true, .. }
-					) => {},
-					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
-					}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
-					RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
-				]
-			);
-		} else {
-			assert_expected_events!(
-				IntegriteePolkadot,
-				vec![
-					RuntimeEvent::MessageQueue(
-						pallet_message_queue::Event::Processed { success: true, .. }
-					) => {},
-					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
-					}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
-				]
-			);
-		}
-	});
+	assert_integritee_polkadot_tokens_minted(
+		token_owner.clone(),
+		port_tokens_amount,
+		forward_teer_location.is_some(),
+	);
 
 	// Assert before and after balances
 
@@ -187,23 +134,9 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	);
 
 	if forward_teer_location.is_some() {
-		AssetHubPolkadot::execute_with(|| {
-			type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
-			assert_expected_events!(
-				AssetHubPolkadot,
-				vec![
-					RuntimeEvent::MessageQueue(
-						pallet_message_queue::Event::Processed { success: true, .. }
-					) => {},
-					RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
-						owner: *owner == token_owner,
-					},
-				]
-			);
-		});
+		assert_asset_hub_polkadot_tokens_forwarded(token_owner.clone());
 
 		// The forwarder makes sure that there are at least 2 ED on the account, but then some fees have to be paid.
-
 		if fund_token_holder_on_ip {
 			// Todo: how to compute the local fees
 			// assert_eq!(
@@ -260,4 +193,90 @@ fn ik_to_ip_bridge_setup() {
 	set_up_pool_with_dot_on_ah_polkadot(ip_sibling(), true);
 
 	create_reserve_asset_on_ip(0, Parent.into(), true, vec![]);
+}
+
+fn assert_asset_hub_kusama_message_processed() {
+	<AssetHubKusama as TestExt>::execute_with(|| {
+		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubKusama,
+			vec![
+				// message processed successfully
+				RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+			]
+		);
+	});
+}
+
+fn assert_asset_hub_polkadot_message_processed() {
+	AssetHubPolkadot::execute_with(|| {
+		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubPolkadot,
+			vec![
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+			]
+		);
+	});
+}
+
+fn assert_asset_hub_polkadot_tokens_forwarded(who: AccountId) {
+	AssetHubPolkadot::execute_with(|| {
+		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubPolkadot,
+			vec![
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+				RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
+					owner: *owner == who,
+				},
+			]
+		);
+	});
+}
+
+fn assert_integritee_polkadot_tokens_minted(
+	beneficiary: AccountId,
+	ported_tokens_amount: Balance,
+	tokens_forwarded: bool,
+) {
+	// We can see the following logs, but these are expected, as the first 2 traders fail until
+	// we get the right one:
+	// 2025-07-19T18:42:17.124871Z ERROR xcm::weight: FixedRateOfFungible::buy_weight Failed to substract from payment amount=3275251420 error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: Here }): 20000000000}, non_fungible: {} }
+	<IntegriteePolkadot as TestExt>::execute_with(|| {
+		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
+
+		if tokens_forwarded {
+			assert_expected_events!(
+				IntegriteePolkadot,
+				vec![
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
+						who, amount,
+					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
+					RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+				]
+			);
+		} else {
+			assert_expected_events!(
+				IntegriteePolkadot,
+				vec![
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
+						who, amount,
+					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
+				]
+			);
+		}
+	});
 }
