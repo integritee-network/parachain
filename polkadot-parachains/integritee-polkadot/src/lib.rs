@@ -67,7 +67,7 @@ use integritee_parachains_common::{
 	RELAY_CHAIN_SLOT_DURATION_MILLIS, SLOT_DURATION, UNINCLUDED_SEGMENT_CAPACITY,
 };
 pub use integritee_parachains_common::{
-	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK, self as integritee_common,
 };
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
@@ -789,6 +789,8 @@ use xcm::{
 	latest::{Location, NetworkId},
 	prelude::{GlobalConsensus, Parachain},
 };
+use xcm_builder::AliasesIntoAccountId32;
+use integritee_parachains_common::porteer::forward_teer;
 
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
@@ -817,6 +819,10 @@ impl PortTokens for NeverPortTokens {
 	}
 }
 
+parameter_types! {
+	pub const AnyNetwork: Option<NetworkId> = None;
+}
+
 impl ForwardPortedTokens for NeverPortTokens {
 	type AccountId = AccountId;
 	type Balance = Balance;
@@ -824,11 +830,11 @@ impl ForwardPortedTokens for NeverPortTokens {
 	type Error = DispatchError;
 
 	fn forward_ported_tokens(
-		_who: &Self::AccountId,
-		_amount: Self::Balance,
-		_location: Self::Location,
+		who: &Self::AccountId,
+		amount: Self::Balance,
+		location: Self::Location,
 	) -> Result<(), Self::Error> {
-		Err(DispatchError::Other("porteer: Forwarding Ported Tokens disabled"))
+		forward_teer::<Runtime, AliasesIntoAccountId32<AnyNetwork, AccountId>>(who.clone(), location, amount)
 	}
 }
 

@@ -24,6 +24,8 @@ pub mod currency;
 pub mod fee;
 
 pub mod xcm_config;
+pub mod porteer;
+
 pub use constants::*;
 pub use types::*;
 

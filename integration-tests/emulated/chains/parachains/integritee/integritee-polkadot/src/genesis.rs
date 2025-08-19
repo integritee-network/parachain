@@ -21,12 +21,14 @@ use emulated_integration_tests_common::{
 };
 use parachains_common::Balance;
 use xcm::prelude::*;
+use integritee_polkadot_runtime::integritee_common::porteer::DEFAULT_XCM_FEES_IP_PERSPECTIVE;
 
 pub const PARA_ID: u32 = 2039;
 pub const ED: Balance = integritee_polkadot_runtime::ExistentialDeposit::get();
 
 frame_support::parameter_types! {
 	pub UniversalLocation: InteriorLocation = [GlobalConsensus(Polkadot), Parachain(PARA_ID)].into();
+	pub AssetHubLocation: Location = Location::new(1, Parachain(1000));
 }
 
 pub fn genesis() -> sp_core::storage::Storage {
@@ -91,6 +93,8 @@ pub fn genesis() -> sp_core::storage::Storage {
 				send_enabled: true,
 				receive_enabled: true,
 			},
+			initial_location_whitelist: Some(vec![AssetHubLocation::get()]),
+			initial_xcm_fees: Some(DEFAULT_XCM_FEES_IP_PERSPECTIVE),
 			..Default::default()
 		},
 		..Default::default()

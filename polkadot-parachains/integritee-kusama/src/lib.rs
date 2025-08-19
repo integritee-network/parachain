@@ -69,7 +69,7 @@ use integritee_parachains_common::{
 	RELAY_CHAIN_SLOT_DURATION_MILLIS, SLOT_DURATION, UNINCLUDED_SEGMENT_CAPACITY,
 };
 pub use integritee_parachains_common::{
-	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK, self as integritee_common,
 };
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
@@ -784,11 +784,12 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
+use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint};
 use sp_core::hex2array;
-use xcm::latest::{Location, Parent, SendError, SendXcm};
-use xcm::prelude::Parachain;
+use xcm::latest::{Location, NetworkId, SendError};
+use xcm_builder::AliasesIntoAccountId32;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use integritee_parachains_common::porteer::{forward_teer, IK_FEE};
 
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
@@ -827,7 +828,7 @@ impl PortTokens for PortTokensToPolkadot {
 			fees.hop3,
 		);
 
-		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm.clone())).unwrap();
+		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1.clone())).unwrap();
 
 		// Todo: Is this best practice, we could also do this with, but then we have to manually
 		// do some xcm steps on our local chain, e.g. burning assets and adding them to holding:
@@ -843,6 +844,10 @@ impl PortTokens for PortTokensToPolkadot {
 	}
 }
 
+parameter_types! {
+	pub const AnyNetwork: Option<NetworkId> = None;
+}
+
 impl ForwardPortedTokens for PortTokensToPolkadot {
 	type AccountId = AccountId;
 	type Balance = Balance;
@@ -850,11 +855,11 @@ impl ForwardPortedTokens for PortTokensToPolkadot {
 	type Error = DispatchError;
 
 	fn forward_ported_tokens(
-		_who: &Self::AccountId,
-		_amount: Self::Balance,
-		_location: Self::Location,
+		who: &Self::AccountId,
+		amount: Self::Balance,
+		location: Self::Location,
 	) -> Result<(), Self::Error> {
-		Err(DispatchError::Other("porteer: Forwarding Ported Tokens disabled"))
+		forward_teer::<Runtime, AliasesIntoAccountId32<AnyNetwork, AccountId>>(who.clone(), location, amount)
 	}
 }
 

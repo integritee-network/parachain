@@ -16,6 +16,7 @@ use frame_support::{assert_ok, traits::fungible::Mutate as M};
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::integritee_kusama_runtime::{Alice, TEER},
 };
+use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::genesis::AssetHubLocation;
 
 fn ik_sibling_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
@@ -92,7 +93,7 @@ fn ik_to_ip_xcm_works() {
 		Porteer::port_tokens(
 			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
 			port_tokens_amount,
-			None,
+			Some(AssetHubLocation::get()),
 		)
 		.unwrap();
 
@@ -149,6 +150,19 @@ fn ik_to_ip_xcm_works() {
 				RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
 					who, amount,
 				}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
+				RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+			]
+		);
+	});
+
+	AssetHubPolkadot::execute_with(|| {
+		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubPolkadot,
+			vec![
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
 			]
 		);
 	});
