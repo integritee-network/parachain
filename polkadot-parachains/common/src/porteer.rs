@@ -83,7 +83,7 @@ pub fn asset_hub_polkadot_location() -> Location {
 	Location::new(2, [GlobalConsensus(Polkadot), Parachain(ASSET_HUB_POLKADOT_PARA_ID)])
 }
 
-/// XCM as it is being sent from IK all the way to the IP.
+/// XCM as it is being sent from the local Integritee chain to its cousin.
 pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 	call: IntegriteePolkadotCall,
 	local_fee: Balance,
@@ -118,7 +118,8 @@ pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 	])
 }
 
-/// Nested XCM to be executed as `remote_xcm` from within `ik_xcm` on AHK.
+/// Nested XCM to be executed as `remote_xcm` from within `local_integritee_xcm` on the
+/// first hop, namely the Asset Hub sibling.
 fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 	call: IntegriteePolkadotCall,
 	local_as_sibling: Location,
@@ -147,7 +148,8 @@ fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 	])
 }
 
-/// Nested XCM to be executed as `remote_xcm` from within `ahk_xcm` on AHP.
+/// Nested XCM to be executed as `remote_xcm` from within `ah_sibling_xcm` on the
+/// second hop, namely the Asset Hub cousin.
 fn ah_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
 	call: IntegriteePolkadotCall,
 	local_as_cousin: Location,
