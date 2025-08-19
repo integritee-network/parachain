@@ -12,10 +12,17 @@ use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
 };
-use frame_support::{assert_ok, traits::fungible::Mutate as M};
-use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::{
-	genesis::AssetHubLocation,
-	integritee_kusama_runtime::{Alice, TEER},
+use frame_support::{assert_ok, ord_parameter_types, traits::fungible::Mutate as M};
+use frame_support::dispatch::RawOrigin;
+use frame_support::traits::Currency;
+use sp_core::{hex2array, sr25519};
+use system_parachains_constants::genesis_presets::get_account_id_from_seed;
+use kusama_polkadot_system_emulated_network::{
+	integritee_kusama_emulated_chain::{
+		genesis::AssetHubLocation,
+		integritee_kusama_runtime::{Alice, TEER},
+	},
+	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
 
 fn ik_sibling_account() -> AccountId {
@@ -33,9 +40,14 @@ fn root_on_ik() -> AccountId {
 	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self()).unwrap()
 }
 
+
+ord_parameter_types! {
+	pub const Ferdie: AccountId = AccountId::new(hex2array!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c"));
+}
+
 #[test]
 fn ik_to_ip_xcm_works_without_forwarding() {
-	ik_to_pk_xcm(Some(AssetHubLocation::get()))
+	ik_to_pk_xcm(None)
 }
 
 #[test]
@@ -57,6 +69,8 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 	let ik_sibling_acc = ik_sibling_account();
 	let ik_cousin_acc = ik_cousin_account();
 
+	let token_owner = get_account_id_from_seed::<sr25519::Public>("teer_hodler");
+
 	// Fund accounts
 
 	// Note: First we thought that these accounts need to exist on IP, but no.
@@ -70,7 +84,8 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10 * KSM);
 
 	AssetHubKusama::fund_accounts(vec![(ik_sibling_acc, 100 * KSM)]);
-	AssetHubPolkadot::fund_accounts(vec![(ik_cousin_acc.clone(), 100 * DOT)]);
+	// Token Owner needs to have some DOT on AssetHub
+	AssetHubPolkadot::fund_accounts(vec![(ik_cousin_acc.clone(), 100 * DOT), (token_owner.clone(), 100 * DOT)]);
 
 	let ik_sibling = ik_sibling();
 	create_foreign_on_ah_kusama(ik_sibling.clone(), false, vec![]);
@@ -87,13 +102,17 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 
 	log::info!("Setup Done! Sending XCM.");
 
-	let token_owner = Alice::get();
 	let port_tokens_amount = 100 * TEER;
 
-	let token_owner_balance_before_on_ik =
-		IntegriteeKusama::account_data_of(token_owner.clone()).free;
-	let token_owner_balance_before_on_ip =
-		IntegriteePolkadot::account_data_of(token_owner.clone()).free;
+	let token_owner_balance_before_on_ik = 2 * port_tokens_amount;
+	let token_owner_balance_before_on_ip: Balance = 0u32.into();
+
+	<IntegriteePolkadot as TestExt>::execute_with(|| {
+		type Balances = <IntegriteePolkadot as IntegriteePolkadotPallet>::Balances;
+		// Balances::force_set_balance(RawOrigin::Root.into(), token_owner.clone().into(), 0u32.into()).unwrap();
+		// There are indeed some functions that fail to kill an account, so we'd better check XD.
+		assert_eq!(Balances::free_balance(&token_owner), token_owner_balance_before_on_ip);
+	});
 
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
@@ -101,6 +120,10 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 		type Porteer = <IntegriteeKusama as IntegriteeKusamaPallet>::Porteer;
 
 		assert_ok!(<Balances as M<_>>::mint_into(&root_on_ik, 100 * TEER));
+
+		Balances::set_balance(&token_owner, token_owner_balance_before_on_ik);
+		assert_eq!(Balances::free_balance(&token_owner), token_owner_balance_before_on_ik);
+
 
 		Porteer::port_tokens(
 			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
@@ -153,18 +176,33 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 	// 2025-07-19T18:42:17.124871Z ERROR xcm::weight: FixedRateOfFungible::buy_weight Failed to substract from payment amount=3275251420 error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: Here }): 20000000000}, non_fungible: {} }
 	<IntegriteePolkadot as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
-		assert_expected_events!(
-			IntegriteePolkadot,
-			vec![
-				RuntimeEvent::MessageQueue(
-					pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-				RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-					who, amount,
-				}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
-				RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
-			]
-		);
+
+		if forward_teer_location.is_some() {
+			assert_expected_events!(
+				IntegriteePolkadot,
+				vec![
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
+						who, amount,
+					}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
+					RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+				]
+			);
+		} else {
+			assert_expected_events!(
+				IntegriteePolkadot,
+				vec![
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
+						who, amount,
+					}) => { who: *who == token_owner, amount: *amount == port_tokens_amount, },
+				]
+			);
+		}
 	});
 
 	// Assert before and after balances
@@ -193,11 +231,15 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 			);
 		});
 
-		// Todo: Assert balances after forwarding
+		// Makes sure that there are at least 2 ED on the account, but then some fees have to be paid
 
-		assert_eq!(
-			IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-			token_owner_balance_before_on_ip
+		assert!(
+			IntegriteePolkadot::account_data_of(token_owner.clone()).free <
+				2 * ExistentialDeposit::get()
+		);
+		assert!(
+			IntegriteePolkadot::account_data_of(token_owner.clone()).free >
+				1 * ExistentialDeposit::get()
 		);
 	} else {
 		assert_eq!(
