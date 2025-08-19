@@ -12,16 +12,10 @@ use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
 };
-use frame_support::{
-	assert_ok,
-	dispatch::RawOrigin,
-	ord_parameter_types,
-	traits::{fungible::Mutate as M, Currency},
-};
+use frame_support::{assert_ok, ord_parameter_types, traits::fungible::Mutate as M};
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
-		genesis::AssetHubLocation,
-		integritee_kusama_runtime::{Alice, TEER},
+		genesis::AssetHubLocation, integritee_kusama_runtime::TEER,
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
@@ -49,15 +43,25 @@ ord_parameter_types! {
 
 #[test]
 fn ik_to_ip_xcm_works_without_forwarding() {
-	ik_to_pk_xcm(None)
+	ik_to_pk_xcm(None, true)
 }
 
 #[test]
 fn ik_to_ip_xcm_works_with_forwarding() {
-	ik_to_pk_xcm(Some(AssetHubLocation::get()))
+	ik_to_pk_xcm(Some(AssetHubLocation::get()), true)
 }
 
-fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
+#[test]
+fn ik_to_ip_xcm_works_without_forwarding_with_nonexisting_ip_beneficiary() {
+	ik_to_pk_xcm(None, false)
+}
+
+#[test]
+fn ik_to_ip_xcm_works_with_forwarding_with_nonexisting_ip_beneficiary() {
+	ik_to_pk_xcm(Some(AssetHubLocation::get()), false)
+}
+
+fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip: bool) {
 	const KSM: u128 = 1_000_000_000_000;
 	const DOT: u128 = 10_000_000_000;
 
@@ -110,10 +114,18 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 	let port_tokens_amount = 100 * TEER;
 
 	let token_owner_balance_before_on_ik = 2 * port_tokens_amount;
-	let token_owner_balance_before_on_ip: Balance = 0u32.into();
+
+	let token_owner_balance_before_on_ip: Balance = match fund_token_holder_on_ip {
+		true => 100 * TEER,
+		false => 0,
+	};
 
 	<IntegriteePolkadot as TestExt>::execute_with(|| {
 		type Balances = <IntegriteePolkadot as IntegriteePolkadotPallet>::Balances;
+
+		if token_owner_balance_before_on_ip > 0 {
+			assert_ok!(<Balances as M<_>>::mint_into(&token_owner, token_owner_balance_before_on_ip));
+		}
 		assert_eq!(Balances::free_balance(&token_owner), token_owner_balance_before_on_ip);
 	});
 
@@ -235,14 +247,23 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 
 		// The forwarder makes sure that there are at least 2 ED on the account, but then some fees have to be paid.
 
-		assert!(
-			IntegriteePolkadot::account_data_of(token_owner.clone()).free <
-				2 * ExistentialDeposit::get()
-		);
-		assert!(
-			IntegriteePolkadot::account_data_of(token_owner.clone()).free >
-				1 * ExistentialDeposit::get()
-		);
+		if fund_token_holder_on_ip {
+			// Todo: how to compute the local fees
+			// assert_eq!(
+			// 	IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+			// 	token_owner_balance_before_on_ip
+			// );
+		} else {
+			// Ensure that token forwarding respects the ED.
+			assert!(
+				IntegriteePolkadot::account_data_of(token_owner.clone()).free <
+					2 * ExistentialDeposit::get()
+			);
+			assert!(
+				IntegriteePolkadot::account_data_of(token_owner.clone()).free >
+					1 * ExistentialDeposit::get()
+			);
+		}
 	} else {
 		assert_eq!(
 			IntegriteePolkadot::account_data_of(token_owner.clone()).free,
