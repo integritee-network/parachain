@@ -62,14 +62,15 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
 };
+pub use integritee_parachains_common::{
+	self as integritee_common, AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce,
+	Signature, MILLISECS_PER_BLOCK,
+};
 use integritee_parachains_common::{
 	fee::{SlowAdjustingFeeUpdate, WeightToFee},
 	AuraId, AVERAGE_ON_INITIALIZE_RATIO, BLOCK_PROCESSING_VELOCITY, DAYS, HOURS,
 	MAXIMUM_BLOCK_WEIGHT, MINUTES, MS_PER_DAY, NORMAL_DISPATCH_RATIO,
 	RELAY_CHAIN_SLOT_DURATION_MILLIS, SLOT_DURATION, UNINCLUDED_SEGMENT_CAPACITY,
-};
-pub use integritee_parachains_common::{
-	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK, self as integritee_common,
 };
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
@@ -785,11 +786,11 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint};
+use integritee_parachains_common::porteer::{forward_teer, IK_FEE};
 use sp_core::hex2array;
 use xcm::latest::{Location, NetworkId, SendError};
 use xcm_builder::AliasesIntoAccountId32;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use integritee_parachains_common::porteer::{forward_teer, IK_FEE};
 
 ord_parameter_types! {
 	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
@@ -859,7 +860,11 @@ impl ForwardPortedTokens for PortTokensToPolkadot {
 		amount: Self::Balance,
 		location: Self::Location,
 	) -> Result<(), Self::Error> {
-		forward_teer::<Runtime, AliasesIntoAccountId32<AnyNetwork, AccountId>>(who.clone(), location, amount)
+		forward_teer::<Runtime, AliasesIntoAccountId32<AnyNetwork, AccountId>>(
+			who.clone(),
+			location,
+			amount,
+		)
 	}
 }
 

@@ -19,9 +19,9 @@
 use emulated_integration_tests_common::{
 	accounts, build_genesis_storage, collators, SAFE_XCM_VERSION,
 };
+use integritee_kusama_runtime::integritee_common::porteer::DEFAULT_XCM_FEES_IK_PERSPECTIVE;
 use parachains_common::Balance;
 use xcm::prelude::*;
-use integritee_kusama_runtime::integritee_common::porteer::DEFAULT_XCM_FEES_IK_PERSPECTIVE;
 
 pub const PARA_ID: u32 = 2015;
 pub const ED: Balance = integritee_kusama_runtime::ExistentialDeposit::get();

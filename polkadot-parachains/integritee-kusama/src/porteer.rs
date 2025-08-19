@@ -47,7 +47,6 @@ pub(crate) fn ik_on_ahp_v5() -> Location {
 	Location::new(2, [GlobalConsensus(NetworkId::Kusama), Parachain(INTEGRITEE_KUSAMA_PARA_ID)])
 }
 
-
 /// XCM as it is being sent from IK all the way to the IP.
 pub fn ik_xcm<Call, IntegriteePolkadotCall: Encode>(
 	call: IntegriteePolkadotCall,

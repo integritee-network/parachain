@@ -3,8 +3,8 @@ use crate::{
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		asset_hub_polkadot_location, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot,
 		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, create_reserve_asset_on_ip,
-		ik_sibling, ik_sibling_v5, ik_cousin_v5, ip_sibling_v5, set_up_pool_with_dot_on_ah_polkadot,
-		set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
+		ik_cousin_v5, ik_sibling, ik_sibling_v5, ip_sibling, ip_sibling_v5,
+		set_up_pool_with_dot_on_ah_polkadot, set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
 	},
 	*,
 };
@@ -13,11 +13,10 @@ use emulated_integration_tests_common::{
 	xcm_emulator::{log, ConvertLocation},
 };
 use frame_support::{assert_ok, traits::fungible::Mutate as M};
-use kusama_polkadot_system_emulated_network::{
-	integritee_kusama_emulated_chain::integritee_kusama_runtime::{Alice, TEER},
+use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::{
+	genesis::AssetHubLocation,
+	integritee_kusama_runtime::{Alice, TEER},
 };
-use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::genesis::AssetHubLocation;
-use crate::tests::ip_sibling;
 
 fn ik_sibling_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())

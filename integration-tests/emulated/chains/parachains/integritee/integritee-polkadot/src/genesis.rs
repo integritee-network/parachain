@@ -19,9 +19,9 @@
 use emulated_integration_tests_common::{
 	accounts, build_genesis_storage, collators, SAFE_XCM_VERSION,
 };
+use integritee_polkadot_runtime::integritee_common::porteer::DEFAULT_XCM_FEES_IP_PERSPECTIVE;
 use parachains_common::Balance;
 use xcm::prelude::*;
-use integritee_polkadot_runtime::integritee_common::porteer::DEFAULT_XCM_FEES_IP_PERSPECTIVE;
 
 pub const PARA_ID: u32 = 2039;
 pub const ED: Balance = integritee_polkadot_runtime::ExistentialDeposit::get();
