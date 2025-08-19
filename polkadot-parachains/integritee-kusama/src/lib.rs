@@ -787,9 +787,10 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::{forward_teer, IK_FEE, ik_xcm, integritee_runtime_porteer_mint};
+use integritee_parachains_common::porteer::{forward_teer, IK_FEE, ik_xcm, integritee_runtime_porteer_mint, asset_hub_polkadot_location, ip_on_ahp_v5};
 use sp_core::hex2array;
-use xcm::latest::{Location, NetworkId, SendError};
+use xcm::latest::{Location, NetworkId, Parent, SendError};
+use xcm::prelude::Parachain;
 use xcm_builder::AliasesIntoAccountId32;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
@@ -816,18 +817,18 @@ impl PortTokens for PortTokensToPolkadot {
 		let xcm1 = ik_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
 			IK_FEE,
-			fees.hop1,
-			fees.hop2,
-			fees.hop3,
+			((Parent, Parachain(1000)).into(), fees.hop1),
+			(asset_hub_polkadot_location(), fees.hop2),
+			(ip_on_ahp_v5(), fees.hop3),
 		);
 
 		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
 		let xcm2 = ik_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location),
 			IK_FEE,
-			fees.hop1,
-			fees.hop2,
-			fees.hop3,
+			((Parent, Parachain(1000)).into(), fees.hop1),
+			(asset_hub_polkadot_location(), fees.hop2),
+			(ip_on_ahp_v5(), fees.hop3),
 		);
 
 		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1.clone())).unwrap();
