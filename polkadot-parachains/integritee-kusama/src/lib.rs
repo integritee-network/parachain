@@ -118,7 +118,6 @@ mod helpers;
 mod weights;
 
 mod migrations;
-pub mod porteer;
 pub mod xcm_config;
 
 #[cfg(test)]
@@ -788,8 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint};
-use integritee_parachains_common::porteer::{forward_teer, IK_FEE};
+use integritee_parachains_common::porteer::{forward_teer, IK_FEE, ik_xcm, integritee_runtime_porteer_mint};
 use sp_core::hex2array;
 use xcm::latest::{Location, NetworkId, SendError};
 use xcm_builder::AliasesIntoAccountId32;
@@ -816,7 +814,7 @@ impl PortTokens for PortTokensToPolkadot {
 		let fees = Porteer::xcm_fee_config();
 
 		let xcm1 = ik_xcm(
-			integritee_polkadot_porteer_mint(who.clone(), amount, location.clone()),
+			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
 			IK_FEE,
 			fees.hop1,
 			fees.hop2,
@@ -825,7 +823,7 @@ impl PortTokens for PortTokensToPolkadot {
 
 		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
 		let xcm2 = ik_xcm(
-			integritee_polkadot_porteer_mint(who.clone(), amount, location),
+			integritee_runtime_porteer_mint(who.clone(), amount, location),
 			IK_FEE,
 			fees.hop1,
 			fees.hop2,
