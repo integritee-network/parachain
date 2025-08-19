@@ -11,11 +11,10 @@ use xcm::{
 		Location, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
 	},
 	prelude::{
-		DepositAsset, Fungible, GlobalConsensus, Here, InitiateTransfer, Parachain, Polkadot,
-		RefundSurplus, SetAppendix, Transact, WithdrawAsset,
+		DepositAsset, Fungible, GlobalConsensus, Here, InitiateTransfer, Kusama, Parachain,
+		Polkadot, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
 	},
 };
-use xcm::prelude::Kusama;
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;

@@ -803,9 +803,9 @@ ord_parameter_types! {
 	pub const IntegriteeKusamaSovereignAccount: AccountId = AccountId::new(hex2array!("8e420f365988e859988375baa048faf25a88de7ddd979425ccaad93fea6b244d"));
 }
 
-pub struct NeverPortTokens;
+pub struct PortTokensToKusama;
 
-impl PortTokens for NeverPortTokens {
+impl PortTokens for PortTokensToKusama {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
@@ -816,6 +816,7 @@ impl PortTokens for NeverPortTokens {
 		_amount: Self::Balance,
 		_location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
+		// Todo: Fix this once we have finalized the IK -> IP direction.
 		Err(DispatchError::Other("porteer: Porting Tokens disabled"))
 	}
 }
@@ -824,7 +825,7 @@ parameter_types! {
 	pub const AnyNetwork: Option<NetworkId> = None;
 }
 
-impl ForwardPortedTokens for NeverPortTokens {
+impl ForwardPortedTokens for PortTokensToKusama {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
@@ -863,8 +864,8 @@ impl pallet_porteer::Config for Runtime {
 		EnsureSignedBy<IntegriteeKusamaSovereignAccount, AccountId32>,
 		EnsureRoot<AccountId32>,
 	>;
-	type PortTokensToDestination = NeverPortTokens;
-	type ForwardPortedTokensToDestinations = NeverPortTokens;
+	type PortTokensToDestination = PortTokensToKusama;
+	type ForwardPortedTokensToDestinations = PortTokensToKusama;
 	type Location = Location;
 	type Fungible = Balances;
 	#[cfg(feature = "runtime-benchmarks")]
