@@ -124,7 +124,10 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 		type Balances = <IntegriteePolkadot as IntegriteePolkadotPallet>::Balances;
 
 		if token_owner_balance_before_on_ip > 0 {
-			assert_ok!(<Balances as M<_>>::mint_into(&token_owner, token_owner_balance_before_on_ip));
+			assert_ok!(<Balances as M<_>>::mint_into(
+				&token_owner,
+				token_owner_balance_before_on_ip
+			));
 		}
 		assert_eq!(Balances::free_balance(&token_owner), token_owner_balance_before_on_ip);
 	});
