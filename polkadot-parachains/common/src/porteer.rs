@@ -40,7 +40,7 @@ pub fn forward_teer<
 		<T as frame_system::Config>::RuntimeOrigin::signed(who.clone()),
 		Box::new(destination.into_versioned()),
 		Box::new(beneficiary_location.into()),
-		Box::new(vec![Asset { id: Here.into(), fun: Fungible(amount) }.into()].into()),
+		Box::new(vec![Asset { id: Here.into(), fun: Fungible(amount) }].into()),
 		0,
 		WeightLimit::Unlimited,
 	)

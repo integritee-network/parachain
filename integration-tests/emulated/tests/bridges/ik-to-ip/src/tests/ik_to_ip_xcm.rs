@@ -264,7 +264,7 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 			);
 			assert!(
 				IntegriteePolkadot::account_data_of(token_owner.clone()).free >
-					1 * ExistentialDeposit::get()
+					ExistentialDeposit::get()
 			);
 		}
 	} else {
