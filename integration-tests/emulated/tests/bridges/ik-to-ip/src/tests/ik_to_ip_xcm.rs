@@ -195,10 +195,10 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 
 		// Todo: Assert balances after forwarding
 
-		// assert_eq!(
-		// 	IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-		// 	token_owner_balance_before_on_ip + port_tokens_amount
-		// );
+		assert_eq!(
+			IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+			token_owner_balance_before_on_ip
+		);
 	} else {
 		assert_eq!(
 			IntegriteePolkadot::account_data_of(token_owner.clone()).free,

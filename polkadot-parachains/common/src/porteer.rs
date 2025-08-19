@@ -8,7 +8,7 @@ use xcm::{
 	latest::{
 		Asset, AssetFilter,
 		AssetTransferFilter::{ReserveDeposit, Teleport},
-		Location, NetworkId, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
+		Location, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
 	},
 	prelude::{
 		DepositAsset, Fungible, GlobalConsensus, Here, InitiateTransfer, Parachain, Polkadot,
