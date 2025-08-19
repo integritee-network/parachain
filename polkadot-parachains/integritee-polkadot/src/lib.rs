@@ -794,8 +794,6 @@ use xcm::{
 use xcm_builder::AliasesIntoAccountId32;
 
 ord_parameter_types! {
-	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
-
 	pub const IntegriteeKusamaLocation: Location = Location {
 			parents: 2,
 			interior: (GlobalConsensus(NetworkId::Kusama), Parachain(2015)).into(),
@@ -857,8 +855,7 @@ parameter_types! {
 impl pallet_porteer::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
-	type PorteerAdmin =
-		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type PorteerAdmin = EnsureRootOrMoreThanHalfTechnicalCommittee;
 	type HeartBeatTimeout = HeartBeatTimeout;
 	type TokenSenderLocationOrigin = EitherOfDiverse<
 		EnsureSignedBy<IntegriteeKusamaSovereignAccount, AccountId32>,

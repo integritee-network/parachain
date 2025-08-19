@@ -794,14 +794,17 @@ use integritee_parachains_common::porteer::{
 use sp_core::hex2array;
 use xcm::{
 	latest::{Location, NetworkId, Parent, SendError},
-	prelude::Parachain,
+	prelude::{GlobalConsensus, Parachain},
 };
 use xcm_builder::AliasesIntoAccountId32;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
-	pub const Alice: AccountId = AccountId::new(hex2array!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"));
-	pub const Ferdie: AccountId = AccountId::new(hex2array!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c"));
+	pub const IntegriteePolkadotLocation: Location = Location {
+			parents: 2,
+			interior: (GlobalConsensus(NetworkId::Polkadot), Parachain(2039)).into(),
+		};
+	pub const IntegriteePolkadotSovereignAccount: AccountId = AccountId::new(hex2array!("f2d868b4542b6ed5b437c1ebc070d6bfcecab0d1b4f43f6d737cd17d8cac2019"));
 }
 
 pub struct PortTokensToPolkadot;
@@ -887,12 +890,13 @@ parameter_types! {
 impl pallet_porteer::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
-	type PorteerAdmin =
-		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type PorteerAdmin = EnsureRootOrMoreThanHalfTechnicalCommittee;
 	type HeartBeatTimeout = HeartBeatTimeout;
 	// Todo: Do we want to allow to transfer tokens back?
-	type TokenSenderLocationOrigin =
-		EitherOfDiverse<EnsureSignedBy<Alice, AccountId32>, EnsureRoot<AccountId32>>;
+	type TokenSenderLocationOrigin = EitherOfDiverse<
+		EnsureSignedBy<IntegriteePolkadotSovereignAccount, AccountId32>,
+		EnsureRoot<AccountId32>,
+	>;
 	type PortTokensToDestination = PortTokensToPolkadot;
 	type ForwardPortedTokensToDestinations = PortTokensToPolkadot;
 	type Location = Location;

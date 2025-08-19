@@ -1,6 +1,6 @@
 use crate::{
-	xcm_config::XcmConfig, Alice, Balances, IntegriteeKusamaLocation,
-	IntegriteeKusamaSovereignAccount, Porteer, RuntimeCall, TEER,
+	xcm_config::XcmConfig, Balances, IntegriteeKusamaLocation, IntegriteeKusamaSovereignAccount,
+	Porteer, RuntimeCall, TEER,
 };
 use frame_support::{__private::sp_tracing, dispatch::RawOrigin, traits::Currency};
 use integritee_parachains_common::porteer::integritee_runtime_porteer_mint;
@@ -27,15 +27,17 @@ fn ik_porteer_sovereign_account_matches() {
 
 #[test]
 fn integritee_polkadot_porteer_mint_is_correct() {
-	let call = integritee_runtime_porteer_mint(Alice::get(), 10, None);
+	let beneficiary = IntegriteeKusamaSovereignAccount::get();
+	let amount = 10;
+	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None);
 
 	let decoded = RuntimeCall::decode(&mut call.encode().as_slice()).unwrap();
 
 	assert_eq!(
 		decoded,
 		RuntimeCall::Porteer(pallet_porteer::Call::mint_ported_tokens {
-			beneficiary: Alice::get(),
-			amount: 10,
+			beneficiary,
+			amount,
 			forward_tokens_to_location: None,
 		})
 	)
