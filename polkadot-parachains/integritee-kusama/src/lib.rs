@@ -789,7 +789,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 
 use integritee_parachains_common::porteer::{
 	asset_hub_polkadot_location, forward_teer, ik_cousin_v5, ik_sibling_v5,
-	integritee_runtime_porteer_mint, ip_on_ahp_v5, local_integritee_xcm, IK_FEE,
+	integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, IK_FEE,
 };
 use sp_core::hex2array;
 use xcm::{
@@ -827,7 +827,7 @@ impl PortTokens for PortTokensToPolkadot {
 			ik_cousin_v5(),
 			((Parent, Parachain(1000)).into(), fees.hop1),
 			(asset_hub_polkadot_location(), fees.hop2),
-			(ip_on_ahp_v5(), fees.hop3),
+			(ip_sibling_v5(), fees.hop3),
 		);
 
 		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
@@ -838,7 +838,7 @@ impl PortTokens for PortTokensToPolkadot {
 			ik_cousin_v5(),
 			((Parent, Parachain(1000)).into(), fees.hop1),
 			(asset_hub_polkadot_location(), fees.hop2),
-			(ip_on_ahp_v5(), fees.hop3),
+			(ip_sibling_v5(), fees.hop3),
 		);
 
 		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1.clone())).unwrap();

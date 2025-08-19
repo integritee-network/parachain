@@ -15,6 +15,7 @@ use xcm::{
 		RefundSurplus, SetAppendix, Transact, WithdrawAsset,
 	},
 };
+use xcm::prelude::Kusama;
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
@@ -71,10 +72,10 @@ pub fn ik_sibling_v5() -> Location {
 }
 
 pub fn ik_cousin_v5() -> Location {
-	Location::new(1, [Parachain(INTEGRITEE_KUSAMA_PARA_ID)])
+	Location::new(2, [GlobalConsensus(Kusama), Parachain(INTEGRITEE_KUSAMA_PARA_ID)])
 }
 
-pub fn ip_on_ahp_v5() -> Location {
+pub fn ip_sibling_v5() -> Location {
 	Location::new(1, [Parachain(INTEGRITEE_POLKADOT_PARA_ID)])
 }
 
