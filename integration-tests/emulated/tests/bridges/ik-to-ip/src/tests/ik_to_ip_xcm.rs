@@ -12,14 +12,13 @@ use emulated_integration_tests_common::{
 	impls::Parachain,
 	xcm_emulator::{log, ConvertLocation},
 };
-use frame_support::ord_parameter_types;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation, integritee_kusama_runtime::TEER,
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
-use sp_core::{hex2array, sr25519};
+use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
 
 fn ik_sibling_account() -> AccountId {
