@@ -786,7 +786,8 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 
 use crate::porteer::{ik_xcm, integritee_polkadot_porteer_mint, AHK_FEE, AHP_FEE, IK_FEE, IP_FEE};
 use sp_core::hex2array;
-use xcm::latest::Location;
+use xcm::latest::{Location, Parent, SendError, SendXcm};
+use xcm::prelude::Parachain;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
@@ -799,7 +800,7 @@ impl PortTokens for PortTokensToPolkadot {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
-	type Error = DispatchError;
+	type Error = SendError;
 
 	// Todo: Passed owned account id
 	fn port_tokens(
@@ -816,6 +817,8 @@ impl PortTokens for PortTokensToPolkadot {
 			fees.hop2,
 			fees.hop3,
 		);
+
+		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
 		let xcm2 = ik_xcm(
 			integritee_polkadot_porteer_mint(who.clone(), amount, location),
 			IK_FEE,
@@ -824,9 +827,16 @@ impl PortTokens for PortTokensToPolkadot {
 			fees.hop3,
 		);
 
-		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1)).unwrap();
+		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm.clone())).unwrap();
 
-		// Todo: don't use the dispatchable here, but send.
+		// Todo: Is this best practice, we could also do this with, but then we have to manually
+		// do some xcm steps on our local chain, e.g. burning assets and adding them to holding:
+		//
+		// let (ticket, delivery_fees) = xcm_config::XcmRouter::validate(
+		// &mut Some((Parent, Parachain(1000)).into()), &mut Some(xcm1),
+		// )?;
+		//
+		// xcm_config::XcmRouter::deliver(ticket)?;
 		PolkadotXcm::execute(RawOrigin::Root.into(), Box::new(VersionedXcm::from(xcm2)), weight)
 			.unwrap();
 		Ok(())
