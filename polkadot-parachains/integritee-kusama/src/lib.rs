@@ -121,6 +121,9 @@ mod migrations;
 pub mod porteer;
 pub mod xcm_config;
 
+#[cfg(test)]
+mod tests;
+
 pub type SessionHandlers = ();
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know

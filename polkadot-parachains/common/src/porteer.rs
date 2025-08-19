@@ -1,7 +1,8 @@
-use crate::{xcm_config::AccountIdOf, Balance};
+use crate::{xcm_config::AccountIdOf, AccountId, Balance};
 use frame_support::pallet_prelude::OriginTrait;
 use pallet_porteer::XcmFeeParams;
 use sp_runtime::{traits::TryConvert, DispatchError};
+use sp_std::{boxed::Box, vec};
 use xcm::{
 	latest::{Asset, Location, WeightLimit},
 	prelude::{Fungible, Here},
@@ -35,4 +36,17 @@ pub fn forward_teer<
 		0,
 		WeightLimit::Unlimited,
 	)
+}
+
+/// The porteer::mint call used by both runtimes.
+///
+/// We have tests in the runtimes that ensure that the
+/// format and the indexes are correct.
+pub fn integritee_runtime_porteer_mint(
+	beneficiary: AccountId,
+	amount: Balance,
+	location: Option<Location>,
+) -> ([u8; 2], AccountId, Balance, Option<Location>) {
+	// ([pallet_index, call_index], ...)
+	([56, 7], beneficiary, amount, location)
 }
