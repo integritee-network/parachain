@@ -114,8 +114,6 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 
 	<IntegriteePolkadot as TestExt>::execute_with(|| {
 		type Balances = <IntegriteePolkadot as IntegriteePolkadotPallet>::Balances;
-		// Balances::force_set_balance(RawOrigin::Root.into(), token_owner.clone().into(), 0u32.into()).unwrap();
-		// There are indeed some functions that fail to kill an account, so we'd better check XD.
 		assert_eq!(Balances::free_balance(&token_owner), token_owner_balance_before_on_ip);
 	});
 
@@ -235,7 +233,7 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 			);
 		});
 
-		// Makes sure that there are at least 2 ED on the account, but then some fees have to be paid
+		// The forwarder makes sure that there are at least 2 ED on the account, but then some fees have to be paid.
 
 		assert!(
 			IntegriteePolkadot::account_data_of(token_owner.clone()).free <
