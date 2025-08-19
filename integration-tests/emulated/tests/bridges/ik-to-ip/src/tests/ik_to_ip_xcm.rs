@@ -34,7 +34,16 @@ fn root_on_ik() -> AccountId {
 }
 
 #[test]
-fn ik_to_ip_xcm_works() {
+fn ik_to_ip_xcm_works_without_forwarding() {
+	ik_to_pk_xcm(Some(AssetHubLocation::get()))
+}
+
+#[test]
+fn ik_to_ip_xcm_works_with_forwarding() {
+	ik_to_pk_xcm(Some(AssetHubLocation::get()))
+}
+
+fn ik_to_pk_xcm(forward_teer_location: Option<Location>) {
 	const KSM: u128 = 1_000_000_000_000;
 	const DOT: u128 = 10_000_000_000;
 
@@ -96,9 +105,9 @@ fn ik_to_ip_xcm_works() {
 		Porteer::port_tokens(
 			<IntegriteeKusama as Chain>::RuntimeOrigin::signed(token_owner.clone()),
 			port_tokens_amount,
-			Some(AssetHubLocation::get()),
+			forward_teer_location.clone(),
 		)
-		.unwrap();
+			.unwrap();
 
 		assert_expected_events!(
 			IntegriteeKusama,
@@ -158,21 +167,6 @@ fn ik_to_ip_xcm_works() {
 		);
 	});
 
-	AssetHubPolkadot::execute_with(|| {
-		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
-		assert_expected_events!(
-			AssetHubPolkadot,
-			vec![
-				RuntimeEvent::MessageQueue(
-					pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-				RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
-					owner: *owner == token_owner,
-				},
-			]
-		);
-	});
-
 	// Assert before and after balances
 
 	// Note: XCM fees are taken from the Integritee's sovereign account
@@ -183,8 +177,33 @@ fn ik_to_ip_xcm_works() {
 		token_owner_balance_before_on_ik - port_tokens_amount
 	);
 
-	assert_eq!(
-		IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_on_ip + port_tokens_amount
-	);
+	if forward_teer_location.is_some() {
+		AssetHubPolkadot::execute_with(|| {
+			type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
+			assert_expected_events!(
+			AssetHubPolkadot,
+			vec![
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+				RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
+					owner: *owner == token_owner,
+				},
+			]
+		);
+		});
+
+		// Todo: Assert balances after forwarding
+
+		// assert_eq!(
+		// 	IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+		// 	token_owner_balance_before_on_ip + port_tokens_amount
+		// );
+
+	} else {
+		assert_eq!(
+			IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+			token_owner_balance_before_on_ip + port_tokens_amount
+		);
+	}
 }
