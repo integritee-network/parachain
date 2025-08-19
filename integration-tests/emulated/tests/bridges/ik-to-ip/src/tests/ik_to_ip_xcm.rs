@@ -17,6 +17,7 @@ use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::integritee_kusama_runtime::{Alice, TEER},
 };
 use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::genesis::AssetHubLocation;
+use crate::tests::ip_sibling;
 
 fn ik_sibling_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
@@ -70,6 +71,9 @@ fn ik_to_ip_xcm_works() {
 	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
 	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![]);
 	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
+
+	create_foreign_on_ah_polkadot(ip_sibling(), false, vec![]);
+	set_up_pool_with_dot_on_ah_polkadot(ip_sibling(), true);
 
 	create_reserve_asset_on_ip(0, Parent.into(), true, vec![]);
 
@@ -163,6 +167,9 @@ fn ik_to_ip_xcm_works() {
 				RuntimeEvent::MessageQueue(
 					pallet_message_queue::Event::Processed { success: true, .. }
 				) => {},
+				RuntimeEvent::ForeignAssets(pallet_assets::Event::Issued { owner, .. }) => {
+					owner: *owner == token_owner,
+				},
 			]
 		);
 	});
