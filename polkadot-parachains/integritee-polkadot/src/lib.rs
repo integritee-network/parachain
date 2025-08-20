@@ -98,7 +98,7 @@ use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, DispatchError, RuntimeDebug,
+	ApplyExtrinsicResult, RuntimeDebug,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
@@ -787,17 +787,17 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::{
-	asset_hub_kusama_location, forward_teer, ik_sibling_v5, integritee_runtime_porteer_mint,
-	ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, IK_FEE,
-};
+use integritee_parachains_common::porteer::{asset_hub_kusama_location, burn_local_xcm, ik_sibling_v5, integritee_runtime_porteer_mint, ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, receive_teleported_asset, IK_FEE};
 use sp_core::hex2array;
+use sp_runtime::traits::Convert;
 use xcm::{
 	latest::{Location, NetworkId, Parent, SendError},
 	prelude::{GlobalConsensus, Parachain},
 };
-use xcm_builder::AliasesIntoAccountId32;
+use xcm::latest::{ExecuteXcm, SendXcm};
+use xcm_executor::XcmExecutor;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use crate::xcm_config::{AccountIdToLocation, XcmConfig, XcmRouter};
 
 ord_parameter_types! {
 	pub const IntegriteeKusamaLocation: Location = Location {
@@ -868,24 +868,52 @@ impl ForwardPortedTokens for PortTokensToKusama {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
-	type Error = DispatchError;
+	type Error = SendError;
 
 	fn forward_ported_tokens(
 		who: &Self::AccountId,
 		amount: Self::Balance,
 		location: Self::Location,
 	) -> Result<(), Self::Error> {
+
+		let tentative_xcm = burn_local_xcm(amount);
+
+		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(
+			tentative_xcm,
+		)).unwrap();
+
+		let local_fee = Runtime::query_weight_to_asset_fee(
+			local_weight,
+			VersionedAssetId::from(AssetId(Location::parent())),
+		).unwrap();
+
+
 		let forward_amount = sp_std::cmp::min(
 			amount,
 			Balances::free_balance(who)
-				.saturating_sub(ExistentialDeposit::get().saturating_mul(2u32.into())),
+				.saturating_sub(ExistentialDeposit::get().saturating_sub(local_fee)),
 		);
 
-		forward_teer::<Runtime, AliasesIntoAccountId32<AnyNetwork, AccountId>>(
+		let xcm = burn_local_xcm(forward_amount);
+
+		XcmExecutor::<XcmConfig>::prepare_and_execute(
 			who.clone(),
-			location,
-			forward_amount,
-		)
+			xcm,
+			&mut [0; 32],
+			Weight::MAX,
+			Weight::zero(),
+		);
+
+		let asset = (Location::new(1, Parachain(ParachainInfo::parachain_id().into())), forward_amount);
+		let beneficiary_location = AccountIdToLocation::convert(who.clone());
+
+		let remote_xcm = receive_teleported_asset(asset.into(), beneficiary_location);
+
+		let (ticket, _delivery_fees) =
+			XcmRouter::validate(&mut Some(location), &mut Some(remote_xcm))?;
+
+		XcmRouter::deliver(ticket)?;
+		Ok(())
 	}
 }
 

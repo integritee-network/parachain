@@ -176,7 +176,7 @@ fn assert_integritee_polkadot_tokens_minted(
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
 						who, amount,
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
-					RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+					RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::XcmpMessageSent { .. }) => {},
 				]
 			);
 		} else {

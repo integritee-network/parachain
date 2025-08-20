@@ -11,10 +11,11 @@ use xcm::{
 		Location, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
 	},
 	prelude::{
-		DepositAsset, Fungible, GlobalConsensus, Here, InitiateTransfer, Kusama, Parachain,
-		Polkadot, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
+		BurnAsset, DepositAsset, Fungible, GlobalConsensus, Here, InitiateTransfer, Kusama,
+		Parachain, Polkadot, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
 	},
 };
+use xcm::prelude::{AllCounted, BuyExecution, ClearOrigin, ReceiveTeleportedAsset, Wild};
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
@@ -123,6 +124,32 @@ pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 				integritee_cousin_as_sibling,
 			),
 		},
+	])
+}
+
+/// Burn Local Assets to be teleported.
+pub fn burn_local_xcm<Call>(amount: Balance) -> Xcm<Call> {
+	Xcm(vec![
+		WithdrawAsset((Here, Fungible(amount)).into()),
+		BurnAsset((Here, Fungible(amount)).into()),
+	])
+}
+
+pub fn receive_teleported_asset<Call,>(
+	asset: Asset,
+	beneficiary: Location,
+) -> Xcm<Call> {
+	Xcm(vec![
+		ReceiveTeleportedAsset(asset.clone().into()),
+		ClearOrigin,
+		BuyExecution {
+			fees: asset,
+			weight_limit: WeightLimit::Unlimited,
+		},
+		DepositAsset {
+			assets: Wild(AllCounted(1)),
+			beneficiary
+		}
 	])
 }
 

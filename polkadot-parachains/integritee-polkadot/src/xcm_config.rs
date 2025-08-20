@@ -358,6 +358,10 @@ type Reserves = (
 	ReserveAssetsFrom<AssetHubLocation>,
 );
 
+/// Means for transacting assets on this chain.
+pub type AssetTransactors =
+	(LocalNativeTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
+
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
 pub type XcmRouter = xcm_builder::WithUniqueTopic<(
@@ -366,10 +370,6 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
 )>;
-
-/// Means for transacting assets on this chain.
-pub type AssetTransactors =
-	(LocalNativeTransactor, ReservedFungiblesTransactor, LocalFungiblesTransactor);
 
 /// Defines origin aliasing rules for this chain.
 ///
