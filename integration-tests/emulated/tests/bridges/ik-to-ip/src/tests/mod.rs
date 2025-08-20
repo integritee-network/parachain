@@ -17,9 +17,10 @@ use crate::*;
 
 // mod asset_transfers;
 mod ik_to_ip_xcm;
+mod integritee_bridge_setup;
+mod ip_to_ik_xcm;
 mod register_bridged_assets;
 mod send_xcm;
-mod integritee_bridge_setup;
 
 pub(crate) fn teer_on_self() -> Location {
 	Location::new(0, Here)
@@ -120,6 +121,43 @@ pub(crate) fn create_reserve_asset_on_ip(
 		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
 		assert_expected_events!(
 			IntegriteePolkadot,
+			vec![
+				RuntimeEvent::AssetRegistry(
+				pallet_asset_registry::Event::ReserveAssetRegistered {
+						asset_id, ..
+					}
+				) => { asset_id: *asset_id == id, },
+			]
+		);
+	})
+}
+
+pub(crate) fn create_reserve_asset_on_ik(
+	id: u32,
+	reserve_asset_location: Location,
+	sufficient: bool,
+	prefund_accounts: Vec<(AccountId, u128)>,
+) {
+	let owner = IntegriteeKusama::account_id_of(ALICE);
+	IntegriteeKusama::force_create_asset(
+		id,
+		owner,
+		sufficient,
+		ASSET_MIN_BALANCE,
+		prefund_accounts,
+	);
+
+	IntegriteeKusama::execute_with(|| {
+		type AssetRegistry = <IntegriteeKusama as IntegriteeKusamaPallet>::AssetRegistry;
+
+		let sudo_origin = <IntegriteeKusama as Chain>::RuntimeOrigin::root();
+
+		AssetRegistry::register_reserve_asset(sudo_origin, id, reserve_asset_location)
+			.expect("Failed to register reserve asset");
+
+		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			IntegriteeKusama,
 			vec![
 				RuntimeEvent::AssetRegistry(
 				pallet_asset_registry::Event::ReserveAssetRegistered {
@@ -313,11 +351,61 @@ pub(crate) fn assert_bridge_hub_kusama_message_accepted(expected_processed: bool
 	});
 }
 
+pub(crate) fn assert_bridge_hub_polkadot_message_accepted(expected_processed: bool) {
+	BridgeHubPolkadot::execute_with(|| {
+		type RuntimeEvent = <BridgeHubPolkadot as Chain>::RuntimeEvent;
+
+		if expected_processed {
+			assert_expected_events!(
+				BridgeHubPolkadot,
+				vec![
+					// pay for bridge fees
+					RuntimeEvent::Balances(pallet_balances::Event::Burned { .. }) => {},
+					// message exported
+					// Todo: This seems to be missing upstream.
+					// RuntimeEvent::BridgePolkadotMessages(
+					// 	pallet_bridge_messages::Event::MessageAccepted { .. }
+					// ) => {},
+					// message processed successfully
+					RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+					) => {},
+				]
+			);
+		} else {
+			assert_expected_events!(
+				BridgeHubPolkadot,
+				vec![
+					RuntimeEvent::MessageQueue(pallet_message_queue::Event::Processed {
+						success: false,
+						..
+					}) => {},
+				]
+			);
+		}
+	});
+}
+
 pub(crate) fn assert_bridge_hub_polkadot_message_received() {
 	BridgeHubPolkadot::execute_with(|| {
 		type RuntimeEvent = <BridgeHubPolkadot as Chain>::RuntimeEvent;
 		assert_expected_events!(
 			BridgeHubPolkadot,
+			vec![
+				// message sent to destination
+				RuntimeEvent::XcmpQueue(
+					cumulus_pallet_xcmp_queue::Event::XcmpMessageSent { .. }
+				) => {},
+			]
+		);
+	})
+}
+
+pub(crate) fn assert_bridge_hub_kusama_message_received() {
+	BridgeHubKusama::execute_with(|| {
+		type RuntimeEvent = <BridgeHubKusama as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			BridgeHubKusama,
 			vec![
 				// message sent to destination
 				RuntimeEvent::XcmpQueue(

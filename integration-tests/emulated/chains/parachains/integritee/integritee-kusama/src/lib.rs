@@ -23,7 +23,8 @@ use frame_support::traits::OnInitialize;
 // Cumulus
 use emulated_integration_tests_common::{
 	impl_accounts_helpers_for_parachain, impl_assert_events_helpers_for_parachain,
-	impl_xcm_helpers_for_parachain, impls::Parachain, xcm_emulator::decl_test_parachains,
+	impl_assets_helpers_for_parachain, impl_xcm_helpers_for_parachain, impls::Parachain,
+	xcm_emulator::decl_test_parachains,
 };
 
 // integriteeKusama Parachain declaration
@@ -44,6 +45,8 @@ decl_test_parachains! {
 			PolkadotXcm: integritee_kusama_runtime::PolkadotXcm,
 			Balances: integritee_kusama_runtime::Balances,
 			Porteer: integritee_kusama_runtime::Porteer,
+			Assets: integritee_kusama_runtime::Assets,
+			AssetRegistry: integritee_kusama_runtime::AssetRegistry,
 		}
 	},
 }
@@ -52,3 +55,4 @@ decl_test_parachains! {
 impl_accounts_helpers_for_parachain!(IntegriteeKusama);
 impl_assert_events_helpers_for_parachain!(IntegriteeKusama);
 impl_xcm_helpers_for_parachain!(IntegriteeKusama);
+impl_assets_helpers_for_parachain!(IntegriteeKusama);

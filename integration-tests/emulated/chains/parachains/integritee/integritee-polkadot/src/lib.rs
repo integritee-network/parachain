@@ -44,6 +44,7 @@ decl_test_parachains! {
 		pallets = {
 			PolkadotXcm: integritee_polkadot_runtime::PolkadotXcm,
 			Balances: integritee_polkadot_runtime::Balances,
+			Porteer: integritee_polkadot_runtime::Porteer,
 			Assets: integritee_polkadot_runtime::Assets,
 			AssetRegistry: integritee_polkadot_runtime::AssetRegistry,
 		}
