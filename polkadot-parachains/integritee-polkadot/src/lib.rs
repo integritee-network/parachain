@@ -56,6 +56,7 @@ use frame_support::{
 	},
 	weights::ConstantMultiplier,
 };
+use frame_support::dispatch::RawOrigin;
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
@@ -785,13 +786,15 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::forward_teer;
+use integritee_parachains_common::porteer::{asset_hub_kusama_location, forward_teer, ik_sibling_v5, integritee_runtime_porteer_mint, ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, IK_FEE};
 use sp_core::hex2array;
 use xcm::{
 	latest::{Location, NetworkId},
 	prelude::{GlobalConsensus, Parachain},
 };
+use xcm::latest::{Parent, SendError};
 use xcm_builder::AliasesIntoAccountId32;
+use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
 	pub const IntegriteeKusamaLocation: Location = Location {
@@ -807,15 +810,50 @@ impl PortTokens for PortTokensToKusama {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
-	type Error = DispatchError;
+	type Error = SendError;
 
+	// Todo: Passed owned account id
 	fn port_tokens(
-		_who: &Self::AccountId,
-		_amount: Self::Balance,
-		_location: Option<Self::Location>,
+		who: &Self::AccountId,
+		amount: Self::Balance,
+		location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
-		// Todo: Fix this once we have finalized the IK -> IP direction.
-		Err(DispatchError::Other("porteer: Porting Tokens disabled"))
+		let fees = Porteer::xcm_fee_config();
+
+		let xcm1 = local_integritee_xcm(
+			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
+			IK_FEE,
+			ip_sibling_v5(),
+			ip_cousin_v5(),
+			((Parent, Parachain(1000)).into(), fees.hop1),
+			(asset_hub_kusama_location(), fees.hop2),
+			(ik_sibling_v5(), fees.hop3),
+		);
+
+		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
+		let xcm2 = local_integritee_xcm(
+			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
+			IK_FEE,
+			ip_sibling_v5(),
+			ip_cousin_v5(),
+			((Parent, Parachain(1000)).into(), fees.hop1),
+			(asset_hub_kusama_location(), fees.hop2),
+			(ik_sibling_v5(), fees.hop3),
+		);
+
+		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1.clone())).unwrap();
+
+		// Todo: Is this best practice, we could also do this with, but then we have to manually
+		// do some xcm steps on our local chain, e.g. burning assets and adding them to holding:
+		//
+		// let (ticket, delivery_fees) = xcm_config::XcmRouter::validate(
+		// &mut Some((Parent, Parachain(1000)).into()), &mut Some(xcm1),
+		// )?;
+		//
+		// xcm_config::XcmRouter::deliver(ticket)?;
+		PolkadotXcm::execute(RawOrigin::Root.into(), Box::new(VersionedXcm::from(xcm2)), weight)
+			.unwrap();
+		Ok(())
 	}
 }
 

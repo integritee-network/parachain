@@ -61,6 +61,7 @@ pub fn integritee_runtime_porteer_mint(
 
 pub const INTEGRITEE_KUSAMA_PARA_ID: u32 = 2015;
 pub const INTEGRITEE_POLKADOT_PARA_ID: u32 = 2039;
+pub const ASSET_HUB_KUSAMA_PARA_ID: u32 = 1000;
 pub const ASSET_HUB_POLKADOT_PARA_ID: u32 = 1000;
 
 pub const PALLET_PORTEER_INDEX: u32 = 56;
@@ -78,9 +79,18 @@ pub fn ip_sibling_v5() -> Location {
 	Location::new(1, [Parachain(INTEGRITEE_POLKADOT_PARA_ID)])
 }
 
+pub fn ip_cousin_v5() -> Location {
+	Location::new(2, [GlobalConsensus(Polkadot), Parachain(INTEGRITEE_POLKADOT_PARA_ID)])
+}
+
+pub fn asset_hub_kusama_location() -> Location {
+	Location::new(2, [GlobalConsensus(Kusama), Parachain(ASSET_HUB_KUSAMA_PARA_ID)])
+}
+
 pub fn asset_hub_polkadot_location() -> Location {
 	Location::new(2, [GlobalConsensus(Polkadot), Parachain(ASSET_HUB_POLKADOT_PARA_ID)])
 }
+
 
 /// XCM as it is being sent from the local Integritee chain to its cousin.
 pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
