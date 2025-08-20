@@ -875,10 +875,16 @@ impl ForwardPortedTokens for PortTokensToPolkadot {
 		amount: Self::Balance,
 		location: Self::Location,
 	) -> Result<(), Self::Error> {
+		let forward_amount = sp_std::cmp::min(
+			amount,
+			Balances::free_balance(who)
+				.saturating_sub(ExistentialDeposit::get().saturating_mul(2u32.into())),
+		);
+
 		forward_teer::<Runtime, AliasesIntoAccountId32<AnyNetwork, AccountId>>(
 			who.clone(),
 			location,
-			amount,
+			forward_amount,
 		)
 	}
 }
