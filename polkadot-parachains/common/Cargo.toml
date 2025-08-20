@@ -36,6 +36,7 @@ polkadot-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
 xcm = { workspace = true }
 xcm-executor = { workspace = true }
+xcm-runtime-apis = { workspace = true }
 
 [features]
 default = ["std"]
@@ -59,4 +60,5 @@ std = [
     "sp-std/std",
     "xcm-executor/std",
     "xcm/std",
+    "xcm-runtime-apis/std",
 ]

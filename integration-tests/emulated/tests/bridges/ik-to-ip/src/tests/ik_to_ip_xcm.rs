@@ -9,7 +9,11 @@ use crate::{
 use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
-		genesis::AssetHubLocation, integritee_kusama_runtime::TEER,
+		genesis::AssetHubLocation,
+		integritee_kusama_runtime::{
+			integritee_common::porteer::{burn_local_xcm, weigh_xcm},
+			TEER,
+		},
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
@@ -111,23 +115,22 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	if forward_teer_location.is_some() {
 		assert_asset_hub_polkadot_tokens_forwarded(token_owner.clone());
-
 		// The forwarder makes sure that there are at least 2 ED on the account, but then some fees have to be paid.
 		if fund_token_holder_on_ip {
-			// Todo: how to compute the local fees
-			// assert_eq!(
-			// 	IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-			// 	token_owner_balance_before_on_ip
-			// );
+			let local_fee = <IntegriteePolkadot as TestExt>::execute_with(|| {
+				type Runtime = <IntegriteePolkadot as Chain>::Runtime;
+				weigh_xcm::<Runtime>(burn_local_xcm(0)).unwrap()
+			});
+
+			assert_eq!(
+				IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+				token_owner_balance_before_on_ip
+			);
 		} else {
 			// Ensure that token forwarding respects the ED.
-			assert!(
-				IntegriteePolkadot::account_data_of(token_owner.clone()).free <
-					2 * ExistentialDeposit::get()
-			);
-			assert!(
-				IntegriteePolkadot::account_data_of(token_owner.clone()).free >
-					ExistentialDeposit::get()
+			assert_eq!(
+				IntegriteePolkadot::account_data_of(token_owner.clone()).free,
+				ExistentialDeposit::get()
 			);
 		}
 	} else {

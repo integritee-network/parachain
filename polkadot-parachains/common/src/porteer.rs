@@ -1,5 +1,5 @@
-use crate::{xcm_config::AccountIdOf, AccountId, Balance};
-use frame_support::pallet_prelude::OriginTrait;
+use crate::{fee::WeightToFee, xcm_config::AccountIdOf, AccountId, Balance};
+use frame_support::{pallet_prelude::OriginTrait, weights::WeightToFee as _};
 use pallet_porteer::XcmFeeParams;
 use parity_scale_codec::Encode;
 use sp_runtime::{traits::TryConvert, DispatchError};
@@ -11,11 +11,13 @@ use xcm::{
 		Location, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
 	},
 	prelude::{
-		BurnAsset, DepositAsset, Fungible, GlobalConsensus, Here, InitiateTransfer, Kusama,
-		Parachain, Polkadot, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
+		AllCounted, BurnAsset, BuyExecution, ClearOrigin, DepositAsset, Fungible, GlobalConsensus,
+		Here, InitiateTransfer, Kusama, Parachain, Polkadot, ReceiveTeleportedAsset, RefundSurplus,
+		SetAppendix, Transact, Wild, WithdrawAsset,
 	},
+	VersionedXcm,
 };
-use xcm::prelude::{AllCounted, BuyExecution, ClearOrigin, ReceiveTeleportedAsset, Wild};
+use xcm_runtime_apis::fees;
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
@@ -135,22 +137,18 @@ pub fn burn_local_xcm<Call>(amount: Balance) -> Xcm<Call> {
 	])
 }
 
-pub fn receive_teleported_asset<Call,>(
-	asset: Asset,
-	beneficiary: Location,
-) -> Xcm<Call> {
+pub fn receive_teleported_asset<Call>(asset: Asset, beneficiary: Location) -> Xcm<Call> {
 	Xcm(vec![
 		ReceiveTeleportedAsset(asset.clone().into()),
 		ClearOrigin,
-		BuyExecution {
-			fees: asset,
-			weight_limit: WeightLimit::Unlimited,
-		},
-		DepositAsset {
-			assets: Wild(AllCounted(1)),
-			beneficiary
-		}
+		BuyExecution { fees: asset, weight_limit: WeightLimit::Unlimited },
+		DepositAsset { assets: Wild(AllCounted(1)), beneficiary },
 	])
+}
+
+pub fn weigh_xcm<T: pallet_xcm::Config>(xcm: Xcm<()>) -> Result<Balance, fees::Error> {
+	let w = pallet_xcm::Pallet::<T>::query_xcm_weight(VersionedXcm::V5(xcm))?;
+	Ok(WeightToFee::weight_to_fee(&w))
 }
 
 /// Nested XCM to be executed as `remote_xcm` from within `local_integritee_xcm` on the
