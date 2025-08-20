@@ -17,7 +17,7 @@ use kusama_polkadot_system_emulated_network::{
         integritee_kusama_runtime::TEER,
     },
 };
-use crate::tests::{bridged_dot_at_ah_kusama, create_reserve_asset_on_ik};
+use crate::tests::{asset_hub_kusama_location, bridge_hub_kusama_location, bridged_dot_at_ah_kusama, create_reserve_asset_on_ik, ip_cousin_v5};
 
 pub(crate) const KSM: u128 = 1_000_000_000_000;
 pub(crate) const DOT: u128 = 10_000_000_000;
@@ -54,10 +54,17 @@ fn ip_local_root() -> AccountId {
 }
 
 fn setup_xcm_versions() {
+	// For IK -> IP
 	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
 	AssetHubPolkadot::force_xcm_version(ip_sibling_v5(), XCM_VERSION);
 	AssetHubPolkadot::force_xcm_version(ik_cousin_v5(), XCM_VERSION);
 	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
+
+	// For IP -> IK
+	AssetHubPolkadot::force_xcm_version(asset_hub_kusama_location(), XCM_VERSION);
+	AssetHubKusama::force_xcm_version(ik_sibling_v5(), XCM_VERSION);
+	AssetHubKusama::force_xcm_version(ip_cousin_v5(), XCM_VERSION);
+	BridgeHubPolkadot::force_xcm_version(bridge_hub_kusama_location(), XCM_VERSION);
 }
 
 pub(crate) fn ik_to_ip_bridge_setup() {
@@ -92,18 +99,23 @@ pub(crate) fn ik_to_ip_bridge_setup() {
 pub(crate) fn ip_to_ik_bridge_setup() {
 	setup_xcm_versions();
 
+	let ip_local_root = ip_local_root();
 	let ip_sibling_acc = ip_sibling_account();
 	let ip_cousin_acc = ip_cousin_account();
+
+	println!("IP Local root: {:?}", ip_local_root);
+	println!("IP Sibling: {:?}", &ip_sibling_acc);
+	println!("IP Cousin: {:?}", &ip_cousin_acc);
 
 	// Fund accounts
 
 	// fund the KAH's SA on KBH for paying bridge transport fees
-	BridgeHubPolkadot::fund_para_sovereign(AssetHubPolkadot::para_id(), 10 * DOT);
+	BridgeHubPolkadot::fund_para_sovereign(AssetHubPolkadot::para_id(), 100 * DOT);
 
-	AssetHubPolkadot::fund_accounts(vec![(ip_sibling_acc, 100 * DOT)]);
+	AssetHubPolkadot::fund_accounts(vec![(ip_sibling_acc, 100000 * DOT)]);
 	AssetHubKusama::fund_accounts(vec![(ip_cousin_acc.clone(), 100 * KSM)]);
 
-	IntegriteePolkadot::fund_accounts(vec![(ip_local_root(), 100 * TEER)]);
+	IntegriteePolkadot::fund_accounts(vec![(ip_local_root, 100_000 * TEER)]);
 
 	create_foreign_on_ah_polkadot(ip_sibling(), false, vec![]);
 	set_up_pool_with_dot_on_ah_polkadot(ip_sibling(), true);

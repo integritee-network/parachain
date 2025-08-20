@@ -18,7 +18,7 @@ use xcm::{
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
-pub const AHP_FEE: u128 = 300000000000;
+pub const AHP_FEE: u128 = 3000000000000;
 pub const IP_FEE: u128 = 1000000000000;
 
 pub const DEFAULT_XCM_FEES_IK_PERSPECTIVE: XcmFeeParams<Balance> =

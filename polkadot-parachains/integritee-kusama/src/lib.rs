@@ -787,10 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::{
-	asset_hub_polkadot_location, forward_teer, ik_cousin_v5, ik_sibling_v5,
-	integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, IK_FEE,
-};
+use integritee_parachains_common::porteer::{asset_hub_polkadot_location, forward_teer, ik_cousin_v5, ik_sibling_v5, integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, AHK_FEE, IK_FEE};
 use sp_core::hex2array;
 use xcm::{
 	latest::{Location, NetworkId, Parent, SendError},
@@ -825,7 +822,7 @@ impl PortTokens for PortTokensToPolkadot {
 
 		let xcm1 = local_integritee_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
-			IK_FEE,
+			IK_FEE + AHK_FEE,
 			ik_sibling_v5(),
 			ik_cousin_v5(),
 			((Parent, Parachain(1000)).into(), fees.hop1),
@@ -836,7 +833,7 @@ impl PortTokens for PortTokensToPolkadot {
 		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
 		let xcm2 = local_integritee_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location),
-			IK_FEE,
+			IK_FEE + AHK_FEE,
 			ik_sibling_v5(),
 			ik_cousin_v5(),
 			((Parent, Parachain(1000)).into(), fees.hop1),
