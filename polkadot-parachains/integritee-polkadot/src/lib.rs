@@ -44,7 +44,9 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 use frame_support::{
-	derive_impl, ord_parameter_types,
+	derive_impl,
+	dispatch::RawOrigin,
+	ord_parameter_types,
 	traits::{
 		fungible::{Credit, HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
 		tokens::{
@@ -56,7 +58,6 @@ use frame_support::{
 	},
 	weights::ConstantMultiplier,
 };
-use frame_support::dispatch::RawOrigin;
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
@@ -786,13 +787,15 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::{asset_hub_kusama_location, forward_teer, ik_sibling_v5, integritee_runtime_porteer_mint, ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, IK_FEE};
+use integritee_parachains_common::porteer::{
+	asset_hub_kusama_location, forward_teer, ik_sibling_v5, integritee_runtime_porteer_mint,
+	ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, IK_FEE,
+};
 use sp_core::hex2array;
 use xcm::{
-	latest::{Location, NetworkId},
+	latest::{Location, NetworkId, Parent, SendError},
 	prelude::{GlobalConsensus, Parachain},
 };
-use xcm::latest::{Parent, SendError};
 use xcm_builder::AliasesIntoAccountId32;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
@@ -912,7 +915,7 @@ pub struct PorteerBenchmarkHelper;
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_porteer::BenchmarkHelper<Location> for PorteerBenchmarkHelper {
 	fn get_whitelisted_location() -> Location {
-		use xcm::prelude::Junctions;
+		use xcm::prelude::{Junctions, Parachain};
 		Location::new(1, Junctions::X1([Parachain(1000u32.into())].into()))
 	}
 }
@@ -1327,6 +1330,7 @@ mod benches {
 		[pallet_message_queue, MessageQueue]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
+		[pallet_porteer, Porteer]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
 		[pallet_session, SessionBench::<Runtime>]

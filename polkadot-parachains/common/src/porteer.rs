@@ -91,7 +91,6 @@ pub fn asset_hub_polkadot_location() -> Location {
 	Location::new(2, [GlobalConsensus(Polkadot), Parachain(ASSET_HUB_POLKADOT_PARA_ID)])
 }
 
-
 /// XCM as it is being sent from the local Integritee chain to its cousin.
 pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 	call: IntegriteePolkadotCall,

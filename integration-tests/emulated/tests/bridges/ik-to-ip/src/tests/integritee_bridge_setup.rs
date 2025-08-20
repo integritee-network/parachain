@@ -26,10 +26,21 @@ fn ik_sibling_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
 }
 
+fn ip_sibling_account() -> AccountId {
+	AssetHubPolkadot::sovereign_account_id_of(ip_sibling_v5())
+}
+
 fn ik_cousin_account() -> AccountId {
 	AssetHubPolkadot::sovereign_account_of_parachain_on_other_global_consensus(
 		KusamaId,
 		IntegriteeKusama::para_id(),
+	)
+}
+
+fn ip_cousin_account() -> AccountId {
+	AssetHubKusama::sovereign_account_of_parachain_on_other_global_consensus(
+		Polkadot,
+		IntegriteePolkadot::para_id(),
 	)
 }
 
@@ -81,8 +92,8 @@ pub(crate) fn ik_to_ip_bridge_setup() {
 pub(crate) fn ip_to_ik_bridge_setup() {
 	setup_xcm_versions();
 
-	let ip_sibling_acc = ik_sibling_account();
-	let ip_cousin_acc = ik_cousin_account();
+	let ip_sibling_acc = ip_sibling_account();
+	let ip_cousin_acc = ip_cousin_account();
 
 	// Fund accounts
 
