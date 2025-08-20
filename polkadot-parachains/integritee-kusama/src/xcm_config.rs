@@ -317,7 +317,7 @@ pub type Traders = (
 	// for KSM aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
-		XcmFeesTo32ByteAccount<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
+		XcmFeesTo32ByteAccount<ReservedFungiblesTransactor, AccountId, TreasuryAccount>,
 	>,
 );
 
