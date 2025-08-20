@@ -22,22 +22,22 @@ use crate::tests::{asset_hub_kusama_location, bridge_hub_kusama_location, bridge
 pub(crate) const KSM: u128 = 1_000_000_000_000;
 pub(crate) const DOT: u128 = 10_000_000_000;
 
-fn ik_sibling_account() -> AccountId {
+pub fn ik_sibling_account() -> AccountId {
 	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
 }
 
-fn ip_sibling_account() -> AccountId {
+pub fn ip_sibling_account() -> AccountId {
 	AssetHubPolkadot::sovereign_account_id_of(ip_sibling_v5())
 }
 
-fn ik_cousin_account() -> AccountId {
+pub fn ik_cousin_account() -> AccountId {
 	AssetHubPolkadot::sovereign_account_of_parachain_on_other_global_consensus(
 		KusamaId,
 		IntegriteeKusama::para_id(),
 	)
 }
 
-fn ip_cousin_account() -> AccountId {
+pub fn ip_cousin_account() -> AccountId {
 	AssetHubKusama::sovereign_account_of_parachain_on_other_global_consensus(
 		Polkadot,
 		IntegriteePolkadot::para_id(),

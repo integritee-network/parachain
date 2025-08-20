@@ -35,10 +35,7 @@ pub(crate) fn ik_sibling_v5() -> Location {
 }
 
 pub(crate) fn ik_cousin_v5() -> Location {
-	Location::new(
-		2,
-		[GlobalConsensus(Kusama), Parachain(IntegriteeKusama::para_id().into())],
-	)
+	Location::new(2, [GlobalConsensus(Kusama), Parachain(IntegriteeKusama::para_id().into())])
 }
 
 pub(crate) fn ip_sibling() -> xcm::v4::Location {
@@ -50,10 +47,7 @@ pub(crate) fn ip_sibling_v5() -> Location {
 }
 
 pub(crate) fn ip_cousin_v5() -> Location {
-	Location::new(
-		2,
-		[GlobalConsensus(Polkadot), Parachain(IntegriteePolkadot::para_id().into())],
-	)
+	Location::new(2, [GlobalConsensus(Polkadot), Parachain(IntegriteePolkadot::para_id().into())])
 }
 
 pub(crate) fn asset_hub_kusama_location() -> Location {

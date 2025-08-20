@@ -787,7 +787,10 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::{asset_hub_polkadot_location, forward_teer, ik_cousin_v5, ik_sibling_v5, integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, AHK_FEE, IK_FEE};
+use integritee_parachains_common::porteer::{
+	asset_hub_polkadot_location, forward_teer, ik_cousin_v5, ik_sibling_v5,
+	integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, AHK_FEE, IK_FEE,
+};
 use sp_core::hex2array;
 use xcm::{
 	latest::{Location, NetworkId, Parent, SendError},
