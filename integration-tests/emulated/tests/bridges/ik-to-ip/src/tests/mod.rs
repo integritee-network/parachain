@@ -19,6 +19,7 @@ use crate::*;
 mod ik_to_ip_xcm;
 mod register_bridged_assets;
 mod send_xcm;
+mod integritee_bridge_setup;
 
 pub(crate) fn teer_on_self() -> Location {
 	Location::new(0, Here)
@@ -325,4 +326,33 @@ pub(crate) fn assert_bridge_hub_polkadot_message_received() {
 			]
 		);
 	})
+}
+
+fn assert_asset_hub_kusama_message_processed() {
+	<AssetHubKusama as TestExt>::execute_with(|| {
+		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubKusama,
+			vec![
+				// message processed successfully
+				RuntimeEvent::MessageQueue(
+						pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+			]
+		);
+	});
+}
+
+fn assert_asset_hub_polkadot_message_processed() {
+	AssetHubPolkadot::execute_with(|| {
+		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
+		assert_expected_events!(
+			AssetHubPolkadot,
+			vec![
+				RuntimeEvent::MessageQueue(
+					pallet_message_queue::Event::Processed { success: true, .. }
+				) => {},
+			]
+		);
+	});
 }

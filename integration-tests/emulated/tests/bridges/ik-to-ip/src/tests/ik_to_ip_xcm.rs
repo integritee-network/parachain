@@ -1,17 +1,12 @@
 use crate::{
 	tests::{
+		assert_asset_hub_kusama_message_processed, assert_asset_hub_polkadot_message_processed,
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
-		asset_hub_polkadot_location, bridge_hub_polkadot_location, bridged_ksm_at_ah_polkadot,
-		create_foreign_on_ah_kusama, create_foreign_on_ah_polkadot, create_reserve_asset_on_ip,
-		ik_cousin_v5, ik_sibling, ik_sibling_v5, ip_sibling, ip_sibling_v5,
-		set_up_pool_with_dot_on_ah_polkadot, set_up_pool_with_ksm_on_ah_kusama, teer_on_self,
+		integritee_bridge_setup::{ik_to_ip_bridge_setup, DOT},
 	},
 	*,
 };
-use emulated_integration_tests_common::{
-	impls::Parachain,
-	xcm_emulator::{log, ConvertLocation},
-};
+use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation, integritee_kusama_runtime::TEER,
@@ -20,21 +15,6 @@ use kusama_polkadot_system_emulated_network::{
 };
 use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
-
-fn ik_sibling_account() -> AccountId {
-	AssetHubKusama::sovereign_account_id_of(ik_sibling_v5())
-}
-
-fn ik_cousin_account() -> AccountId {
-	AssetHubPolkadot::sovereign_account_of_parachain_on_other_global_consensus(
-		KusamaId,
-		IntegriteeKusama::para_id(),
-	)
-}
-
-fn ik_local_root() -> AccountId {
-	<IntegriteeKusama as Parachain>::LocationToAccountId::convert_location(&teer_on_self()).unwrap()
-}
 
 #[test]
 fn ik_to_ip_xcm_works_without_forwarding() {
@@ -55,9 +35,6 @@ fn ik_to_ip_xcm_works_without_forwarding_with_nonexisting_ip_beneficiary() {
 fn ik_to_ip_xcm_works_with_forwarding_with_nonexisting_ip_beneficiary() {
 	ik_to_pk_xcm(Some(AssetHubLocation::get()), false)
 }
-
-const KSM: u128 = 1_000_000_000_000;
-const DOT: u128 = 10_000_000_000;
 
 fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip: bool) {
 	ik_to_ip_bridge_setup();
@@ -159,68 +136,6 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 			token_owner_balance_before_on_ip + port_tokens_amount
 		);
 	}
-}
-
-fn ik_to_ip_bridge_setup() {
-	// Set XCM versions
-	AssetHubKusama::force_xcm_version(asset_hub_polkadot_location(), XCM_VERSION);
-	AssetHubPolkadot::force_xcm_version(ip_sibling_v5(), XCM_VERSION);
-	AssetHubPolkadot::force_xcm_version(ik_cousin_v5(), XCM_VERSION);
-	BridgeHubKusama::force_xcm_version(bridge_hub_polkadot_location(), XCM_VERSION);
-
-	let ik_sibling_acc = ik_sibling_account();
-	let ik_cousin_acc = ik_cousin_account();
-
-	// Fund accounts
-
-	// fund the KAH's SA on KBH for paying bridge transport fees
-	BridgeHubKusama::fund_para_sovereign(AssetHubKusama::para_id(), 10 * KSM);
-
-	AssetHubKusama::fund_accounts(vec![(ik_sibling_acc, 100 * KSM)]);
-	AssetHubPolkadot::fund_accounts(vec![(ik_cousin_acc.clone(), 100 * DOT)]);
-
-	IntegriteeKusama::fund_accounts(vec![(ik_local_root(), 100 * TEER)]);
-
-	create_foreign_on_ah_kusama(ik_sibling(), false, vec![]);
-	set_up_pool_with_ksm_on_ah_kusama(ik_sibling(), true);
-
-	let bridged_ksm_at_ah_polkadot = bridged_ksm_at_ah_polkadot();
-	create_foreign_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true, vec![]);
-	set_up_pool_with_dot_on_ah_polkadot(bridged_ksm_at_ah_polkadot.clone(), true);
-
-	create_foreign_on_ah_polkadot(ip_sibling(), false, vec![]);
-	set_up_pool_with_dot_on_ah_polkadot(ip_sibling(), true);
-
-	create_reserve_asset_on_ip(0, Parent.into(), true, vec![]);
-}
-
-fn assert_asset_hub_kusama_message_processed() {
-	<AssetHubKusama as TestExt>::execute_with(|| {
-		type RuntimeEvent = <AssetHubKusama as Chain>::RuntimeEvent;
-		assert_expected_events!(
-			AssetHubKusama,
-			vec![
-				// message processed successfully
-				RuntimeEvent::MessageQueue(
-						pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-			]
-		);
-	});
-}
-
-fn assert_asset_hub_polkadot_message_processed() {
-	AssetHubPolkadot::execute_with(|| {
-		type RuntimeEvent = <AssetHubPolkadot as Chain>::RuntimeEvent;
-		assert_expected_events!(
-			AssetHubPolkadot,
-			vec![
-				RuntimeEvent::MessageQueue(
-					pallet_message_queue::Event::Processed { success: true, .. }
-				) => {},
-			]
-		);
-	});
 }
 
 fn assert_asset_hub_polkadot_tokens_forwarded(who: AccountId) {
