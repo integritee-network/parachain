@@ -111,11 +111,27 @@ pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
 	destination: Location,
 ) -> Result<(), XcmError> {
 	let xcm = burn_asset_xcm(who.clone(), asset.clone(), local_fee);
+	let remote_xcm = receive_teleported_asset(asset.into(), beneficiary);
 
-	let mut hash = xcm.using_encoded(sp_io::hashing::blake2_256);
-	let outcome = XcmExecutor::<XcmConfig>::prepare_and_execute(
+	execute_local_and_remote_xcm::<XcmConfig, <XcmConfig as xcm_executor::Config>::RuntimeCall>(
 		who,
 		xcm,
+		destination,
+		remote_xcm,
+	)?;
+	Ok(())
+}
+
+pub fn execute_local_and_remote_xcm<XcmConfig: xcm_executor::Config<RuntimeCall = Call>, Call>(
+	who: Location,
+	local_xcm: Xcm<Call>,
+	destination: Location,
+	remote_xcm: Xcm<()>,
+) -> Result<(), XcmError> {
+	let mut hash = local_xcm.using_encoded(sp_io::hashing::blake2_256);
+	let outcome = XcmExecutor::<XcmConfig>::prepare_and_execute(
+		who,
+		local_xcm,
 		&mut hash,
 		Weight::MAX,
 		Weight::zero(),
@@ -125,8 +141,6 @@ pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
 		log::error!("Local execution is incomplete: {:?}", error);
 		error
 	})?;
-
-	let remote_xcm = receive_teleported_asset(asset.into(), beneficiary);
 
 	let (ticket, _delivery_fees) = <XcmConfig as xcm_executor::Config>::XcmSender::validate(
 		&mut Some(destination),
