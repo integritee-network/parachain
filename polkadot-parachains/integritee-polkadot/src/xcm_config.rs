@@ -59,7 +59,7 @@ use xcm_builder::{
 	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
 	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
-	WithComputedOrigin,
+	WithComputedOrigin, WithUniqueTopic,
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
@@ -364,7 +364,7 @@ pub type AssetTransactors =
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = xcm_builder::WithUniqueTopic<(
+pub type XcmRouter = WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
 	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm, ()>,
 	// ..and XCMP to communicate with the sibling chains.
@@ -460,6 +460,7 @@ pub type PriceForSiblingParachainDelivery = polkadot_runtime_common::xcm_sender:
 	TransactionByteFee,
 	XcmpQueue,
 >;
+
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ChannelInfo = ParachainSystem;
