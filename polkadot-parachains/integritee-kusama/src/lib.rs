@@ -840,7 +840,8 @@ impl PortTokens for PortTokensToPolkadot {
 		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
 		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
-		let ah_sibling_fee = (AssetHubLocation::get(), fees.hop1);
+		let ah_sibling_fee =
+			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), fees.hop1);
 
 		let local_xcm =
 			burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
