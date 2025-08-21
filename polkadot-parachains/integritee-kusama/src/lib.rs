@@ -921,7 +921,6 @@ impl pallet_porteer::Config for Runtime {
 	type WeightInfo = ();
 	type PorteerAdmin = EnsureRootOrMoreThanHalfTechnicalCommittee;
 	type HeartBeatTimeout = HeartBeatTimeout;
-	// Todo: Do we want to allow to transfer tokens back?
 	type TokenSenderLocationOrigin = EitherOfDiverse<
 		EnsureSignedBy<IntegriteePolkadotSovereignAccount, AccountId32>,
 		EnsureRoot<AccountId32>,
@@ -1524,7 +1523,7 @@ impl_runtime_apis! {
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
-// Todo: When we upgrade the sdk we can replace the following function's body with:
+        // Todo: When we upgrade the sdk we can replace the following function's body with:
 		// 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
 		// 			use crate::xcm_config::XcmConfig;
 		// 			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
