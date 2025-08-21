@@ -24,6 +24,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 extern crate alloc;
+use crate::porteer::{IntegriteeKusamaSovereignAccount, PortTokensToKusama};
 use alloc::borrow::Cow;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use cumulus_primitives_core::AggregateMessageOrigin;
@@ -103,15 +104,13 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use xcm::{
-	latest::prelude::AssetId, Version as XcmVersion, VersionedAssetId, VersionedAssets,
-	VersionedLocation, VersionedXcm,
+	latest::prelude::AssetId, prelude::Location, Version as XcmVersion, VersionedAssetId,
+	VersionedAssets, VersionedLocation, VersionedXcm,
 };
-use xcm::prelude::Location;
 use xcm_runtime_apis::{
 	dry_run::{CallDryRunEffects, Error as XcmDryRunApiError, XcmDryRunEffects},
 	fees::Error as XcmPaymentApiError,
 };
-use crate::porteer::{IntegriteeKusamaSovereignAccount, PortTokensToKusama};
 
 mod helpers;
 mod weights;
@@ -119,9 +118,9 @@ mod weights;
 mod migrations;
 pub mod xcm_config;
 
+mod porteer;
 #[cfg(test)]
 mod tests;
-mod porteer;
 
 pub type SessionHandlers = ();
 
