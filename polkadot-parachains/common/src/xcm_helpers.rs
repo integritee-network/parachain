@@ -60,7 +60,7 @@ pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
     destination: Location,
 ) -> Result<(), XcmError> {
     let xcm = burn_asset_xcm(who.clone(), asset.clone(), local_fee);
-    let remote_xcm = receive_teleported_asset(asset.into(), beneficiary);
+    let remote_xcm = receive_teleported_asset(asset, beneficiary);
 
     execute_local_and_remote_xcm::<XcmConfig, <XcmConfig as xcm_executor::Config>::RuntimeCall>(
         who,
@@ -86,9 +86,8 @@ pub fn execute_local_and_remote_xcm<XcmConfig: xcm_executor::Config<RuntimeCall 
         Weight::zero(),
     );
 
-    outcome.ensure_complete().map_err(|error| {
+    outcome.ensure_complete().inspect_err(|&error| {
         log::error!("Local execution is incomplete: {:?}", error);
-        error
     })?;
 
     let (ticket, _delivery_fees) = <XcmConfig as xcm_executor::Config>::XcmSender::validate(

@@ -101,7 +101,7 @@ pub fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 ) -> Xcm<Call> {
 	Xcm(vec![
 		ReceiveTeleportedAsset(teleported_asset.clone().into()),
-		PayFees { asset: teleported_asset.into() },
+		PayFees { asset: teleported_asset },
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
 			DepositAsset {

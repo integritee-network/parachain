@@ -461,13 +461,11 @@ fn query_integritee_kusama_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
 
 		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).unwrap();
 
-		let local_fee = Runtime::query_weight_to_asset_fee(
+		Runtime::query_weight_to_asset_fee(
 			local_weight,
 			VersionedAssetId::from(AssetId(Location::here())),
 		)
-		.unwrap();
-
-		local_fee
+		.unwrap()
 	})
 }
 
@@ -477,12 +475,9 @@ fn query_integritee_polkadot_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
 
 		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).unwrap();
 
-		let local_fee = Runtime::query_weight_to_asset_fee(
+		Runtime::query_weight_to_asset_fee(
 			local_weight,
 			VersionedAssetId::from(AssetId(Location::here())),
-		)
-		.unwrap();
-
-		local_fee
+		).unwrap()
 	})
 }
