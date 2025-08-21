@@ -828,20 +828,13 @@ impl PortTokens for PortTokensToKusama {
 		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
 		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
-		let port_tokens_amount = sp_std::cmp::min(
-			amount,
-			Balances::free_balance(who)
-				.saturating_sub(ExistentialDeposit::get())
-				.saturating_sub(local_fee),
-		);
+		let asset_hub_sibling_fee =
+			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), fees.hop1);
 
-		let asset =
-			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), port_tokens_amount);
-
-		let local_xcm = burn_asset_xcm(who_location.clone(), asset.clone().into(), local_fee);
+		let local_xcm = burn_asset_xcm(who_location.clone(), asset_hub_sibling_fee.clone().into(), local_fee);
 		let remote_xcm = ah_sibling_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
-			asset.into(),
+			asset_hub_sibling_fee.into(),
 			ip_sibling_v5(),
 			ip_cousin_v5(),
 			(asset_hub_kusama_location(), fees.hop2),

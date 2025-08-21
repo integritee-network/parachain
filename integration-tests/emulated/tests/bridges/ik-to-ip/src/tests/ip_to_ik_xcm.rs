@@ -112,9 +112,10 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	let xcm = burn_native_xcm(Location::here(), 0, 0);
 	let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
+	let ah_sibling_fee = query_integritee_polkadot_ah_sibling_remote_fee();
 	assert_eq!(
 		IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_on_ip - port_tokens_amount - local_fee
+		token_owner_balance_before_on_ip - port_tokens_amount - local_fee - ah_sibling_fee
 	);
 
 	if forward_teer_location.is_some() {
@@ -198,4 +199,11 @@ fn assert_integritee_kusama_tokens_minted(
 			);
 		}
 	});
+}
+
+fn query_integritee_polkadot_ah_sibling_remote_fee() -> Balance {
+	<IntegriteePolkadot as TestExt>::execute_with(|| {
+		type Porteer = <IntegriteePolkadot as IntegriteePolkadotPallet>::Porteer;
+		Porteer::xcm_fee_config().hop1
+	})
 }
