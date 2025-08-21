@@ -787,7 +787,7 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 parameter_types! {
-	pub const HeartBeatTimeout: BlockNumber = 10;
+	pub const HeartBeatTimeout: Moment = 10;
 }
 
 impl pallet_porteer::Config for Runtime {
