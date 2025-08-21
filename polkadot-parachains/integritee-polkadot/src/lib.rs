@@ -893,7 +893,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 	fn forward_ported_tokens(
 		who: &Self::AccountId,
 		amount: Self::Balance,
-		location: Self::Location,
+		destination: Self::Location,
 	) -> Result<(), Self::Error> {
 		let who_location = AccountIdToLocation::convert(who.clone());
 		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
@@ -916,7 +916,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 			beneficiary_location,
 			asset.into(),
 			local_fee,
-			location,
+			destination,
 		)?;
 		Ok(())
 	}

@@ -1,9 +1,8 @@
-use crate::{xcm_config::AccountIdOf, AccountId, Balance};
-use frame_support::pallet_prelude::{OriginTrait, Weight};
+use crate::{AccountId, Balance};
+use frame_support::pallet_prelude::Weight;
 use pallet_porteer::XcmFeeParams;
 use parity_scale_codec::Encode;
-use sp_runtime::{traits::TryConvert, DispatchError};
-use sp_std::{boxed::Box, vec};
+use sp_std::vec;
 use xcm::{
 	latest::{
 		Asset, AssetFilter,
@@ -14,9 +13,9 @@ use xcm::{
 		AllCounted, BurnAsset, BuyExecution, ClearOrigin, DepositAsset, ExecuteXcm, Fungible,
 		GlobalConsensus, Here, InitiateTransfer, Kusama, Parachain, PayFees, Polkadot,
 		ReceiveTeleportedAsset, RefundSurplus, SendXcm, SetAppendix, Transact, Wild, WithdrawAsset,
+		XcmError,
 	},
 };
-use xcm::prelude::XcmError;
 use xcm_executor::XcmExecutor;
 
 pub const IK_FEE: u128 = 1000000000000;
@@ -29,25 +28,6 @@ pub const DEFAULT_XCM_FEES_IK_PERSPECTIVE: XcmFeeParams<Balance> =
 
 pub const DEFAULT_XCM_FEES_IP_PERSPECTIVE: XcmFeeParams<Balance> =
 	XcmFeeParams { hop1: AHP_FEE, hop2: AHK_FEE, hop3: IK_FEE };
-
-pub fn forward_teer<
-	T: pallet_xcm::Config + frame_system::Config,
-	AccountIdToLocation: for<'a> TryConvert<&'a AccountIdOf<T>, Location>,
->(
-	who: AccountIdOf<T>,
-	destination: Location,
-	amount: Balance,
-) -> Result<(), DispatchError> {
-	let beneficiary_location = AccountIdToLocation::try_convert(&who).unwrap();
-	pallet_xcm::Pallet::<T>::transfer_assets(
-		<T as frame_system::Config>::RuntimeOrigin::signed(who.clone()),
-		Box::new(destination.into_versioned()),
-		Box::new(beneficiary_location.into()),
-		Box::new(vec![Asset { id: Here.into(), fun: Fungible(amount) }].into()),
-		0,
-		WeightLimit::Unlimited,
-	)
-}
 
 /// The porteer::mint call used by both runtimes.
 ///
