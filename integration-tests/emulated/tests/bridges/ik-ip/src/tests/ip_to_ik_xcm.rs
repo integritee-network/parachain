@@ -123,8 +123,8 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	// Assert before and after balances
 
-	// Note: XCM fees are taken from the Integritee's sovereign account
 	// Todo: Assert Sovereign Account balances on the different chains
+	// https://github.com/integritee-network/parachain/issues/337
 
 	let xcm = burn_native_xcm(Location::here(), 0, 0);
 	let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
