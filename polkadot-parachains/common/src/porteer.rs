@@ -74,40 +74,6 @@ pub fn asset_hub_polkadot_location() -> Location {
 	Location::new(2, [GlobalConsensus(Polkadot), Parachain(ASSET_HUB_POLKADOT_PARA_ID)])
 }
 
-/// XCM as it is being sent from the local Integritee chain to its cousin.
-pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
-	call: IntegriteePolkadotCall,
-	local_fee: Balance,
-	local_as_sibling: Location,
-	local_as_cousin: Location,
-	ah_sibling: (Location, Balance),
-	ah_cousin: (Location, Balance),
-	integritee_cousin_as_sibling: (Location, Balance),
-) -> Xcm<Call> {
-	Xcm(vec![
-		// Assume that we always pay in native for now
-		WithdrawAsset((Here, Fungible(local_fee + ah_sibling.1)).into()),
-		SetAppendix(Xcm(vec![
-			RefundSurplus,
-			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: Here.into() },
-		])),
-		InitiateTransfer {
-			destination: ah_sibling.0,
-			remote_fees: Some(Teleport(AssetFilter::Definite(
-				Asset { id: Here.into(), fun: Fungible(ah_sibling.1) }.into(),
-			))),
-			preserve_origin: true,
-			assets: Default::default(),
-			remote_xcm: ah_sibling_xcm(
-				call,
-				local_as_sibling,
-				local_as_cousin,
-				ah_cousin,
-				integritee_cousin_as_sibling,
-			),
-		},
-	])
-}
 
 /// Returns an Xcm that is meant to be executed locally to burn the native asset.
 pub fn burn_native_xcm<Call>(who: Location, amount: Balance, local_fees: Balance) -> Xcm<Call> {
@@ -171,6 +137,41 @@ pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
 	Ok(())
 }
 
+/// XCM as it is being sent from the local Integritee chain to its cousin.
+pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
+	call: IntegriteePolkadotCall,
+	local_fee: Balance,
+	local_as_sibling: Location,
+	local_as_cousin: Location,
+	ah_sibling: (Location, Balance),
+	ah_cousin: (Location, Balance),
+	integritee_cousin_as_sibling: (Location, Balance),
+) -> Xcm<Call> {
+	Xcm(vec![
+		// Assume that we always pay in native for now
+		WithdrawAsset((Here, Fungible(local_fee + ah_sibling.1)).into()),
+		SetAppendix(Xcm(vec![
+			RefundSurplus,
+			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: Here.into() },
+		])),
+		InitiateTransfer {
+			destination: ah_sibling.0,
+			remote_fees: Some(Teleport(AssetFilter::Definite(
+				Asset { id: Here.into(), fun: Fungible(ah_sibling.1) }.into(),
+			))),
+			preserve_origin: true,
+			assets: Default::default(),
+			remote_xcm: ah_sibling_xcm(
+				call,
+				local_as_sibling,
+				local_as_cousin,
+				ah_cousin,
+				integritee_cousin_as_sibling,
+			),
+		},
+	])
+}
+
 /// Nested XCM to be executed as `remote_xcm` from within `local_integritee_xcm` on the
 /// first hop, namely the Asset Hub sibling.
 fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
@@ -196,7 +197,8 @@ fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: ah_cousin_xcm(call, local_as_cousin, integritee_cousin_as_sibling),
+			// remote_xcm: ah_cousin_xcm(call, local_as_cousin, integritee_cousin_as_sibling),
+			remote_xcm: Default::default(),
 		},
 	])
 }
