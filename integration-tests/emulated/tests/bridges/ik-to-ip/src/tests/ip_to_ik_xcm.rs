@@ -11,13 +11,12 @@ use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
-		integritee_kusama_runtime::{integritee_common::porteer::burn_native_xcm, TEER},
+		integritee_kusama_runtime::{integritee_common::xcm_helpers::burn_native_xcm, TEER},
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
 use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
-use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 #[test]
 fn ip_to_ik_xcm_works_without_forwarding_with_endowed_ip_beneficiary() {
