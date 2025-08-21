@@ -25,7 +25,7 @@ use super::{
 };
 use crate::weights;
 use core::marker::PhantomData;
-use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus};
+use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus, ParaId};
 use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
@@ -49,21 +49,20 @@ use sp_std::{
 	convert::{From, Into},
 	prelude::*,
 };
-use staging_xcm::latest::prelude::*;
-use staging_xcm_builder::{
+use xcm::latest::prelude::*;
+use xcm_builder::{
 	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
 	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
 	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
-	DescribeTerminus, EnsureXcmOrigin, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
-	GlobalConsensusParachainConvertsFor, HashedDescription, NoChecking, ParentAsSuperuser,
-	ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	TrailingSetTopicAsId, WithComputedOrigin,
+	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
+	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
+	WithComputedOrigin, WithUniqueTopic,
 };
-use staging_xcm_executor::{traits::JustTry, XcmExecutor};
+use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
-use xcm_transactor_primitives::*;
 
 /// Supported local Currencies. Keep this to TEER,
 /// other assets will be handled through AssetRegistry pallet
@@ -141,7 +140,7 @@ pub type LocationToAccountId = (
 	HashedDescription<AccountId, DescribeFamily<DescribeAllTerminal>>,
 	// Different global consensus parachain sovereign account.
 	// (Used for over-bridge transfers and reserve processing)
-	GlobalConsensusParachainConvertsFor<UniversalLocation, AccountId>,
+	ExternalConsensusLocationsConverterFor<UniversalLocation, AccountId>,
 );
 
 /// Means for transacting TEER only.
@@ -318,7 +317,7 @@ pub type Traders = (
 	// for KSM aka RelayNative
 	FixedRateOfFungible<
 		RelayNativePerSecond,
-		XcmFeesTo32ByteAccount<LocalFungiblesTransactor, AccountId, TreasuryAccount>,
+		XcmFeesTo32ByteAccount<ReservedFungiblesTransactor, AccountId, TreasuryAccount>,
 	>,
 );
 
@@ -361,12 +360,12 @@ type Reserves = (
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = (
+pub type XcmRouter = WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
 	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm, ()>,
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
-);
+)>;
 
 /// Means for transacting assets on this chain.
 pub type AssetTransactors =
@@ -385,7 +384,7 @@ pub type TrustedAliasers = (
 
 pub struct XcmConfig;
 
-impl staging_xcm_executor::Config for XcmConfig {
+impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	// How to withdraw and deposit an asset.

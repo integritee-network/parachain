@@ -76,7 +76,7 @@ cumulus-relay-chain-interface = { workspace = true }
 polkadot-cli = { workspace = true }
 polkadot-primitives = { workspace = true, features = ["std"] }
 polkadot-service = { workspace = true }
-staging-xcm = { workspace = true, features = ["std"] }
+xcm = { workspace = true, features = ["std"] }
 
 # Temporary pin only
 # See https://github.com/bluejekyll/trust-dns/issues/1946 for more details.
@@ -89,7 +89,9 @@ substrate-build-script-utils = { workspace = true }
 assert_cmd = { workspace = true }
 nix = { workspace = true }
 pallet-sudo = { workspace = true, features = ["std"] }
-polkadot-cli = { workspace = true, features = ["rococo-native"] } # purge_chain_works works with rococo-local and needs to allow this
+polkadot-cli = { workspace = true, features = [
+    "rococo-native",
+] } # purge_chain_works works with rococo-local and needs to allow this
 tempfile = { workspace = true }
 
 [features]
@@ -106,7 +108,7 @@ runtime-benchmarks = [
     "polkadot-service/runtime-benchmarks",
     "integritee-polkadot-runtime/runtime-benchmarks",
     "pallet-sudo/runtime-benchmarks",
-    "staging-xcm/runtime-benchmarks",
+    "xcm/runtime-benchmarks",
 ]
 fast-runtime = [
     "polkadot-service/fast-runtime",

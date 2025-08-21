@@ -24,6 +24,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 extern crate alloc;
+use crate::porteer::{IntegriteePolkadotSovereignAccount, PortTokensToPolkadot};
 use alloc::borrow::Cow;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use cumulus_primitives_core::AggregateMessageOrigin;
@@ -60,14 +61,15 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSignedBy, EnsureWithSuccess,
 };
+pub use integritee_parachains_common::{
+	self as integritee_common, AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce,
+	Signature, MILLISECS_PER_BLOCK,
+};
 use integritee_parachains_common::{
 	fee::{SlowAdjustingFeeUpdate, WeightToFee},
 	AuraId, AVERAGE_ON_INITIALIZE_RATIO, BLOCK_PROCESSING_VELOCITY, DAYS, HOURS,
 	MAXIMUM_BLOCK_WEIGHT, MINUTES, MS_PER_DAY, NORMAL_DISPATCH_RATIO,
 	RELAY_CHAIN_SLOT_DURATION_MILLIS, SLOT_DURATION, UNINCLUDED_SEGMENT_CAPACITY,
-};
-pub use integritee_parachains_common::{
-	AccountId, Address, Balance, BlockNumber, Hash, Header, Nonce, Signature, MILLISECS_PER_BLOCK,
 };
 use pallet_asset_conversion::{Ascending, Chain, WithFirstAsset};
 pub use pallet_balances::Call as BalancesCall;
@@ -84,23 +86,26 @@ use parachains_common::{message_queue::NarrowOriginToSibling, AssetIdForTrustBac
 use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, ConstU128, ConstU32, OpaqueMetadata};
+use sp_core::{
+	crypto::{AccountId32, KeyTypeId},
+	ConstU128, ConstU32, OpaqueMetadata,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchError, RuntimeDebug, TransactionOutcome,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use staging_xcm::{
-	latest::prelude::AssetId, Version as XcmVersion, VersionedAssetId, VersionedAssets,
-	VersionedLocation, VersionedXcm,
+use xcm::{
+	latest::{prelude::AssetId, Location},
+	Version as XcmVersion, VersionedAssetId, VersionedAssets, VersionedLocation, VersionedXcm,
 };
 use xcm_runtime_apis::{
 	dry_run::{CallDryRunEffects, Error as XcmDryRunApiError, XcmDryRunEffects},
@@ -112,6 +117,11 @@ mod weights;
 
 mod migrations;
 pub mod xcm_config;
+
+mod porteer;
+
+#[cfg(test)]
+mod tests;
 
 pub type SessionHandlers = ();
 
@@ -518,9 +528,9 @@ impl pallet_message_queue::Config for Runtime {
 		cumulus_primitives_core::AggregateMessageOrigin,
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type MessageProcessor = staging_xcm_builder::ProcessXcmMessage<
+	type MessageProcessor = xcm_builder::ProcessXcmMessage<
 		AggregateMessageOrigin,
-		staging_xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
+		xcm_executor::XcmExecutor<xcm_config::XcmConfig>,
 		RuntimeCall,
 	>;
 	type Size = u32;
@@ -776,6 +786,37 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
+
+parameter_types! {
+	pub const HeartBeatTimeout: Moment = 10;
+}
+
+impl pallet_porteer::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+	type PorteerAdmin = EnsureRootOrMoreThanHalfTechnicalCommittee;
+	type HeartBeatTimeout = HeartBeatTimeout;
+	type TokenSenderLocationOrigin = EitherOfDiverse<
+		EnsureSignedBy<IntegriteePolkadotSovereignAccount, AccountId32>,
+		EnsureRoot<AccountId32>,
+	>;
+	type PortTokensToDestination = PortTokensToPolkadot;
+	type ForwardPortedTokensToDestinations = PortTokensToPolkadot;
+	type Location = Location;
+	type Fungible = Balances;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = PorteerBenchmarkHelper;
+}
+
+pub struct PorteerBenchmarkHelper;
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_porteer::BenchmarkHelper<Location> for PorteerBenchmarkHelper {
+	fn get_whitelisted_location() -> Location {
+		use xcm::prelude::{Junctions, Parachain};
+		Location::new(1, Junctions::X1([Parachain(1000u32.into())].into()))
+	}
+}
 
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = prod_or_fast!(5 * DAYS, 5 * MINUTES);
@@ -1104,6 +1145,7 @@ construct_runtime!(
 		Sidechain: pallet_sidechain= 53,
 		EnclaveBridge: pallet_enclave_bridge = 54,
 		TeerDays: pallet_teerdays = 55,
+		Porteer: pallet_porteer = 56,
 	}
 );
 
@@ -1179,6 +1221,7 @@ mod benches {
 		[pallet_message_queue, MessageQueue]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
+		[pallet_porteer, Porteer]
 		[pallet_proxy, Proxy]
 		[pallet_scheduler, Scheduler]
 		[pallet_session, SessionBench::<Runtime>]
@@ -1350,22 +1393,58 @@ impl_runtime_apis! {
 	}
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
-		fn query_acceptable_payment_assets(xcm_version: staging_xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
+		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<VersionedAssetId>, XcmPaymentApiError> {
 			let acceptable_assets = vec![AssetId(xcm_config::SelfLocation::get())];
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
+		// Todo: Replace after polkadot-sdk update, see #336:
+		// https://github.com/integritee-network/parachain/issues/336
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-			let latest_asset_id: Result<AssetId, ()> = asset.clone().try_into();
-			match latest_asset_id {
-				Ok(asset_id) if asset_id.0 == xcm_config::SelfLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				Ok(asset_id) if asset_id.0 == xcm_config::RelayChainLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				_ => todo!("Asset fee payment for {:?} not implemented", asset),
-			}
+			use xcm::v5::Asset;
+			use frame_support::storage::with_transaction;
+			use xcm::opaque::lts::XcmHash;
+			use xcm_executor::traits::WeightTrader;
+			use xcm::opaque::latest::XcmContext;
+
+			use crate::xcm_config::XcmConfig;
+			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
+
+			let asset: AssetId = asset.clone().try_into()
+			.map_err(|e| {
+				sp_tracing::debug!(target: "xcm::pallet::query_weight_to_asset_fee", ?e, ?asset, "Failed to convert versioned asset");
+				XcmPaymentApiError::VersionedConversionFailed
+			})?;
+
+			let max_amount = u128::MAX / 2;
+			let max_payment: Asset = (asset.clone(), max_amount).into();
+			let context = XcmContext::with_message_id(XcmHash::default());
+
+			// We return the unspent amount without affecting the state
+			// as we used a big amount of the asset without any check.
+			let unspent = with_transaction(|| {
+				let mut trader = Trader::new();
+				let result = trader.buy_weight(weight, max_payment.into(), &context)
+					.map_err(|e| {
+						sp_tracing::error!(target: "Runtime::query_weight_to_asset_fee", ?e, ?asset, "Failed to buy weight");
+
+						// Return something convertible to `DispatchError` as required by the `with_transaction` fn.
+						DispatchError::Other("Failed to buy weight")
+					});
+
+			TransactionOutcome::Rollback(result)
+			}).map_err(|error| {
+				sp_tracing::debug!(target: "Runtime::query_weight_to_asset_fee", ?error, "Failed to execute transaction");
+				XcmPaymentApiError::AssetNotFound
+			})?;
+
+			let Some(unspent) = unspent.fungible.get(&asset) else {
+				sp_tracing::error!(target: "Runtime::query_weight_to_asset_fee", ?asset, "The trader didn't return the needed fungible asset");
+				return Err(XcmPaymentApiError::AssetNotFound);
+			};
+
+			let paid = max_amount - unspent;
+			Ok(paid)
 		}
 
 		fn query_xcm_weight(message: VersionedXcm<()>) -> Result<Weight, XcmPaymentApiError> {

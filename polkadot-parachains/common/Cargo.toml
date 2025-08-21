@@ -10,9 +10,13 @@ description = "Logic which is common to all parachain runtimes"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+log = { workspace = true }
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
 smallvec = { workspace = true }
+
+# integritee
+pallet-porteer = { workspace = true }
 
 # Substrate dependencies
 frame-executive = { workspace = true }
@@ -20,6 +24,7 @@ frame-support = { workspace = true }
 frame-system = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-balances = { workspace = true }
+pallet-xcm = { workspace = true }
 sp-consensus-aura = { workspace = true }
 sp-core = { workspace = true }
 sp-io = { workspace = true }
@@ -30,21 +35,22 @@ sp-std = { workspace = true }
 polkadot-core-primitives = { workspace = true }
 polkadot-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
-staging-xcm = { workspace = true }
-staging-xcm-executor = { workspace = true }
-
-[build-dependencies]
-substrate-wasm-builder = { workspace = true }
+xcm = { workspace = true }
+xcm-executor = { workspace = true }
+xcm-runtime-apis = { workspace = true }
 
 [features]
 default = ["std"]
 std = [
     "parity-scale-codec/std",
+    "log/std",
     "frame-executive/std",
     "frame-support/std",
     "frame-system/std",
     "pallet-authorship/std",
     "pallet-balances/std",
+    "pallet-porteer/std",
+    "pallet-xcm/std",
     "polkadot-core-primitives/std",
     "polkadot-primitives/std",
     "polkadot-runtime-common/std",
@@ -54,6 +60,7 @@ std = [
     "sp-io/std",
     "sp-runtime/std",
     "sp-std/std",
-    "staging-xcm-executor/std",
-    "staging-xcm/std",
+    "xcm-executor/std",
+    "xcm/std",
+    "xcm-runtime-apis/std",
 ]

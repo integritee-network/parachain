@@ -81,7 +81,7 @@ jobs:
 
       - name: Release
         if: ${{ matrix.binary == 'release' }}
-        run: cargo build --release --locked
+        run: cargo build --release --locked -p integritee-collator
 
       # Upload artifacts
       - name: Upload integritee-collator
@@ -136,7 +136,7 @@ jobs:
 
       - name: Release
         if: ${{ matrix.binary == 'release' }}
-        run: cargo build --release --locked --features try-runtime,runtime-benchmarks
+        run: cargo build --release --locked --features try-runtime,runtime-benchmarks -p integritee-collator
 
       # Upload artifacts
       - name: Upload integritee-collator
@@ -166,7 +166,10 @@ jobs:
         rust: [ nightly-2024-04-14 ]
         rust-target: [ x86_64-unknown-linux-gnu ]
         #        check: [fmt --all -- --check, clippy -- -D warnings]
-        check: [ check --features runtime-benchmarks ] # skip clippy for now
+        check: [
+          check --features runtime-benchmarks,
+          test
+        ] # skip clippy for now
     env:
       RUST_BACKTRACE: full
       RUSTV: ${{ matrix.rust }}
@@ -183,7 +186,25 @@ jobs:
         run: |
           sudo apt update
           sudo apt install --assume-yes protobuf-compiler
-
+      - name: Free up disk space
+        run: |
+          echo "Initial disk usage:"
+          df -h
+          # Remove unnecessary tools installed by default (frees ~9GB)
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/android
+          # free another 4GB
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /opt/hostedtoolcache/go
+          sudo rm -rf /opt/hostedtoolcache/Python
+          sudo rm -rf /opt/hostedtoolcache/Ruby
+          sudo rm -rf /opt/hostedtoolcache/Java*
+          sudo rm -rf /opt/hostedtoolcache/node
+          sudo apt-get clean
+          echo "After cleanup disk usage (expected to be >=40GB free):"
+          df -h
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.rust-target }}-${{ matrix.check }}
