@@ -123,7 +123,7 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 			assert_eq!(
 				IntegriteeKusama::account_data_of(token_owner.clone()).free,
-				token_owner_balance_before_on_ip - local_fee
+				token_owner_balance_before_on_ik - local_fee
 			);
 		} else {
 			// Ensure that token forwarding respects the ED.
