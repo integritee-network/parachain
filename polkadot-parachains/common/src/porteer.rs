@@ -1,5 +1,5 @@
-use crate::{fee::WeightToFee, xcm_config::AccountIdOf, AccountId, Balance};
-use frame_support::{pallet_prelude::OriginTrait, weights::WeightToFee as _};
+use crate::{xcm_config::AccountIdOf, AccountId, Balance};
+use frame_support::pallet_prelude::{OriginTrait, Weight};
 use pallet_porteer::XcmFeeParams;
 use parity_scale_codec::Encode;
 use sp_runtime::{traits::TryConvert, DispatchError};
@@ -8,16 +8,15 @@ use xcm::{
 	latest::{
 		Asset, AssetFilter,
 		AssetTransferFilter::{ReserveDeposit, Teleport},
-		Location, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
+		Location, OriginKind, Parent, SendError, WeightLimit, WildAsset, Xcm,
 	},
 	prelude::{
-		AllCounted, BurnAsset, BuyExecution, ClearOrigin, DepositAsset, Fungible, GlobalConsensus,
-		Here, InitiateTransfer, Kusama, Parachain, PayFees, Polkadot, ReceiveTeleportedAsset,
-		RefundSurplus, SetAppendix, Transact, Wild, WithdrawAsset,
+		AllCounted, BurnAsset, BuyExecution, ClearOrigin, DepositAsset, ExecuteXcm, Fungible,
+		GlobalConsensus, Here, InitiateTransfer, Kusama, Parachain, PayFees, Polkadot,
+		ReceiveTeleportedAsset, RefundSurplus, SendXcm, SetAppendix, Transact, Wild, WithdrawAsset,
 	},
-	VersionedXcm,
 };
-use xcm_runtime_apis::fees;
+use xcm_executor::XcmExecutor;
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
@@ -131,14 +130,19 @@ pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 
 /// Burn Local Assets to be teleported.
 pub fn burn_local_xcm<Call>(who: Location, amount: Balance, local_fees: Balance) -> Xcm<Call> {
+	let asset: Asset = (Here, Fungible(amount)).into();
+	burn_asset_xcm(who, asset, local_fees)
+}
+
+pub fn burn_asset_xcm<Call>(who: Location, asset: Asset, local_fees: Balance) -> Xcm<Call> {
 	Xcm(vec![
-		WithdrawAsset((Here, Fungible(amount.saturating_add(local_fees))).into()),
+		WithdrawAsset(vec![asset.clone(), (Here, Fungible(local_fees)).into()].into()),
 		PayFees { asset: (Here, Fungible(local_fees)).into() },
 		SetAppendix(Xcm(vec![
 			RefundSurplus,
 			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: who },
 		])),
-		BurnAsset((Here, Fungible(amount)).into()),
+		BurnAsset(asset.into()),
 	])
 }
 
@@ -149,6 +153,45 @@ pub fn receive_teleported_asset<Call>(asset: Asset, beneficiary: Location) -> Xc
 		BuyExecution { fees: asset, weight_limit: WeightLimit::Unlimited },
 		DepositAsset { assets: Wild(AllCounted(1)), beneficiary },
 	])
+}
+
+pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
+	who: Location,
+	beneficiary: Location,
+	asset: Asset,
+	local_fee: Balance,
+	destination: Location,
+) -> Result<(), SendError> {
+	let xcm = burn_asset_xcm(who.clone(), asset.clone(), local_fee);
+
+	let outcome = XcmExecutor::<XcmConfig>::prepare_and_execute(
+		who,
+		xcm,
+		// Todo: Return the Id, and the pallet and emit an event with it.
+		// But the PalletXcm does that anyhow already.
+		&mut [0; 32],
+		Weight::MAX,
+		Weight::zero(),
+	);
+
+	println!("Outcome: {:?}", outcome);
+
+	//
+	// match outcome {
+	// 	Outcome::Complete { .. } => {}
+	// 	Outcome::Incomplete { .. } => {}
+	// 	Outcome::Error { .. } => {}
+	// }
+
+	let remote_xcm = receive_teleported_asset(asset.into(), beneficiary);
+
+	let (ticket, _delivery_fees) = <XcmConfig as xcm_executor::Config>::XcmSender::validate(
+		&mut Some(destination),
+		&mut Some(remote_xcm),
+	)?;
+
+	<XcmConfig as xcm_executor::Config>::XcmSender::deliver(ticket)?;
+	Ok(())
 }
 
 /// Nested XCM to be executed as `remote_xcm` from within `local_integritee_xcm` on the

@@ -790,15 +790,15 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 use crate::xcm_config::{AccountIdToLocation, XcmConfig, XcmRouter};
 use integritee_parachains_common::porteer::{
 	asset_hub_kusama_location, burn_local_xcm, ik_sibling_v5, integritee_runtime_porteer_mint,
-	ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, receive_teleported_asset, weigh_xcm, IK_FEE,
+	ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, receive_teleported_asset, teleport_asset,
+	IK_FEE,
 };
 use sp_core::hex2array;
 use sp_runtime::traits::Convert;
 use xcm::{
-	latest::{ExecuteXcm, Junction, Location, NetworkId, Outcome, Parent, SendError, SendXcm},
+	latest::{Location, NetworkId, Parent, SendError},
 	prelude::{GlobalConsensus, Parachain},
 };
-use xcm_executor::XcmExecutor;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
@@ -880,7 +880,6 @@ impl ForwardPortedTokens for PortTokensToKusama {
 		let who_location = AccountIdToLocation::convert(who.clone());
 
 		let tentative_xcm = burn_local_xcm(who_location.clone(), amount, 0);
-
 		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(tentative_xcm)).unwrap();
 
 		let local_fee = Runtime::query_weight_to_asset_fee(
@@ -900,38 +899,19 @@ impl ForwardPortedTokens for PortTokensToKusama {
 		println!("Local Fee: {:?}", local_fee);
 		println!("Forward Amount: {:?}", forward_amount);
 
-		let xcm = burn_local_xcm(who_location.clone(), forward_amount, local_fee);
-
 		let who_location = AccountIdToLocation::convert(who.clone());
-		let outcome = XcmExecutor::<XcmConfig>::prepare_and_execute(
-			who_location,
-			xcm,
-			// Todo: Return the Id, and the pallet and emit an event with it.
-			// But the PalletXcm does that anyhow already.
-			&mut [0; 32],
-			Weight::MAX,
-			Weight::zero(),
-		);
-
-		println!("Local Execution Outcome {:?}", outcome);
-
-		//
-		// match outcome {
-		// 	Outcome::Complete { .. } => {}
-		// 	Outcome::Incomplete { .. } => {}
-		// 	Outcome::Error { .. } => {}
-		// }
 
 		let asset =
 			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), forward_amount);
 		let beneficiary_location = AccountIdToLocation::convert(who.clone());
 
-		let remote_xcm = receive_teleported_asset(asset.into(), beneficiary_location);
-
-		let (ticket, _delivery_fees) =
-			XcmRouter::validate(&mut Some(location), &mut Some(remote_xcm))?;
-
-		XcmRouter::deliver(ticket)?;
+		teleport_asset::<XcmConfig>(
+			who_location,
+			beneficiary_location,
+			asset.into(),
+			local_fee,
+			location,
+		)?;
 		Ok(())
 	}
 }
