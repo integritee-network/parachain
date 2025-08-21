@@ -660,7 +660,7 @@ impl pallet_treasury::Config for Runtime {
 	type Burn = (); //No burn
 	type BurnDestination = (); //No burn
 	type SpendFunds = Bounties;
-	type SpendOrigin = EnsureWithSuccess<EnsureRoot<AccountId>, AccountId, MaxBalance>;
+	type SpendOrigin = EnsureWithSuccess<EnsureRootOrMoreThanHalfCouncil, AccountId, MaxBalance>;
 	type MaxApprovals = MaxApprovals; //0:cannot approve any proposal
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 	type AssetKind = ();
