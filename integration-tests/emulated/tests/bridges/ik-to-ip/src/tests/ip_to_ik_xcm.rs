@@ -3,6 +3,7 @@ use crate::{
 		assert_asset_hub_kusama_message_processed, assert_asset_hub_polkadot_message_processed,
 		assert_bridge_hub_kusama_message_received, assert_bridge_hub_polkadot_message_accepted,
 		integritee_bridge_setup::{ip_to_ik_bridge_setup, KSM},
+		query_integritee_kusama_xcm_execution_fee, query_integritee_polkadot_xcm_execution_fee,
 	},
 	*,
 };
@@ -83,8 +84,8 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 		assert_expected_events!(
 			IntegriteePolkadot,
 			vec![
-				RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
 				RuntimeEvent::Porteer(pallet_porteer::Event::PortedTokens { .. }) => {},
+				RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::XcmpMessageSent { .. }) => {},
 			]
 		);
 	});
@@ -109,9 +110,11 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	// Note: XCM fees are taken from the Integritee's sovereign account
 	// Todo: Assert Sovereign Account balances on the different chains
 
+	let xcm = burn_native_xcm(Location::here(), 0, 0);
+	let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
 	assert_eq!(
 		IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_on_ip - port_tokens_amount
+		token_owner_balance_before_on_ip - port_tokens_amount - local_fee
 	);
 
 	if forward_teer_location.is_some() {
@@ -195,20 +198,4 @@ fn assert_integritee_kusama_tokens_minted(
 			);
 		}
 	});
-}
-
-fn query_integritee_kusama_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
-	<IntegriteeKusama as TestExt>::execute_with(|| {
-		type Runtime = <IntegriteeKusama as Chain>::Runtime;
-
-		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).unwrap();
-
-		let local_fee = Runtime::query_weight_to_asset_fee(
-			local_weight,
-			VersionedAssetId::from(AssetId(Location::here())),
-		)
-		.unwrap();
-
-		local_fee
-	})
 }

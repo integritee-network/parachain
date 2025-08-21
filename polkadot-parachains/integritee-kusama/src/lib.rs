@@ -94,7 +94,12 @@ use sp_core::{
 };
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-use sp_runtime::{generic, impl_opaque_keys, traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup}, transaction_validity::{TransactionSource, TransactionValidity}, ApplyExtrinsicResult, DispatchError, RuntimeDebug, TransactionOutcome};
+use sp_runtime::{
+	generic, impl_opaque_keys,
+	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
+	transaction_validity::{TransactionSource, TransactionValidity},
+	ApplyExtrinsicResult, DispatchError, RuntimeDebug, TransactionOutcome,
+};
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -782,17 +787,19 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use integritee_parachains_common::porteer::{asset_hub_polkadot_location, burn_native_xcm, ik_cousin_v5, ik_sibling_v5, integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, teleport_asset, AHK_FEE, IK_FEE};
+use crate::xcm_config::{AccountIdToLocation, XcmConfig};
+use integritee_parachains_common::porteer::{
+	asset_hub_polkadot_location, burn_native_xcm, ik_cousin_v5, ik_sibling_v5,
+	integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, teleport_asset, AHK_FEE,
+	IK_FEE,
+};
 use sp_core::hex2array;
 use sp_runtime::traits::Convert;
 use xcm::{
-	latest::{Location, NetworkId, Parent, SendError},
-	prelude::{GlobalConsensus, Parachain},
+	latest::{Location, NetworkId, Parent, SendError, Xcm},
+	prelude::{GlobalConsensus, Parachain, XcmError},
 };
-use xcm::latest::Xcm;
-use xcm::prelude::XcmError;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use crate::xcm_config::{AccountIdToLocation, XcmConfig};
 
 ord_parameter_types! {
 	pub const IntegriteePolkadotLocation: Location = Location {
@@ -857,16 +864,16 @@ impl PortTokens for PortTokensToPolkadot {
 
 impl PortTokensToPolkadot {
 	fn query_native_fee(xcm: Xcm<()>) -> Result<Balance, XcmError> {
-		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm))
-			.map_err(|e| {
-				log::error!("Could not query weight: {:?}", e);
-				XcmError::WeightNotComputable
-			})?;
+		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).map_err(|e| {
+			log::error!("Could not query weight: {:?}", e);
+			XcmError::WeightNotComputable
+		})?;
 
 		let local_fee = Runtime::query_weight_to_asset_fee(
 			local_weight,
 			VersionedAssetId::from(AssetId(Location::here())),
-		).map_err(|e| {
+		)
+		.map_err(|e| {
 			log::error!("Could not convert weight to asset: {:?}", e);
 			XcmError::FeesNotMet
 		})?;
@@ -1527,7 +1534,7 @@ impl_runtime_apis! {
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
-        // Todo: When we upgrade the sdk we can replace the following function's body with:
+		// Todo: When we upgrade the sdk we can replace the following function's body with:
 		// 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
 		// 			use crate::xcm_config::XcmConfig;
 		// 			type Trader = <XcmConfig as xcm_executor::Config>::Trader;

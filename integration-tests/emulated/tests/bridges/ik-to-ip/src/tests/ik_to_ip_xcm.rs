@@ -3,6 +3,7 @@ use crate::{
 		assert_asset_hub_kusama_message_processed, assert_asset_hub_polkadot_message_processed,
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		integritee_bridge_setup::{ik_to_ip_bridge_setup, DOT},
+		query_integritee_polkadot_xcm_execution_fee,
 	},
 	*,
 };
@@ -192,20 +193,4 @@ fn assert_integritee_polkadot_tokens_minted(
 			);
 		}
 	});
-}
-
-fn query_integritee_polkadot_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
-	<IntegriteePolkadot as TestExt>::execute_with(|| {
-		type Runtime = <IntegriteePolkadot as Chain>::Runtime;
-
-		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).unwrap();
-
-		let local_fee = Runtime::query_weight_to_asset_fee(
-			local_weight,
-			VersionedAssetId::from(AssetId(Location::here())),
-		)
-		.unwrap();
-
-		local_fee
-	})
 }
