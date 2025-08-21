@@ -45,7 +45,6 @@ pub use frame_support::{
 };
 use frame_support::{
 	derive_impl,
-	dispatch::RawOrigin,
 	ord_parameter_types,
 	traits::{
 		fungible::{Credit, HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
@@ -787,20 +786,21 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use crate::xcm_config::{AccountIdToLocation, XcmConfig};
-use integritee_parachains_common::porteer::{
-	ahp_cousin_location, ik_cousin_v5, ik_sibling_v5,
-	integritee_runtime_porteer_mint, ip_sibling_v5, AHK_FEE,
-	IK_FEE,
+use crate::xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig};
+use integritee_parachains_common::{
+	porteer::{
+		ah_sibling_xcm, ahp_cousin_location, ik_cousin_v5, ik_sibling_v5,
+		integritee_runtime_porteer_mint, ip_sibling_v5,
+	},
+	xcm_helpers::{burn_asset_xcm, burn_native_xcm, execute_local_and_remote_xcm, teleport_asset},
 };
 use sp_core::hex2array;
 use sp_runtime::traits::Convert;
 use xcm::{
-	latest::{Location, NetworkId, Parent, SendError, Xcm},
+	latest::{Location, NetworkId, Xcm},
 	prelude::{GlobalConsensus, Parachain, XcmError},
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use integritee_parachains_common::xcm_helpers::{burn_native_xcm, teleport_asset};
 
 ord_parameter_types! {
 	pub const IntegriteePolkadotLocation: Location = Location {
@@ -816,7 +816,7 @@ impl PortTokens for PortTokensToPolkadot {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
-	type Error = SendError;
+	type Error = XcmError;
 
 	// Todo: Passed owned account id
 	fn port_tokens(
@@ -824,41 +824,41 @@ impl PortTokens for PortTokensToPolkadot {
 		amount: Self::Balance,
 		location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
+		// let xcm1 = local_integritee_xcm(
+		// 	integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
+		// 	IK_FEE + AHK_FEE,
+		// 	ik_sibling_v5(),
+		// 	ik_cousin_v5(),
+		// 	((Parent, Parachain(1000)).into(), fees.hop1),
+		// 	(ahp_cousin_location(), fees.hop2),
+		// 	(ip_sibling_v5(), fees.hop3),
+		// );
+
+		let who_location = AccountIdToLocation::convert(who.clone());
 		let fees = Porteer::xcm_fee_config();
 
-		let xcm1 = local_integritee_xcm(
+		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
+		let local_fee = Self::query_native_fee(tentative_xcm)?;
+
+		let ah_sibling_fee = (AssetHubLocation::get(), fees.hop1);
+
+		let local_xcm =
+			burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
+
+		let remote_xcm = ah_sibling_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
-			IK_FEE + AHK_FEE,
+			ah_sibling_fee.into(),
 			ik_sibling_v5(),
 			ik_cousin_v5(),
-			((Parent, Parachain(1000)).into(), fees.hop1),
 			(ahp_cousin_location(), fees.hop2),
 			(ip_sibling_v5(), fees.hop3),
 		);
-
-		// need to xcms as querying the weight coerces the type to `Xcm<()>`.
-		let xcm2 = local_integritee_xcm(
-			integritee_runtime_porteer_mint(who.clone(), amount, location),
-			IK_FEE + AHK_FEE,
-			ik_sibling_v5(),
-			ik_cousin_v5(),
-			((Parent, Parachain(1000)).into(), fees.hop1),
-			(ahp_cousin_location(), fees.hop2),
-			(ip_sibling_v5(), fees.hop3),
-		);
-
-		let weight = Runtime::query_xcm_weight(VersionedXcm::from(xcm1.clone())).unwrap();
-
-		// Todo: Is this best practice, we could also do this with, but then we have to manually
-		// do some xcm steps on our local chain, e.g. burning assets and adding them to holding:
-		//
-		// let (ticket, delivery_fees) = xcm_config::XcmRouter::validate(
-		// &mut Some((Parent, Parachain(1000)).into()), &mut Some(xcm1),
-		// )?;
-		//
-		// xcm_config::XcmRouter::deliver(ticket)?;
-		PolkadotXcm::execute(RawOrigin::Root.into(), Box::new(VersionedXcm::from(xcm2)), weight)
-			.unwrap();
+		execute_local_and_remote_xcm::<XcmConfig, <XcmConfig as xcm_executor::Config>::RuntimeCall>(
+			who_location,
+			local_xcm,
+			AssetHubLocation::get(),
+			remote_xcm,
+		)?;
 		Ok(())
 	}
 }
