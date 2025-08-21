@@ -478,6 +478,7 @@ fn query_integritee_polkadot_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
 		Runtime::query_weight_to_asset_fee(
 			local_weight,
 			VersionedAssetId::from(AssetId(Location::here())),
-		).unwrap()
+		)
+		.unwrap()
 	})
 }

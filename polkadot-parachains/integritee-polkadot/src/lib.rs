@@ -788,11 +788,10 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 use crate::xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig};
 use integritee_parachains_common::{
 	porteer::{
-		ah_sibling_xcm, ahk_cousin_location,
-		ik_sibling_v5, integritee_runtime_porteer_mint, ip_cousin_v5,
-		ip_sibling_v5
+		ah_sibling_xcm, ahk_cousin_location, ik_sibling_v5, integritee_runtime_porteer_mint,
+		ip_cousin_v5, ip_sibling_v5,
 	},
-	xcm_helpers::{burn_asset_xcm, burn_native_xcm, execute_local_and_remote_xcm},
+	xcm_helpers::{burn_asset_xcm, burn_native_xcm, execute_local_and_remote_xcm, teleport_asset},
 };
 use sp_core::hex2array;
 use sp_runtime::traits::Convert;
@@ -801,7 +800,6 @@ use xcm::{
 	prelude::{GlobalConsensus, Parachain, XcmError},
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
-use integritee_parachains_common::xcm_helpers::teleport_asset;
 
 ord_parameter_types! {
 	pub const IntegriteeKusamaLocation: Location = Location {

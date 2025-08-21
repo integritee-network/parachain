@@ -23,14 +23,12 @@ use parity_scale_codec::Encode;
 use sp_std::vec;
 use xcm::{
 	latest::{
-		Asset, AssetFilter,
-		AssetTransferFilter::{ReserveDeposit},
-		Location, OriginKind, Parent, WildAsset, Xcm,
+		Asset, AssetFilter, AssetTransferFilter::ReserveDeposit, Location, OriginKind, Parent,
+		WildAsset, Xcm,
 	},
 	prelude::{
-		DepositAsset, Fungible,
-		GlobalConsensus, InitiateTransfer, Kusama, Parachain, PayFees, Polkadot,
-		ReceiveTeleportedAsset, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
+		DepositAsset, Fungible, GlobalConsensus, InitiateTransfer, Kusama, Parachain, PayFees,
+		Polkadot, ReceiveTeleportedAsset, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
 	},
 };
 
