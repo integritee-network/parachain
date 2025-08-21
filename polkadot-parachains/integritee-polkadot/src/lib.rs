@@ -799,6 +799,7 @@ use xcm::{
 	latest::{Location, NetworkId, Parent, SendError},
 	prelude::{GlobalConsensus, Parachain},
 };
+use xcm::latest::Xcm;
 use xcm::prelude::XcmError;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
@@ -863,8 +864,24 @@ impl PortTokens for PortTokensToKusama {
 	}
 }
 
-parameter_types! {
-	pub const AnyNetwork: Option<NetworkId> = None;
+impl PortTokensToKusama {
+	fn query_native_fee(xcm: Xcm<()>) -> Result<Balance, XcmError> {
+		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm))
+			.map_err(|e| {
+				log::error!("Could not query weight: {:?}", e);
+				XcmError::WeightNotComputable
+			})?;
+
+		let local_fee = Runtime::query_weight_to_asset_fee(
+			local_weight,
+			VersionedAssetId::from(AssetId(Location::here())),
+		).map_err(|e| {
+			log::error!("Could not convert weight to asset: {:?}", e);
+			XcmError::FeesNotMet
+		})?;
+
+		Ok(local_fee)
+	}
 }
 
 impl ForwardPortedTokens for PortTokensToKusama {
@@ -879,15 +896,8 @@ impl ForwardPortedTokens for PortTokensToKusama {
 		location: Self::Location,
 	) -> Result<(), Self::Error> {
 		let who_location = AccountIdToLocation::convert(who.clone());
-
 		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
-		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(tentative_xcm)).unwrap();
-
-		let local_fee = Runtime::query_weight_to_asset_fee(
-			local_weight,
-			VersionedAssetId::from(AssetId(Location::here())),
-		)
-		.unwrap();
+		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
 		let forward_amount = sp_std::cmp::min(
 			amount,
