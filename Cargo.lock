@@ -6481,6 +6481,7 @@ dependencies = [
  "sp-session",
  "sp-std",
  "sp-storage",
+ "sp-tracing",
  "sp-transaction-pool",
  "sp-version",
  "staging-parachain-info",

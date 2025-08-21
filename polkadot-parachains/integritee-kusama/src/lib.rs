@@ -94,12 +94,7 @@ use sp_core::{
 };
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-use sp_runtime::{
-	generic, impl_opaque_keys,
-	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
-	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, RuntimeDebug,
-};
+use sp_runtime::{generic, impl_opaque_keys, traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup}, transaction_validity::{TransactionSource, TransactionValidity}, ApplyExtrinsicResult, DispatchError, RuntimeDebug, TransactionOutcome};
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -1529,17 +1524,57 @@ impl_runtime_apis! {
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
+// Todo: When we upgrade the sdk we can replace the following function's body with:
+		// 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
+		// 			use crate::xcm_config::XcmConfig;
+		// 			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
+		// 			PolkadotXcm::query_weight_to_asset_fee::<Trader>(weight, asset)
+		// 		}
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-			let latest_asset_id: Result<AssetId, ()> = asset.clone().try_into();
-			match latest_asset_id {
-				Ok(asset_id) if asset_id.0 == xcm_config::SelfLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				Ok(asset_id) if asset_id.0 == xcm_config::RelayChainLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				_ => todo!("Asset fee payment for {:?} not implemented", asset),
-			}
+			use xcm::v5::Asset;
+			use frame_support::storage::with_transaction;
+			use xcm::opaque::lts::XcmHash;
+			use xcm_executor::traits::WeightTrader;
+			use xcm::opaque::latest::XcmContext;
+
+			use crate::xcm_config::XcmConfig;
+			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
+
+			let asset: AssetId = asset.clone().try_into()
+			.map_err(|e| {
+				sp_tracing::debug!(target: "xcm::pallet::query_weight_to_asset_fee", ?e, ?asset, "Failed to convert versioned asset");
+				XcmPaymentApiError::VersionedConversionFailed
+			})?;
+
+			let max_amount = u128::MAX / 2;
+			let max_payment: Asset = (asset.clone(), max_amount).into();
+			let context = XcmContext::with_message_id(XcmHash::default());
+
+			// We return the unspent amount without affecting the state
+			// as we used a big amount of the asset without any check.
+			let unspent = with_transaction(|| {
+				let mut trader = Trader::new();
+				let result = trader.buy_weight(weight, max_payment.into(), &context)
+					.map_err(|e| {
+						sp_tracing::error!(target: "Runtime::query_weight_to_asset_fee", ?e, ?asset, "Failed to buy weight");
+
+						// Return something convertible to `DispatchError` as required by the `with_transaction` fn.
+						DispatchError::Other("Failed to buy weight")
+					});
+
+			TransactionOutcome::Rollback(result)
+			}).map_err(|error| {
+				sp_tracing::debug!(target: "Runtime::query_weight_to_asset_fee", ?error, "Failed to execute transaction");
+				XcmPaymentApiError::AssetNotFound
+			})?;
+
+			let Some(unspent) = unspent.fungible.get(&asset) else {
+				sp_tracing::error!(target: "Runtime::query_weight_to_asset_fee", ?asset, "The trader didn't return the needed fungible asset");
+				return Err(XcmPaymentApiError::AssetNotFound);
+			};
+
+			let paid = max_amount - unspent;
+			Ok(paid)
 		}
 
 		fn query_xcm_weight(message: VersionedXcm<()>) -> Result<Weight, XcmPaymentApiError> {
