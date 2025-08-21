@@ -10,6 +10,7 @@ description = "Logic which is common to all parachain runtimes"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+log = { workspace = true }
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
 smallvec = { workspace = true }
@@ -42,6 +43,7 @@ xcm-runtime-apis = { workspace = true }
 default = ["std"]
 std = [
     "parity-scale-codec/std",
+    "log/std",
     "frame-executive/std",
     "frame-support/std",
     "frame-system/std",

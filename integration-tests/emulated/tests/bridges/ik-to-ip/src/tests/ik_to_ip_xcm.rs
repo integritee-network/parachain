@@ -10,7 +10,7 @@ use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
-		integritee_kusama_runtime::{integritee_common::porteer::burn_local_xcm, TEER},
+		integritee_kusama_runtime::{integritee_common::porteer::burn_native_xcm, TEER},
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
@@ -115,7 +115,7 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 		assert_asset_hub_polkadot_tokens_forwarded(token_owner.clone());
 
 		if fund_token_holder_on_ip {
-			let xcm = burn_local_xcm(Location::here(), 0, 0);
+			let xcm = burn_native_xcm(Location::here(), 0, 0);
 			let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
 
 			assert_eq!(

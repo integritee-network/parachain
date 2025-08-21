@@ -787,10 +787,10 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCommitteeInstance, 1, 1>,
 >;
 
-use crate::xcm_config::{AccountIdToLocation, XcmConfig, XcmRouter};
+use crate::xcm_config::{AccountIdToLocation, XcmConfig};
 use integritee_parachains_common::porteer::{
-	asset_hub_kusama_location, burn_local_xcm, ik_sibling_v5, integritee_runtime_porteer_mint,
-	ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, receive_teleported_asset, teleport_asset,
+	asset_hub_kusama_location, burn_native_xcm, ik_sibling_v5, integritee_runtime_porteer_mint,
+	ip_cousin_v5, ip_sibling_v5, local_integritee_xcm, teleport_asset,
 	IK_FEE,
 };
 use sp_core::hex2array;
@@ -799,6 +799,7 @@ use xcm::{
 	latest::{Location, NetworkId, Parent, SendError},
 	prelude::{GlobalConsensus, Parachain},
 };
+use xcm::prelude::XcmError;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 ord_parameter_types! {
@@ -870,7 +871,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 	type AccountId = AccountId;
 	type Balance = Balance;
 	type Location = Location;
-	type Error = SendError;
+	type Error = XcmError;
 
 	fn forward_ported_tokens(
 		who: &Self::AccountId,
@@ -879,7 +880,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 	) -> Result<(), Self::Error> {
 		let who_location = AccountIdToLocation::convert(who.clone());
 
-		let tentative_xcm = burn_local_xcm(who_location.clone(), amount, 0);
+		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
 		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(tentative_xcm)).unwrap();
 
 		let local_fee = Runtime::query_weight_to_asset_fee(
@@ -895,12 +896,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 				.saturating_sub(local_fee),
 		);
 
-		println!("Full Amount: {:?}", amount);
-		println!("Local Fee: {:?}", local_fee);
-		println!("Forward Amount: {:?}", forward_amount);
-
 		let who_location = AccountIdToLocation::convert(who.clone());
-
 		let asset =
 			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), forward_amount);
 		let beneficiary_location = AccountIdToLocation::convert(who.clone());

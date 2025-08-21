@@ -8,7 +8,7 @@ use xcm::{
 	latest::{
 		Asset, AssetFilter,
 		AssetTransferFilter::{ReserveDeposit, Teleport},
-		Location, OriginKind, Parent, SendError, WeightLimit, WildAsset, Xcm,
+		Location, OriginKind, Parent, WeightLimit, WildAsset, Xcm,
 	},
 	prelude::{
 		AllCounted, BurnAsset, BuyExecution, ClearOrigin, DepositAsset, ExecuteXcm, Fungible,
@@ -16,6 +16,7 @@ use xcm::{
 		ReceiveTeleportedAsset, RefundSurplus, SendXcm, SetAppendix, Transact, Wild, WithdrawAsset,
 	},
 };
+use xcm::prelude::XcmError;
 use xcm_executor::XcmExecutor;
 
 pub const IK_FEE: u128 = 1000000000000;
@@ -128,12 +129,13 @@ pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 	])
 }
 
-/// Burn Local Assets to be teleported.
-pub fn burn_local_xcm<Call>(who: Location, amount: Balance, local_fees: Balance) -> Xcm<Call> {
+/// Returns an Xcm that is meant to be executed locally to burn the native asset.
+pub fn burn_native_xcm<Call>(who: Location, amount: Balance, local_fees: Balance) -> Xcm<Call> {
 	let asset: Asset = (Here, Fungible(amount)).into();
 	burn_asset_xcm(who, asset, local_fees)
 }
 
+/// Returns an Xcm that is meant to be executed locally to burn the `Asset`.
 pub fn burn_asset_xcm<Call>(who: Location, asset: Asset, local_fees: Balance) -> Xcm<Call> {
 	Xcm(vec![
 		WithdrawAsset(vec![asset.clone(), (Here, Fungible(local_fees)).into()].into()),
@@ -161,27 +163,22 @@ pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
 	asset: Asset,
 	local_fee: Balance,
 	destination: Location,
-) -> Result<(), SendError> {
+) -> Result<(), XcmError> {
 	let xcm = burn_asset_xcm(who.clone(), asset.clone(), local_fee);
 
+	let mut hash = xcm.using_encoded(sp_io::hashing::blake2_256);
 	let outcome = XcmExecutor::<XcmConfig>::prepare_and_execute(
 		who,
 		xcm,
-		// Todo: Return the Id, and the pallet and emit an event with it.
-		// But the PalletXcm does that anyhow already.
-		&mut [0; 32],
+		&mut hash,
 		Weight::MAX,
 		Weight::zero(),
 	);
 
-	println!("Outcome: {:?}", outcome);
-
-	//
-	// match outcome {
-	// 	Outcome::Complete { .. } => {}
-	// 	Outcome::Incomplete { .. } => {}
-	// 	Outcome::Error { .. } => {}
-	// }
+	outcome.ensure_complete().map_err(|error| {
+		log::error!("Local execution is incomplete: {:?}", error);
+		error
+	})?;
 
 	let remote_xcm = receive_teleported_asset(asset.into(), beneficiary);
 
