@@ -896,6 +896,10 @@ impl ForwardPortedTokens for PortTokensToPolkadot {
 				.saturating_sub(local_fee),
 		);
 
+		println!("amount: {}", amount);
+		println!("local fee: {}", local_fee);
+		println!("forward amount: {}", forward_amount);
+
 		let who_location = AccountIdToLocation::convert(who.clone());
 		let asset =
 			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), forward_amount);

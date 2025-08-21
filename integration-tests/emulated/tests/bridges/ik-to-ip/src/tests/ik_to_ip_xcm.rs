@@ -19,12 +19,12 @@ use system_parachains_constants::genesis_presets::get_account_id_from_seed;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 #[test]
-fn ik_to_ip_xcm_works_without_forwarding() {
+fn ik_to_ip_xcm_works_without_forwarding_with_endowed_ip_beneficiary() {
 	ik_to_pk_xcm(None, true)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_with_forwarding() {
+fn ik_to_ip_xcm_works_with_forwarding_with_endowed_ip_beneficiary() {
 	ik_to_pk_xcm(Some(AssetHubLocation::get()), true)
 }
 
