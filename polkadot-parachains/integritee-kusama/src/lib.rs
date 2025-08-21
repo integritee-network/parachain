@@ -789,8 +789,8 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 
 use crate::xcm_config::{AccountIdToLocation, XcmConfig};
 use integritee_parachains_common::porteer::{
-	asset_hub_polkadot_location, burn_native_xcm, ik_cousin_v5, ik_sibling_v5,
-	integritee_runtime_porteer_mint, ip_sibling_v5, local_integritee_xcm, teleport_asset, AHK_FEE,
+	ahp_cousin_location, ik_cousin_v5, ik_sibling_v5,
+	integritee_runtime_porteer_mint, ip_sibling_v5, AHK_FEE,
 	IK_FEE,
 };
 use sp_core::hex2array;
@@ -800,6 +800,7 @@ use xcm::{
 	prelude::{GlobalConsensus, Parachain, XcmError},
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use integritee_parachains_common::xcm_helpers::{burn_native_xcm, teleport_asset};
 
 ord_parameter_types! {
 	pub const IntegriteePolkadotLocation: Location = Location {
@@ -831,7 +832,7 @@ impl PortTokens for PortTokensToPolkadot {
 			ik_sibling_v5(),
 			ik_cousin_v5(),
 			((Parent, Parachain(1000)).into(), fees.hop1),
-			(asset_hub_polkadot_location(), fees.hop2),
+			(ahp_cousin_location(), fees.hop2),
 			(ip_sibling_v5(), fees.hop3),
 		);
 
@@ -842,7 +843,7 @@ impl PortTokens for PortTokensToPolkadot {
 			ik_sibling_v5(),
 			ik_cousin_v5(),
 			((Parent, Parachain(1000)).into(), fees.hop1),
-			(asset_hub_polkadot_location(), fees.hop2),
+			(ahp_cousin_location(), fees.hop2),
 			(ip_sibling_v5(), fees.hop3),
 		);
 

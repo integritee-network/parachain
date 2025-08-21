@@ -44,8 +44,7 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 use frame_support::{
-	derive_impl,
-	ord_parameter_types,
+	derive_impl, ord_parameter_types,
 	traits::{
 		fungible::{Credit, HoldConsideration, NativeFromLeft, NativeOrWithId, UnionOf},
 		tokens::{
@@ -787,10 +786,13 @@ pub type EnsureRootOrAllTechnicalCommittee = EitherOfDiverse<
 >;
 
 use crate::xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig};
-use integritee_parachains_common::porteer::{
-	ah_sibling_xcm, asset_hub_kusama_location, burn_asset_xcm, burn_native_xcm,
-	execute_local_and_remote_xcm, ik_sibling_v5, integritee_runtime_porteer_mint, ip_cousin_v5,
-	ip_sibling_v5, teleport_asset,
+use integritee_parachains_common::{
+	porteer::{
+		ah_sibling_xcm, ahk_cousin_location,
+		ik_sibling_v5, integritee_runtime_porteer_mint, ip_cousin_v5,
+		ip_sibling_v5
+	},
+	xcm_helpers::{burn_asset_xcm, burn_native_xcm, execute_local_and_remote_xcm},
 };
 use sp_core::hex2array;
 use sp_runtime::traits::Convert;
@@ -799,6 +801,7 @@ use xcm::{
 	prelude::{GlobalConsensus, Parachain, XcmError},
 };
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
+use integritee_parachains_common::xcm_helpers::teleport_asset;
 
 ord_parameter_types! {
 	pub const IntegriteeKusamaLocation: Location = Location {
@@ -828,16 +831,17 @@ impl PortTokens for PortTokensToKusama {
 		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
 		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
-		let asset_hub_sibling_fee =
+		let ah_sibling_fee =
 			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), fees.hop1);
 
-		let local_xcm = burn_asset_xcm(who_location.clone(), asset_hub_sibling_fee.clone().into(), local_fee);
+		let local_xcm =
+			burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
 		let remote_xcm = ah_sibling_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
-			asset_hub_sibling_fee.into(),
+			ah_sibling_fee.into(),
 			ip_sibling_v5(),
 			ip_cousin_v5(),
-			(asset_hub_kusama_location(), fees.hop2),
+			(ahk_cousin_location(), fees.hop2),
 			(ik_sibling_v5(), fees.hop3),
 		);
 		execute_local_and_remote_xcm::<XcmConfig, <XcmConfig as xcm_executor::Config>::RuntimeCall>(
