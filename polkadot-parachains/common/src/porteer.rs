@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Common code that the Porteer requires to send code back and forth between IK<>IP.
+//! Common code that the Porteer requires to send tokens back and forth between IK<>IP.
 
 use crate::{AccountId, Balance};
 use pallet_porteer::XcmFeeParams;
