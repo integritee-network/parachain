@@ -9,12 +9,14 @@ use crate::{
 use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
-		genesis::AssetHubLocation, integritee_kusama_runtime::TEER,
+		genesis::AssetHubLocation,
+		integritee_kusama_runtime::{integritee_common::porteer::burn_native_xcm, TEER},
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
 };
 use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
+use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 #[test]
 fn ip_to_ik_xcm_works_without_forwarding() {
@@ -115,22 +117,19 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	if forward_teer_location.is_some() {
 		assert_asset_hub_kusama_tokens_forwarded(token_owner.clone());
 
-		// The forwarder makes sure that there are at least 2 ED on the account, but then some fees have to be paid.
 		if fund_token_holder_on_ip {
-			// Todo: how to compute the local fees
-			// assert_eq!(
-			// 	IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-			// 	token_owner_balance_before_on_ip
-			// );
+			let xcm = burn_native_xcm(Location::here(), 0, 0);
+			let local_fee = query_integritee_kusama_xcm_execution_fee(xcm);
+
+			assert_eq!(
+				IntegriteeKusama::account_data_of(token_owner.clone()).free,
+				token_owner_balance_before_on_ip - local_fee
+			);
 		} else {
 			// Ensure that token forwarding respects the ED.
-			assert!(
-				IntegriteeKusama::account_data_of(token_owner.clone()).free <
-					2 * ExistentialDeposit::get()
-			);
-			assert!(
-				IntegriteeKusama::account_data_of(token_owner.clone()).free >
-					ExistentialDeposit::get()
+			assert_eq!(
+				IntegriteeKusama::account_data_of(token_owner.clone()).free,
+				ExistentialDeposit::get()
 			);
 		}
 	} else {
@@ -179,7 +178,7 @@ fn assert_integritee_kusama_tokens_minted(
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
 						who, amount,
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
-					RuntimeEvent::PolkadotXcm(pallet_xcm::Event::Sent { .. }) => {},
+					RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::XcmpMessageSent { .. }) => {},
 				]
 			);
 		} else {
@@ -196,4 +195,20 @@ fn assert_integritee_kusama_tokens_minted(
 			);
 		}
 	});
+}
+
+fn query_integritee_kusama_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
+	<IntegriteeKusama as TestExt>::execute_with(|| {
+		type Runtime = <IntegriteeKusama as Chain>::Runtime;
+
+		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).unwrap();
+
+		let local_fee = Runtime::query_weight_to_asset_fee(
+			local_weight,
+			VersionedAssetId::from(AssetId(Location::here())),
+		)
+		.unwrap();
+
+		local_fee
+	})
 }
