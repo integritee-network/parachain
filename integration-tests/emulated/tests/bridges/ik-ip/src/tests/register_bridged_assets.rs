@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Copied from the runtimes repo, but we keep them as sanity tests
+
 use crate::tests::*;
 
 const XCM_FEE: u128 = 40_000_000_000;

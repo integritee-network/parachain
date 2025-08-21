@@ -1955,7 +1955,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bridge-hub-ik-to-ip-integration-tests"
+name = "bridge-hub-ik-ip-integration-tests"
 version = "1.18.0"
 dependencies = [
  "bp-bridge-hub-kusama",

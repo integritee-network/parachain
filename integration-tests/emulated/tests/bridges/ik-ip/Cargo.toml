@@ -1,5 +1,5 @@
 [package]
-name = "bridge-hub-ik-to-ip-integration-tests"
+name = "bridge-hub-ik-ip-integration-tests"
 authors.workspace = true
 edition.workspace = true
 version = "1.18.0"

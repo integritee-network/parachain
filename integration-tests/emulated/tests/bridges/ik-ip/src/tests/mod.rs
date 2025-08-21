@@ -16,7 +16,6 @@
 use crate::*;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
-// mod asset_transfers;
 mod ik_to_ip_xcm;
 mod integritee_bridge_setup;
 mod ip_to_ik_xcm;

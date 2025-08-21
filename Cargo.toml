@@ -9,7 +9,7 @@ members = [
     "integration-tests/emulated/chains/parachains/integritee/integritee-kusama",
     "integration-tests/emulated/chains/parachains/integritee/integritee-polkadot",
     "integration-tests/emulated/networks/kusama-polkadot-system",
-    "integration-tests/emulated/tests/bridges/ik-to-ip",
+    "integration-tests/emulated/tests/bridges/ik-ip",
     "polkadot-parachains",
     "polkadot-parachains/common",
     "polkadot-parachains/integritee-kusama",
