@@ -87,6 +87,7 @@ sp-runtime = { workspace = true }
 sp-session = { workspace = true }
 sp-std = { workspace = true }
 sp-storage = { workspace = true }
+sp-tracing = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 staging-parachain-info = { workspace = true }
@@ -187,6 +188,7 @@ std = [
     "sp-std/std",
     "sp-storage/std",
     "sp-transaction-pool/std",
+    "sp-tracing/std",
     "sp-version/std",
     "staging-parachain-info/std",
     "xcm-builder/std",

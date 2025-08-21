@@ -12,8 +12,8 @@ use xcm::{
 	},
 	prelude::{
 		AllCounted, BurnAsset, BuyExecution, ClearOrigin, DepositAsset, Fungible, GlobalConsensus,
-		Here, InitiateTransfer, Kusama, Parachain, Polkadot, ReceiveTeleportedAsset, RefundSurplus,
-		SetAppendix, Transact, Wild, WithdrawAsset,
+		Here, InitiateTransfer, Kusama, Parachain, PayFees, Polkadot, ReceiveTeleportedAsset,
+		RefundSurplus, SetAppendix, Transact, Wild, WithdrawAsset,
 	},
 	VersionedXcm,
 };
@@ -130,9 +130,14 @@ pub fn local_integritee_xcm<Call, IntegriteePolkadotCall: Encode>(
 }
 
 /// Burn Local Assets to be teleported.
-pub fn burn_local_xcm<Call>(amount: Balance) -> Xcm<Call> {
+pub fn burn_local_xcm<Call>(who: Location, amount: Balance, local_fees: Balance) -> Xcm<Call> {
 	Xcm(vec![
-		WithdrawAsset((Here, Fungible(amount)).into()),
+		WithdrawAsset((Here, Fungible(amount.saturating_add(local_fees))).into()),
+		PayFees { asset: (Here, Fungible(local_fees)).into() },
+		SetAppendix(Xcm(vec![
+			RefundSurplus,
+			DepositAsset { assets: AssetFilter::Wild(WildAsset::All), beneficiary: who },
+		])),
 		BurnAsset((Here, Fungible(amount)).into()),
 	])
 }
@@ -144,11 +149,6 @@ pub fn receive_teleported_asset<Call>(asset: Asset, beneficiary: Location) -> Xc
 		BuyExecution { fees: asset, weight_limit: WeightLimit::Unlimited },
 		DepositAsset { assets: Wild(AllCounted(1)), beneficiary },
 	])
-}
-
-pub fn weigh_xcm<T: pallet_xcm::Config>(xcm: Xcm<()>) -> Result<Balance, fees::Error> {
-	let w = pallet_xcm::Pallet::<T>::query_xcm_weight(VersionedXcm::V5(xcm))?;
-	Ok(WeightToFee::weight_to_fee(&w))
 }
 
 /// Nested XCM to be executed as `remote_xcm` from within `local_integritee_xcm` on the

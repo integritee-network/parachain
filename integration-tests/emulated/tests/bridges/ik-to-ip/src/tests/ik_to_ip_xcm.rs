@@ -11,7 +11,7 @@ use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
 		integritee_kusama_runtime::{
-			integritee_common::porteer::{burn_local_xcm, weigh_xcm},
+			integritee_common::porteer::{burn_local_xcm},
 			TEER,
 		},
 	},
@@ -19,6 +19,7 @@ use kusama_polkadot_system_emulated_network::{
 };
 use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
+use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 #[test]
 fn ik_to_ip_xcm_works_without_forwarding() {
@@ -115,16 +116,14 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	if forward_teer_location.is_some() {
 		assert_asset_hub_polkadot_tokens_forwarded(token_owner.clone());
-		// The forwarder makes sure that there are at least 2 ED on the account, but then some fees have to be paid.
+
 		if fund_token_holder_on_ip {
-			let local_fee = <IntegriteePolkadot as TestExt>::execute_with(|| {
-				type Runtime = <IntegriteePolkadot as Chain>::Runtime;
-				weigh_xcm::<Runtime>(burn_local_xcm(0)).unwrap()
-			});
+			let xcm = burn_local_xcm(Location::here(), 0, 0);
+			let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
 
 			assert_eq!(
 				IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-				token_owner_balance_before_on_ip
+				token_owner_balance_before_on_ip - local_fee
 			);
 		} else {
 			// Ensure that token forwarding respects the ED.
@@ -196,4 +195,20 @@ fn assert_integritee_polkadot_tokens_minted(
 			);
 		}
 	});
+}
+
+fn query_integritee_polkadot_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
+	<IntegriteePolkadot as TestExt>::execute_with(|| {
+		type Runtime = <IntegriteePolkadot as Chain>::Runtime;
+
+		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(xcm)).unwrap();
+
+		let local_fee = Runtime::query_weight_to_asset_fee(
+			local_weight,
+			VersionedAssetId::from(AssetId(Location::here())),
+		)
+			.unwrap();
+
+		local_fee
+	})
 }

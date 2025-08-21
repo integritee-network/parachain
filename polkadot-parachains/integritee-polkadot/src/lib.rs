@@ -98,7 +98,7 @@ use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, BlakeTwo256, Block as BlockT, ConvertInto, IdentityLookup},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchError, RuntimeDebug, TransactionOutcome,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
@@ -795,7 +795,7 @@ use integritee_parachains_common::porteer::{
 use sp_core::hex2array;
 use sp_runtime::traits::Convert;
 use xcm::{
-	latest::{ExecuteXcm, Location, NetworkId, Parent, SendError, SendXcm},
+	latest::{ExecuteXcm, Junction, Location, NetworkId, Outcome, Parent, SendError, SendXcm},
 	prelude::{GlobalConsensus, Parachain},
 };
 use xcm_executor::XcmExecutor;
@@ -877,22 +877,34 @@ impl ForwardPortedTokens for PortTokensToKusama {
 		amount: Self::Balance,
 		location: Self::Location,
 	) -> Result<(), Self::Error> {
-		let tentative_xcm = burn_local_xcm(amount);
-		let local_fee = weigh_xcm::<Runtime>(tentative_xcm).map_err(|e| {
-			log::error!("Could not compute xcm fees: {:?}", e);
-			SendError::Fees
-		})?;
+		let who_location = AccountIdToLocation::convert(who.clone());
+
+		let tentative_xcm = burn_local_xcm(who_location.clone(), amount, 0);
+
+		let local_weight = Runtime::query_xcm_weight(VersionedXcm::V5(tentative_xcm)).unwrap();
+
+		let local_fee = Runtime::query_weight_to_asset_fee(
+			local_weight,
+			VersionedAssetId::from(AssetId(Location::here())),
+		)
+		.unwrap();
 
 		let forward_amount = sp_std::cmp::min(
 			amount,
 			Balances::free_balance(who)
-				.saturating_sub(ExistentialDeposit::get().saturating_sub(local_fee)),
+				.saturating_sub(ExistentialDeposit::get())
+				.saturating_sub(local_fee),
 		);
 
-		let xcm = burn_local_xcm(forward_amount);
+		println!("Full Amount: {:?}", amount);
+		println!("Local Fee: {:?}", local_fee);
+		println!("Forward Amount: {:?}", forward_amount);
 
-		XcmExecutor::<XcmConfig>::prepare_and_execute(
-			who.clone(),
+		let xcm = burn_local_xcm(who_location.clone(), forward_amount, local_fee);
+
+		let who_location = AccountIdToLocation::convert(who.clone());
+		let outcome = XcmExecutor::<XcmConfig>::prepare_and_execute(
+			who_location,
 			xcm,
 			// Todo: Return the Id, and the pallet and emit an event with it.
 			// But the PalletXcm does that anyhow already.
@@ -900,6 +912,15 @@ impl ForwardPortedTokens for PortTokensToKusama {
 			Weight::MAX,
 			Weight::zero(),
 		);
+
+		println!("Local Execution Outcome {:?}", outcome);
+
+		//
+		// match outcome {
+		// 	Outcome::Complete { .. } => {}
+		// 	Outcome::Incomplete { .. } => {}
+		// 	Outcome::Error { .. } => {}
+		// }
 
 		let asset =
 			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), forward_amount);
@@ -1533,17 +1554,57 @@ impl_runtime_apis! {
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
+		// Todo: When we upgrade the sdk we can replace the following function's body with:
+		// 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
+		// 			use crate::xcm_config::XcmConfig;
+		// 			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
+		// 			PolkadotXcm::query_weight_to_asset_fee::<Trader>(weight, asset)
+		// 		}
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-			let latest_asset_id: Result<AssetId, ()> = asset.clone().try_into();
-			match latest_asset_id {
-				Ok(asset_id) if asset_id.0 == xcm_config::SelfLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				Ok(asset_id) if asset_id.0 == xcm_config::RelayChainLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				_ => todo!("Asset fee payment for {:?} not implemented", asset),
-			}
+			use xcm::v5::Asset;
+			use frame_support::storage::with_transaction;
+			use xcm::opaque::lts::XcmHash;
+			use xcm_executor::traits::WeightTrader;
+			use xcm::opaque::latest::XcmContext;
+
+			use crate::xcm_config::XcmConfig;
+			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
+
+			let asset: AssetId = asset.clone().try_into()
+			.map_err(|e| {
+				sp_tracing::debug!(target: "xcm::pallet::query_weight_to_asset_fee", ?e, ?asset, "Failed to convert versioned asset");
+				XcmPaymentApiError::VersionedConversionFailed
+			})?;
+
+			let max_amount = u128::MAX / 2;
+			let max_payment: Asset = (asset.clone(), max_amount).into();
+			let context = XcmContext::with_message_id(XcmHash::default());
+
+			// We return the unspent amount without affecting the state
+			// as we used a big amount of the asset without any check.
+			let unspent = with_transaction(|| {
+				let mut trader = Trader::new();
+				let result = trader.buy_weight(weight, max_payment.into(), &context)
+					.map_err(|e| {
+						sp_tracing::error!(target: "Runtime::query_weight_to_asset_fee", ?e, ?asset, "Failed to buy weight");
+
+						// Return something convertible to `DispatchError` as required by the `with_transaction` fn.
+						DispatchError::Other("Failed to buy weight")
+					});
+
+			TransactionOutcome::Rollback(result)
+			}).map_err(|error| {
+				sp_tracing::debug!(target: "Runtime::query_weight_to_asset_fee", ?error, "Failed to execute transaction");
+				XcmPaymentApiError::AssetNotFound
+			})?;
+
+			let Some(unspent) = unspent.fungible.get(&asset) else {
+				sp_tracing::error!(target: "Runtime::query_weight_to_asset_fee", ?asset, "The trader didn't return the needed fungible asset");
+				return Err(XcmPaymentApiError::AssetNotFound);
+			};
+
+			let paid = max_amount - unspent;
+			Ok(paid)
 		}
 
 		fn query_xcm_weight(message: VersionedXcm<()>) -> Result<Weight, XcmPaymentApiError> {
