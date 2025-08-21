@@ -19,6 +19,7 @@ use crate::{
 	xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig},
 	Balances, ExistentialDeposit, ParachainInfo, Porteer, Runtime,
 };
+use alloc::vec;
 use frame_support::ord_parameter_types;
 use integritee_parachains_common::{
 	porteer::{

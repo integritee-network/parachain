@@ -20,6 +20,7 @@
 use crate::Balance;
 use frame_support::pallet_prelude::Weight;
 use parity_scale_codec::Encode;
+use sp_std::vec;
 use xcm::{
 	latest::{Asset, AssetFilter, ExecuteXcm, Location, SendXcm, WeightLimit, WildAsset, Xcm},
 	prelude::{
