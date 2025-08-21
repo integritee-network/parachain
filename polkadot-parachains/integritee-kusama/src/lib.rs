@@ -1398,12 +1398,8 @@ impl_runtime_apis! {
 			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
-		// Todo: When we upgrade the sdk we can replace the following function's body with:
-		// 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
-		// 			use crate::xcm_config::XcmConfig;
-		// 			type Trader = <XcmConfig as xcm_executor::Config>::Trader;
-		// 			PolkadotXcm::query_weight_to_asset_fee::<Trader>(weight, asset)
-		// 		}
+		// Todo: Replace after polkadot-sdk update, see #336:
+		// https://github.com/integritee-network/parachain/issues/336
 		fn query_weight_to_asset_fee(weight: Weight, asset: VersionedAssetId) -> Result<u128, XcmPaymentApiError> {
 			use xcm::v5::Asset;
 			use frame_support::storage::with_transaction;
