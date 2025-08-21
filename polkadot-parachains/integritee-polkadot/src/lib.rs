@@ -817,9 +817,8 @@ impl PortTokens for PortTokensToKusama {
 	type Location = Location;
 	type Error = XcmError;
 
-	// Todo: Passed owned account id
 	fn port_tokens(
-		who: &Self::AccountId,
+		who: Self::AccountId,
 		amount: Self::Balance,
 		location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
@@ -879,7 +878,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 	type Error = XcmError;
 
 	fn forward_ported_tokens(
-		who: &Self::AccountId,
+		who: Self::AccountId,
 		amount: Self::Balance,
 		destination: Self::Location,
 	) -> Result<(), Self::Error> {
@@ -889,7 +888,7 @@ impl ForwardPortedTokens for PortTokensToKusama {
 
 		let forward_amount = sp_std::cmp::min(
 			amount,
-			Balances::free_balance(who)
+			Balances::free_balance(&who)
 				.saturating_sub(ExistentialDeposit::get())
 				.saturating_sub(local_fee),
 		);

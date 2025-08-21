@@ -817,22 +817,11 @@ impl PortTokens for PortTokensToPolkadot {
 	type Location = Location;
 	type Error = XcmError;
 
-	// Todo: Passed owned account id
 	fn port_tokens(
-		who: &Self::AccountId,
+		who: Self::AccountId,
 		amount: Self::Balance,
 		location: Option<Self::Location>,
 	) -> Result<(), Self::Error> {
-		// let xcm1 = local_integritee_xcm(
-		// 	integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
-		// 	IK_FEE + AHK_FEE,
-		// 	ik_sibling_v5(),
-		// 	ik_cousin_v5(),
-		// 	((Parent, Parachain(1000)).into(), fees.hop1),
-		// 	(ahp_cousin_location(), fees.hop2),
-		// 	(ip_sibling_v5(), fees.hop3),
-		// );
-
 		let who_location = AccountIdToLocation::convert(who.clone());
 		let fees = Porteer::xcm_fee_config();
 
@@ -889,7 +878,7 @@ impl ForwardPortedTokens for PortTokensToPolkadot {
 	type Error = XcmError;
 
 	fn forward_ported_tokens(
-		who: &Self::AccountId,
+		who: Self::AccountId,
 		amount: Self::Balance,
 		destination: Self::Location,
 	) -> Result<(), Self::Error> {
@@ -899,14 +888,10 @@ impl ForwardPortedTokens for PortTokensToPolkadot {
 
 		let forward_amount = sp_std::cmp::min(
 			amount,
-			Balances::free_balance(who)
+			Balances::free_balance(&who)
 				.saturating_sub(ExistentialDeposit::get())
 				.saturating_sub(local_fee),
 		);
-
-		println!("amount: {}", amount);
-		println!("local fee: {}", local_fee);
-		println!("forward amount: {}", forward_amount);
 
 		let who_location = AccountIdToLocation::convert(who.clone());
 		let asset =
