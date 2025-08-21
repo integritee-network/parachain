@@ -48,6 +48,9 @@ pub fn burn_asset_xcm<Call>(who: Location, asset: Asset, local_fees: Balance) ->
 	])
 }
 
+/// XCM meant to be sent to the remote to mint locally burned assets.
+///
+/// Note: Never use that without burning the exact amount to be minted.
 pub fn receive_teleported_asset<Call>(asset: Asset, beneficiary: Location) -> Xcm<Call> {
 	Xcm(vec![
 		ReceiveTeleportedAsset(asset.clone().into()),
@@ -57,6 +60,7 @@ pub fn receive_teleported_asset<Call>(asset: Asset, beneficiary: Location) -> Xc
 	])
 }
 
+/// A stripped down version of the `pallet-xcm`, which gives us more control over the fees.
 pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
 	who: Location,
 	beneficiary: Location,
@@ -76,6 +80,8 @@ pub fn teleport_asset<XcmConfig: xcm_executor::Config>(
 	Ok(())
 }
 
+/// Executes a pair of local and remote XCMs, e.g. burn locally and if successful send
+/// the XCM to mint assets on the remote chain.
 pub fn execute_local_and_remote_xcm<XcmConfig: xcm_executor::Config<RuntimeCall = Call>, Call>(
 	who: Location,
 	local_xcm: Xcm<Call>,
@@ -95,6 +101,8 @@ pub fn execute_local_and_remote_xcm<XcmConfig: xcm_executor::Config<RuntimeCall 
 		log::error!("Local execution is incomplete: {:?}", error);
 	})?;
 
+	// If we don't use anything here with the delivery fees, they will not be charged.
+	// Todo: shall we charge `who`?
 	let (ticket, _delivery_fees) = <XcmConfig as xcm_executor::Config>::XcmSender::validate(
 		&mut Some(destination),
 		&mut Some(remote_xcm),
