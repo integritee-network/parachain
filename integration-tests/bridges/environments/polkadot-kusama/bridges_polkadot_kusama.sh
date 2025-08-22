@@ -648,6 +648,13 @@ case "$1" in
           --sudo \
           tx.porteer.addLocationToWhitelist \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 1000 }]}}')"
+      # set XCM fee params: TEER / KSM / DOT. may be way too high
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setXcmFeeParams \
+              "$(jq --null-input '{ "hop1": 33000000000000, "hop2": 3000000000000, "hop3": 1000000000000 }')"
       ;;
   init-integritee-polkadot-local)
       # SA of sibling asset hub pays for the inwards execution
@@ -788,6 +795,13 @@ case "$1" in
           --sudo \
           tx.porteer.addLocationToWhitelist \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 1000 }]}}')"
+      # set XCM fee params: TEER / DOT / KSM. may be way too high
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setXcmFeeParams \
+              "$(jq --null-input '{ "hop1": 10000000000000, "hop2": 10000000000, "hop3": 200000000000 }')"
       ;;
   reserve-transfer-assets-from-asset-hub-polkadot-local)
       amount=$2
