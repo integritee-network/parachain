@@ -198,7 +198,7 @@ fn integritee_genesis_config(
 			non_authority_keys: vec![],
 		},
 		"balances": {
-			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1_000 * TEER)).collect::<Vec<_>>(),
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1_000_000 * TEER)).collect::<Vec<_>>(),
 		},
 		"parachainInfo": {
 			"parachainId": parachain_id,

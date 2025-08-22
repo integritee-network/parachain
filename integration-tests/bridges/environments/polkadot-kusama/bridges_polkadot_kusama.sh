@@ -329,14 +329,14 @@ case "$1" in
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama" }] } }')"
-      # Create liquidity in the pool @ 10 DOT = 4 KSM
+      # Create liquidity in the pool @ 10 DOT = 4 KSM (100 DOT = 40KSM)
       add_liquidity \
           "ws://127.0.0.1:9910" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Kusama"}] } }')" \
-          100000000000 \
-          4000000000000 \
+          1000000000000 \
+          40000000000000 \
           "$BOB_SOVEREIGN_ACCOUNT_AT_POLKADOT"
       # create foreign assets for native Kusama token (governance call on Polkadot)
       force_create_foreign_asset \
@@ -431,20 +431,31 @@ case "$1" in
       ;;
   init-asset-hub-kusama-local)
       ensure_polkadot_js_api
+      # Alice isn't endowed enough at KAH genesis for practical pool liquidity.
+      # teleport some more: 9000*10^12 is just below the biggest number js can take
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9945" \
+          --seed "//Alice" \
+          tx.xcmPallet.transferAssets \
+              "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "Parachain": 1000 } ] } } }')" \
+              "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '9000000000000000' } } ] }')" \
+              "0" \
+              "Unlimited"
       # create pool for KSM and wDOT
       create_pool \
           "ws://127.0.0.1:9010" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot" }] } }')"
-      # Create liquidity in the pool @ 1 KSM = 2.5 DOT.
+      # Create liquidity in the pool @ 1 KSM = 2.5 DOT (50 KSM = 125 DOT).
       add_liquidity \
           "ws://127.0.0.1:9010" \
           "//Bob" \
           "$(jq --null-input '{ "parents": 1, "interior": "Here" }')" \
           "$(jq --null-input '{ "parents": 2, "interior": { "X1": [{ "GlobalConsensus": "Polkadot"}] } }')" \
-          1000000000000 \
-          25000000000 \
+          50000000000000 \
+          1250000000000 \
           "$BOB_SOVEREIGN_ACCOUNT_AT_KUSAMA"
       force_create_foreign_asset \
           "ws://127.0.0.1:9945" \
@@ -516,7 +527,7 @@ case "$1" in
           "ws://127.0.0.1:9910" \
           "//Alice" \
           "14DXRZEfzojXowgGnamfGzTjnMERF9cVWRkdHHYQFiTsDiXB" \
-          $((100 * $DOT))
+          $((500 * $DOT))
       # set XCM version of remote IntegriteePolkadot for relay and AH
       force_xcm_version \
           "ws://127.0.0.1:9945" \
@@ -579,43 +590,71 @@ case "$1" in
           tx.assetConversion.createPool \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2015 }]}}')" \
-      # send 10 KSM to IK Alice for initial fees
+      # send 1000 KSM to IK Alice for initial fees and liq
       limited_reserve_transfer_assets \
           "ws://127.0.0.1:9010" \
           "//Alice" \
           "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2015 } ] } } }')" \
           "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
+          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '1000000000000000' } } ] }')" \
           0 \
           "Unlimited"
       # here we need to wait until funds arrive, not only until inBlock
       echo "Waiting for funds to arrive on IK"
       sleep 30
-      # send 100 TEER to KAH Alice for pool
+      # send 9000 TEER to KAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9144" \
           --seed "//Alice" \
           tx.polkadotXcm.transferAssets \
               "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } } }')" \
               "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '100000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
+              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '9000000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
               "1" \
               "Unlimited"
       # here we need to wait until funds arrive, not only until inBlock
       echo "Waiting for funds to arrive on KAH"
       sleep 30
-      # provide liquidity to TEER/KSM pool on KAH
+      # provide liquidity to TEER/KSM pool on KAH @ 50TEER = 1KSM (5000 TEER = 100KSM)
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9010" \
           --seed "//Alice" \
           tx.assetConversion.addLiquidity \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2015 }]}}')" \
-              "1000000000000" \
-              "90000000000000" \
+              "100000000000000" \
+              "5000000000000000" \
               "1" \
               "1" \
               "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"
+      # enable the TEER bridge on IK
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setPorteerConfig \
+              "$(jq --null-input '{ "sendEnabled": true, "receiveEnabled": true}')"
+      # make Alice the watchdog
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setWatchdog \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"
+      # whitelist KAH location on IK as direct forwarding location
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.addLocationToWhitelist \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 1000 }]}}')"
+      # set XCM fee params: TEER / KSM / DOT. may be way too high
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setXcmFeeParams \
+              "$(jq --null-input '{ "hop1": 33000000000000, "hop2": 3000000000000, "hop3": 1000000000000 }')"
       ;;
   init-integritee-polkadot-local)
       # SA of sibling asset hub pays for the inwards execution
@@ -698,43 +737,71 @@ case "$1" in
           tx.assetConversion.createPool \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2039 }]}}')" \
-      # send 10 DOT to IP Alice for initial fees
+      # send 1000 DOT to IP Alice for initial fees and liq
       limited_reserve_transfer_assets \
           "ws://127.0.0.1:9910" \
           "//Alice" \
           "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } } }')" \
           "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
+          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
           0 \
           "Unlimited"
       # here we need to wait until funds arrive, not only until inBlock
       echo "Waiting for funds to arrive on IP"
       sleep 30
-      # send 100 TEER to PAH Alice for pool
+      # send 9000 TEER to PAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9244" \
           --seed "//Alice" \
           tx.polkadotXcm.transferAssets \
               "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } } }')" \
               "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '100000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
+              "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '9000000000000000' } }, { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '100000000000' } } ] }')" \
               "1" \
               "Unlimited"
       # here we need to wait until funds arrive, not only until inBlock
       echo "Waiting for funds to arrive on PAH"
       sleep 30
-      # provide liquidity to TEER/DOT pool on PAH
+      # provide liquidity to TEER/DOT pool on PAH @ 20TEER = 1 DOT (5000 TEER = 250 DOT)
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9910" \
           --seed "//Alice" \
           tx.assetConversion.addLiquidity \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2039 }]}}')" \
-              "40000000000" \
-              "90000000000000" \
+              "2500000000000" \
+              "5000000000000000" \
               "1" \
               "1" \
               "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5"
+      # enable the TEER bridge on IP
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setPorteerConfig \
+              "$(jq --null-input '{ "sendEnabled": true, "receiveEnabled": true}')"
+      # make Alice the watchdog
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setWatchdog \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"
+      # whitelist KAH location on IK as direct forwarding location
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.addLocationToWhitelist \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 1000 }]}}')"
+      # set XCM fee params: TEER / DOT / KSM. may be way too high
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setXcmFeeParams \
+              "$(jq --null-input '{ "hop1": 10000000000000, "hop2": 10000000000, "hop3": 200000000000 }')"
       ;;
   reserve-transfer-assets-from-asset-hub-polkadot-local)
       amount=$2
