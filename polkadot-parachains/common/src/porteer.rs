@@ -37,9 +37,11 @@ pub const AHK_FEE: u128 = 33849094374679;
 pub const AHP_FEE: u128 = 3000000000000;
 pub const IP_FEE: u128 = 1000000000000;
 
+// hop1: [TEER], hop2: [KSM], hope: [DOT]. Each hop must include the fees of all subsequent hops (consider swapping)
 pub const DEFAULT_XCM_FEES_IK_PERSPECTIVE: XcmFeeParams<Balance> =
 	XcmFeeParams { hop1: AHK_FEE, hop2: AHP_FEE, hop3: IP_FEE };
 
+// hop1: [TEER], hop2: [DOT], hope: [KSM]. Each hop must include the fees of all subsequent hops (consider swapping)
 pub const DEFAULT_XCM_FEES_IP_PERSPECTIVE: XcmFeeParams<Balance> =
 	XcmFeeParams { hop1: AHP_FEE, hop2: AHK_FEE, hop3: IK_FEE };
 
