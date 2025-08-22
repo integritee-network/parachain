@@ -616,6 +616,27 @@ case "$1" in
               "1" \
               "1" \
               "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"
+      # enable the TEER bridge on IK
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setPorteerConfig \
+              "$(jq --null-input '{ "sendEnabled": true, "receiveEnabled": true}')"
+      # make Alice the watchdog
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setWatchdog \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"
+      # whitelist KAH location on IK as direct forwarding location
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.addLocationToWhitelist \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 1000 }]}}')"
       ;;
   init-integritee-polkadot-local)
       # SA of sibling asset hub pays for the inwards execution
@@ -735,6 +756,27 @@ case "$1" in
               "1" \
               "1" \
               "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5"
+      # enable the TEER bridge on IP
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setPorteerConfig \
+              "$(jq --null-input '{ "sendEnabled": true, "receiveEnabled": true}')"
+      # make Alice the watchdog
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.setWatchdog \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"
+      # whitelist KAH location on IK as direct forwarding location
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          --sudo \
+          tx.porteer.addLocationToWhitelist \
+              "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 1000 }]}}')"
       ;;
   reserve-transfer-assets-from-asset-hub-polkadot-local)
       amount=$2

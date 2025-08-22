@@ -2,10 +2,10 @@
 
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
-    itk, // bun papi add itk -w http://localhost:8001
-    itp, // bun papi add itp -w http://localhost:8003
-    kah, // bun papi add kah -w http://localhost:8000
-    pah, // bun papi add pah -w http://localhost:8002
+    itk, // bun papi add itk -w http://localhost:8001 | bun papi add itk -w http://localhost:9144
+    itp, // bun papi add itp -w http://localhost:8003 | bun papi add itp -w http://localhost:9244
+    kah, // bun papi add kah -w http://localhost:8000 | bun papi add kah -w http://localhost:9010
+    pah, // bun papi add pah -w http://localhost:8002 | bun papi add pah -w http://localhost:9910
     dot,
     ksm,
     XcmV5Junction,
@@ -33,7 +33,7 @@ const CHOPSTICKS: number = 1;
 const ZOMBIENET: number = 2;
 
 // use this constant to select your endpoint set
-const ENDPOINTS = CHOPSTICKS;
+const ENDPOINTS = ZOMBIENET;
 
 const KAH_WS_URL = ENDPOINTS === LIVE
     ? "wss://sys.ibp.network/asset-hub-kusama"
