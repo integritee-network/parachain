@@ -431,11 +431,12 @@ case "$1" in
       ;;
   init-asset-hub-kusama-local)
       ensure_polkadot_js_api
-      # Alice isn't endowed enoughat KAH genesis for practical pool liquidity. teleport some more
+      # Alice isn't endowed enough at KAH genesis for practical pool liquidity.
+      # teleport some more: 9000*10^12 is just below the biggest number js can take
       call_polkadot_js_api \
-          --ws "ws://127.0.0.1:9144" \
+          --ws "ws://127.0.0.1:9945" \
           --seed "//Alice" \
-          tx.polkadotXcm.transferAssets \
+          tx.xcmPallet.transferAssets \
               "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "Parachain": 1000 } ] } } }')" \
               "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
               "$(jq --null-input '{ "V4": [ { "id": { "parents": 0, "interior": "Here" }, "fun": { "Fungible": '9000000000000000' } } ] }')" \
@@ -526,7 +527,7 @@ case "$1" in
           "ws://127.0.0.1:9910" \
           "//Alice" \
           "14DXRZEfzojXowgGnamfGzTjnMERF9cVWRkdHHYQFiTsDiXB" \
-          $((100 * $DOT))
+          $((500 * $DOT))
       # set XCM version of remote IntegriteePolkadot for relay and AH
       force_xcm_version \
           "ws://127.0.0.1:9945" \
