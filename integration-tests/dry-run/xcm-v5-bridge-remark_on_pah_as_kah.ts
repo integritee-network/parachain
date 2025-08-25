@@ -43,11 +43,17 @@ import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 const KAH_PARA_ID = 1000;
 const PAH_PARA_ID = 1000;
 
-// We're using localhost here since this was tested with chopsticks.
-// For production, replace //Alice with a real account and use a public rpc, for example: "wss://polkadot-people-rpc.polkadot.io".
-const KAH_WS_URL = "ws://localhost:9010";
-const PAH_WS_URL = "ws://localhost:9910";
-// How to get to People from the perspective of Asset Hub.
+// if false, we assume zombienet
+const CHOPSTICKS: boolean = true;
+
+// We're running against chopsticks with wasm-override to get XCMv5 support.
+// `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
+const KAH_WS_URL = CHOPSTICKS
+    ? "ws://localhost:8000"
+    : "ws://localhost:9010";
+const PAH_WS_URL = CHOPSTICKS
+    ? "ws://localhost:8002"
+    : "ws://localhost:9910"
 
 const PAH_FROM_KAH = {
     parents: 2,
