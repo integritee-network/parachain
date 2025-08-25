@@ -155,11 +155,6 @@ main();
 async function main() {
     // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 1000000000000n;
-    // We overestimate both local and remote fees, these will be adjusted by the dry run below.
-    const localFeesHighEstimate = 1n * TEER_UNITS; // we're root locally and don't pay fees for execution, but for delivery we do.
-    const remote1FeesHighEstimateTeer = 10n * TEER_UNITS;
-    const remote2FeesHighEstimateKsm = 1n * KSM_UNITS / 10n;
-    const remote3FeesHighEstimateDot = 10n * DOT_UNITS;
 
     if (CHOPSTICKS) {
         const stx = await itkApi.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
@@ -172,12 +167,12 @@ async function main() {
         await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
-    const referenceAmountTeer = 1000000000n;
+    const referenceAmountTeer = 1000000000000n;
     const remote2FeesHighEstimateTeerConverted = await kahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(TEER_FROM_SIBLING, KSM_FROM_KUSAMA_PARACHAINS, referenceAmountTeer, true);
     const teerPerKsm = Number(remote2FeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
     console.log("Current AssetConversion quote for remote1 account: out: ", remote2FeesHighEstimateTeerConverted, " in ", referenceAmountTeer, " TEER. price: ", teerPerKsm, " TEER per KSM");
 
-    const referenceAmountKsm = 1000000000n;
+    const referenceAmountKsm = 100000000000n;
     const remote3FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(KSM_FROM_POLKADOT_PARACHAINS, DOT_FROM_SIBLING_PARACHAINS, referenceAmountKsm, true);
     const ksmPerDot = Number(remote3FeesHighEstimateKsmConverted) / Number(referenceAmountKsm)
     console.log("Current AssetConversion quote for remote2 account: out: ", remote3FeesHighEstimateKsmConverted, " in ", referenceAmountKsm, " KSM. price: ", ksmPerDot / 100.0, " KSM per DOT");
@@ -212,12 +207,23 @@ async function main() {
         amount: transferAmount,
         forwardTokensToLocation: null
     });
+    const setFeesTx = itkApi.tx.Porteer.set_xcm_fee_params({
+        fees: {
+            hop1: 701987734047n,
+            hop2: 97085698579n,
+            hop3: 4886724760n
+        }
+    });
+    const watchdogTx = itkApi.tx.Porteer.watchdog_heartbeat([]);
+    const calls = [setFeesTx.decodedCall, watchdogTx.decodedCall, portTokensTx.decodedCall];
+    const batchTx = itkApi.tx.Utility.batch({calls: calls});
+    // console.log("tentative call on source chain (e.g. to try with chopsticks): ", batchTx.decodedCall);
 
-    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await portTokensTx.getEncodedData()).asHex());
+    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await setFeesTx.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
     const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimateKsm, remote3FeesEstimateDot] =
-        (await estimateFees(portTokensTx))!;
+        (await estimateFees(batchTx))!;
 
     console.log("Local fees estimate [TEER]: ", localFeesEstimate);
     console.log("Remote 1 fees estimate [TEER]: ", remote1FeesEstimate);
@@ -323,7 +329,7 @@ async function estimateFees(
     console.log("deliveryFees to remote1 [TEER]: ", deliveryFeesToRemote1Teer);
 
     // Local fees for execution (which is virtual as root won't pay execution).
-    const localExecutionFees = executionFees.value;
+    const localExecutionFees = 0n;
 
     // Now we dry run on the destination.
     const remote1DryRunResult = await kahApi.apis.DryRunApi.dry_run_xcm(
