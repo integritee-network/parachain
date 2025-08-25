@@ -46,6 +46,7 @@ decl_test_parachains! {
 			Balances: integritee_polkadot_runtime::Balances,
 			Porteer: integritee_polkadot_runtime::Porteer,
 			Assets: integritee_polkadot_runtime::Assets,
+			AssetConversion: integritee_polkadot_runtime::AssetConversion,
 			AssetRegistry: integritee_polkadot_runtime::AssetRegistry,
 		}
 	},

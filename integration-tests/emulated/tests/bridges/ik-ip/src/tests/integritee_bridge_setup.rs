@@ -34,7 +34,7 @@ use kusama_polkadot_system_emulated_network::{
         integritee_kusama_runtime::TEER,
     },
 };
-use crate::tests::{asset_hub_kusama_location, bridge_hub_kusama_location, bridged_dot_at_ah_kusama, create_reserve_asset_on_ik, ip_cousin_v5, set_up_pool_with_teer_on_ik};
+use crate::tests::{asset_hub_kusama_location, bridge_hub_kusama_location, bridged_dot_at_ah_kusama, create_reserve_asset_on_ik, ip_cousin_v5, set_up_pool_with_teer_on_ik, set_up_pool_with_teer_on_ip};
 
 pub(crate) const KSM: u128 = 1_000_000_000_000;
 pub(crate) const DOT: u128 = 10_000_000_000;
@@ -111,6 +111,7 @@ pub(crate) fn ik_to_ip_bridge_setup() {
 	set_up_pool_with_dot_on_ah_polkadot(ip_sibling(), true);
 
 	create_reserve_asset_on_ip(0, Parent.into(), true, vec![]);
+	set_up_pool_with_teer_on_ip(0);
 }
 
 pub(crate) fn ip_to_ik_bridge_setup() {

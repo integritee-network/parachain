@@ -143,6 +143,52 @@ pub(crate) fn create_reserve_asset_on_ip(
 	})
 }
 
+// set up pool
+pub(crate) fn set_up_pool_with_teer_on_ip(asset: AssetIdForTrustBackedAssets) {
+	IntegriteePolkadot::execute_with(|| {
+		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
+		let owner = IntegriteePolkadot::account_id_of(ALICE);
+		let signed_owner = <IntegriteePolkadot as Chain>::RuntimeOrigin::signed(owner.clone());
+
+		assert_ok!(<IntegriteePolkadot as IntegriteePolkadotPallet>::Assets::mint(
+			signed_owner.clone(),
+			asset.into(),
+			owner.clone().into(),
+			3_000_000_000_000,
+		));
+
+		assert_ok!(<IntegriteePolkadot as IntegriteePolkadotPallet>::AssetConversion::create_pool(
+			signed_owner.clone(),
+			Box::new(NativeOrWithId::Native),
+			Box::new(NativeOrWithId::WithId(asset)),
+		));
+		assert_expected_events!(
+			IntegriteePolkadot,
+			vec![
+				RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::PoolCreated { .. }) => {},
+			]
+		);
+		assert_ok!(
+			<IntegriteePolkadot as IntegriteePolkadotPallet>::AssetConversion::add_liquidity(
+				signed_owner.clone(),
+				Box::new(NativeOrWithId::Native),
+				Box::new(NativeOrWithId::WithId(asset)),
+				1_000_000_000_000,
+				2_000_000_000_000,
+				1,
+				1,
+				owner,
+			)
+		);
+		assert_expected_events!(
+			IntegriteePolkadot,
+			vec![
+				RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::LiquidityAdded {..}) => {},
+			]
+		);
+	});
+}
+
 pub(crate) fn create_reserve_asset_on_ik(
 	id: u32,
 	reserve_asset_location: Location,
