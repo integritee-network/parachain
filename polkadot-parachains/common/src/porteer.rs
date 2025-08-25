@@ -150,8 +150,8 @@ fn ah_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
 	])
 }
 
-fn integritee_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
-	call: IntegriteePolkadotCall,
+fn integritee_cousin_xcm<Call, IntegriteeCall: Encode>(
+	call: IntegriteeCall,
 ) -> Xcm<Call> {
 	Xcm(vec![Transact {
 		origin_kind: OriginKind::SovereignAccount,
