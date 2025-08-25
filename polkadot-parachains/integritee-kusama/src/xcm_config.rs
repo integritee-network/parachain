@@ -19,21 +19,30 @@
 //!
 
 use super::{
-	AccountId, AssetRegistry, Assets, Balance, Balances, MaxInstructions, MessageQueue,
-	ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
-	TransactionByteFee, TreasuryAccount, XcmpQueue, TEER,
+	AccountId, AssetConversion, AssetRegistry, Assets, Balance, Balances, MaxInstructions,
+	MessageQueue, Native, NativeAndAssets, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, TransactionByteFee, TreasuryAccount, XcmpQueue, TEER,
 };
 use crate::weights;
+use assets_common::{
+	matching::{LocalLocationPattern, ParentLocation},
+	TrustBackedAssetsAsLocation,
+};
 use core::marker::PhantomData;
 use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus, ParaId};
 use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
-	traits::{Contains, ContainsPair, Disabled, Everything, Nothing, TransformOrigin},
+	traits::{
+		fungible::NativeOrWithId, tokens::imbalance::ResolveAssetTo, Contains, ContainsPair,
+		Disabled, Equals, Everything, EverythingBut, Nothing, TransformOrigin,
+	},
 };
 use frame_system::EnsureRoot;
-use integritee_parachains_common::{currency::CENTS, xcm_config::IsNativeConcrete};
+use integritee_parachains_common::{
+	currency::CENTS, fee::WeightToFee, xcm_config::IsNativeConcrete,
+};
 use orml_traits::{
 	location::{RelativeReserveProvider, Reserve},
 	parameter_type_with_key,
@@ -44,7 +53,10 @@ use parity_scale_codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use polkadot_parachain_primitives::primitives::Sibling;
 use scale_info::TypeInfo;
 use sp_core::ConstU32;
-use sp_runtime::{traits::Convert, RuntimeDebug};
+use sp_runtime::{
+	traits::{Convert, MaybeEquivalence, TryConvertInto},
+	RuntimeDebug,
+};
 use sp_std::{
 	convert::{From, Into},
 	prelude::*,
@@ -52,17 +64,18 @@ use sp_std::{
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
-	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
-	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
-	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
-	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
-	HashedDescription, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
+	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom,
+	AsPrefixedGeneralIndex, Case, DenyReserveTransferToRelayChain, DenyThenTry,
+	DescribeAllTerminal, DescribeFamily, DescribeTerminus, EnsureXcmOrigin,
+	ExternalConsensusLocationsConverterFor, FixedRateOfFungible, FixedWeightBounds,
+	FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter, HashedDescription,
+	MatchedConvertedConcreteId, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId,
-	WithComputedOrigin, WithUniqueTopic,
+	SignedToAccountId32, SovereignSignedViaLocation, StartsWith, TakeWeightCredit,
+	TrailingSetTopicAsId, WithComputedOrigin, WithLatestLocationConverter, WithUniqueTopic,
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
-use xcm_primitives::{AsAssetLocation, ConvertedRegisteredAssetId};
+use xcm_primitives::{AsAssetLocation, AssetLocationGetter, ConvertedRegisteredAssetId};
 
 /// Supported local Currencies. Keep this to TEER,
 /// other assets will be handled through AssetRegistry pallet
@@ -314,12 +327,39 @@ pub type Traders = (
 		NativeAliasPerSecond,
 		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
 	>,
-	// for KSM aka RelayNative
-	FixedRateOfFungible<
-		RelayNativePerSecond,
-		XcmFeesTo32ByteAccount<ReservedFungiblesTransactor, AccountId, TreasuryAccount>,
+	// This trader allows to pay with the relay chain token iff there is a pool to trade if for TEER.
+	cumulus_primitives_utility::SwapFirstAssetTrader<
+		Native,
+		AssetConversion,
+		WeightToFee,
+		NativeAndAssets,
+		MatchedConvertedConcreteId<
+			NativeOrWithId<AssetIdForTrustBackedAssets>,
+			Balance,
+			Equals<ParentLocation>,
+			ReserveAssetsRegistry,
+			TryConvertInto,
+		>,
+		ResolveAssetTo<TreasuryAccount, NativeAndAssets>,
+		AccountId,
 	>,
 );
+
+pub struct ReserveAssetsRegistry;
+impl MaybeEquivalence<Location, NativeOrWithId<u32>> for ReserveAssetsRegistry {
+	fn convert(location: &Location) -> Option<NativeOrWithId<u32>> {
+		// This will only check for reserve assets. The native asset will be ignored.
+		AssetRegistry::get_asset_id(location).map(NativeOrWithId::from)
+	}
+
+	fn convert_back(asset_id: &NativeOrWithId<u32>) -> Option<Location> {
+		match asset_id {
+			// This will only check for reserve assets. The native asset will be ignored.
+			NativeOrWithId::WithId(id) => AssetRegistry::get_asset_location(*id),
+			NativeOrWithId::Native => None,
+		}
+	}
+}
 
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
@@ -330,6 +370,9 @@ parameter_types! {
 	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
 	pub const IntegriteeNative: AssetFilter = Wild(AllOf { fun: WildFungible, id: AssetId(Location::here()) });
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (IntegriteeNative::get(), AssetHubLocation::get());
+
+	pub TrustBackedAssetsPalletIndex: u8 = <Assets as PalletInfoAccess>::index() as u8;
+	pub TrustBackedAssetsPalletLocation: Location = PalletInstance(TrustBackedAssetsPalletIndex::get()).into();
 
 	pub const RelayLocation: Location = Location::parent();
 	pub RelayLocationFilter: AssetFilter = Wild(AllOf {

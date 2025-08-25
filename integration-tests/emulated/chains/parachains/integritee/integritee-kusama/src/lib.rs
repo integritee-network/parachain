@@ -46,6 +46,7 @@ decl_test_parachains! {
 			Balances: integritee_kusama_runtime::Balances,
 			Porteer: integritee_kusama_runtime::Porteer,
 			Assets: integritee_kusama_runtime::Assets,
+			AssetConversion: integritee_kusama_runtime::AssetConversion,
 			AssetRegistry: integritee_kusama_runtime::AssetRegistry,
 		}
 	},

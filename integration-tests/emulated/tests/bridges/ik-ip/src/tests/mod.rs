@@ -14,6 +14,8 @@
 // limitations under the License.
 
 use crate::*;
+use frame_support::traits::fungible::NativeOrWithId;
+use parachains_common::AssetIdForTrustBackedAssets;
 use xcm_runtime_apis::fees::runtime_decl_for_xcm_payment_api::XcmPaymentApi;
 
 mod ik_to_ip_xcm;
@@ -176,6 +178,50 @@ pub(crate) fn create_reserve_asset_on_ik(
 			]
 		);
 	})
+}
+
+// set up pool
+pub(crate) fn set_up_pool_with_teer_on_ik(asset: AssetIdForTrustBackedAssets) {
+	IntegriteeKusama::execute_with(|| {
+		type RuntimeEvent = <IntegriteeKusama as Chain>::RuntimeEvent;
+		let owner = IntegriteeKusama::account_id_of(ALICE);
+		let signed_owner = <IntegriteeKusama as Chain>::RuntimeOrigin::signed(owner.clone());
+
+		assert_ok!(<IntegriteeKusama as IntegriteeKusamaPallet>::Assets::mint(
+			signed_owner.clone(),
+			asset.into(),
+			owner.clone().into(),
+			3_000_000_000_000,
+		));
+
+		assert_ok!(<IntegriteeKusama as IntegriteeKusamaPallet>::AssetConversion::create_pool(
+			signed_owner.clone(),
+			Box::new(NativeOrWithId::Native),
+			Box::new(NativeOrWithId::WithId(asset)),
+		));
+		assert_expected_events!(
+			IntegriteeKusama,
+			vec![
+				RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::PoolCreated { .. }) => {},
+			]
+		);
+		assert_ok!(<IntegriteeKusama as IntegriteeKusamaPallet>::AssetConversion::add_liquidity(
+			signed_owner.clone(),
+			Box::new(NativeOrWithId::Native),
+			Box::new(NativeOrWithId::WithId(asset)),
+			1_000_000_000_000,
+			2_000_000_000_000,
+			1,
+			1,
+			owner,
+		));
+		assert_expected_events!(
+			IntegriteeKusama,
+			vec![
+				RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::LiquidityAdded {..}) => {},
+			]
+		);
+	});
 }
 
 pub(crate) fn foreign_balance_on_ah_kusama(id: xcm::v4::Location, who: &AccountId) -> u128 {
