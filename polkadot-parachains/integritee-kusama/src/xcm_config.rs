@@ -24,10 +24,7 @@ use super::{
 	RuntimeCall, RuntimeEvent, RuntimeOrigin, TransactionByteFee, TreasuryAccount, XcmpQueue, TEER,
 };
 use crate::weights;
-use assets_common::{
-	matching::{LocalLocationPattern, ParentLocation},
-	TrustBackedAssetsAsLocation,
-};
+use assets_common::matching::ParentLocation;
 use core::marker::PhantomData;
 use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus, ParaId};
 use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
@@ -36,7 +33,7 @@ use frame_support::{
 	parameter_types,
 	traits::{
 		fungible::NativeOrWithId, tokens::imbalance::ResolveAssetTo, Contains, ContainsPair,
-		Disabled, Equals, Everything, EverythingBut, Nothing, TransformOrigin,
+		Disabled, Equals, Everything, Nothing, TransformOrigin,
 	},
 };
 use frame_system::EnsureRoot;
@@ -64,15 +61,14 @@ use sp_std::{
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
-	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom,
-	AsPrefixedGeneralIndex, Case, DenyReserveTransferToRelayChain, DenyThenTry,
-	DescribeAllTerminal, DescribeFamily, DescribeTerminus, EnsureXcmOrigin,
-	ExternalConsensusLocationsConverterFor, FixedRateOfFungible, FixedWeightBounds,
-	FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter, HashedDescription,
-	MatchedConvertedConcreteId, NoChecking, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
-	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation, StartsWith, TakeWeightCredit,
-	TrailingSetTopicAsId, WithComputedOrigin, WithLatestLocationConverter, WithUniqueTopic,
+	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
+	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
+	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
+	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
+	HashedDescription, MatchedConvertedConcreteId, NoChecking, ParentAsSuperuser, ParentIsPreset,
+	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	TrailingSetTopicAsId, WithComputedOrigin, WithUniqueTopic,
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, AssetLocationGetter, ConvertedRegisteredAssetId};
