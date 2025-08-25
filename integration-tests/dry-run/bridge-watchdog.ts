@@ -286,6 +286,7 @@ async function estimateFees(
     );
     if (!dryRunResult.success || !dryRunResult.value.execution_result.success) {
         console.error("dryRunResult failed: ", dryRunResult);
+        console.error("localDryRun Error: ", dryRunResult.value.execution_result);
         return;
     }
     console.log("dryRunResult: ", dryRunResult.value);
@@ -359,6 +360,7 @@ async function estimateFees(
         remote1DryRunResult.value.execution_result.type !== "Complete"
     ) {
         console.error("remote1DryRunResult failed: ", remote1DryRunResult);
+        console.error("remote1DryRun Error: ", remote1DryRunResult.value.execution_result);
         return;
     }
     console.log("remote1DryRunResult: ", remote1DryRunResult.value);
@@ -463,6 +465,7 @@ async function estimateFees(
         remote2DryRunResult.value.execution_result.type !== "Complete"
     ) {
         console.error("remote2DryRunResult failed: ", remote2DryRunResult);
+        console.error("remote2DryRun Error: ", remote2DryRunResult.value.execution_result);
         return;
     }
     console.log("remote2DryRunResult: ", remote2DryRunResult.value);
@@ -539,6 +542,7 @@ async function estimateFees(
         remote3DryRunResult.value.execution_result.type !== "Complete"
     ) {
         console.error("remote3DryRunResult failed: ", remote3DryRunResult);
+        console.error("remote3DryRun Error: ", remote3DryRunResult.value.execution_result);
         return;
     }
     console.log("remote3DryRunResult: ", remote3DryRunResult.value);
@@ -594,10 +598,10 @@ async function estimateFees(
     console.log("simulated rate as KSM per DOT: ", ksmPerDot / 100, " with KSM converted for fees: ", ksmSpent, " equal to fees in DOT: ", swapCreditEvent2.value.value.amount_out);
 
 
-    const remote1FeesInTeer = deliveryFeesToRemote1Teer + BigInt(Math.round(Number(remote1FeesInKsm.value) * teerPerKsm * 1.1));
+    const remote1FeesInTeer = BigInt(Math.round(Number(remote1FeesInKsm.value + deliveryFeesToRemote2Ksm) * teerPerKsm * 1.1));
     console.log("remote1FeesInTeer (with margin*): ", remote1FeesInTeer);
 
-    const remote2FeesInKsm = deliveryFeesToRemote2Ksm + BigInt(Math.round(Number(remote2FeesInDot.value) * ksmPerDot * 1.1));
+    const remote2FeesInKsm = BigInt(Math.round(Number(remote2FeesInDot.value + deliveryFeesToRemote3Dot) * ksmPerDot * 1.1));
     console.log("remote2FeesInKsm (with margin*): ", remote2FeesInKsm);
 
     const totalCallerFeesInTeer = localExecutionFees +
