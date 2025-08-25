@@ -573,3 +573,18 @@ fn query_integritee_polkadot_xcm_execution_fee(xcm: Xcm<()>) -> Balance {
 		.unwrap()
 	})
 }
+
+fn ip_asset_balance(who: &AccountId, asset_id: AssetIdForTrustBackedAssets) -> Balance {
+	<IntegriteePolkadot as TestExt>::execute_with(|| {
+		type Assets = <IntegriteePolkadot as IntegriteePolkadotPallet>::Assets;
+		Assets::balance(asset_id, who)
+	})
+}
+
+fn ik_asset_balance(who: &AccountId, asset_id: AssetIdForTrustBackedAssets) -> Balance {
+	<IntegriteeKusama as TestExt>::execute_with(|| {
+		type Assets = <IntegriteeKusama as IntegriteeKusamaPallet>::Assets;
+		Assets::balance(asset_id, who)
+	})
+}
+

@@ -31,6 +31,7 @@ use xcm::{
 		Polkadot, ReceiveTeleportedAsset, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
 	},
 };
+use xcm::prelude::AccountId32;
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
@@ -98,6 +99,7 @@ pub fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 	local_as_cousin: Location,
 	ah_cousin: (Location, Balance),
 	integritee_cousin_as_sibling: (Location, Balance),
+	integritee_cousin_treasury: AccountId,
 ) -> Xcm<Call> {
 	Xcm(vec![
 		ReceiveTeleportedAsset(teleported_asset.clone().into()),
@@ -117,7 +119,7 @@ pub fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: ah_cousin_xcm(call, local_as_cousin, integritee_cousin_as_sibling),
+			remote_xcm: ah_cousin_xcm(call, local_as_cousin, integritee_cousin_as_sibling, integritee_cousin_treasury),
 		},
 	])
 }
@@ -128,6 +130,7 @@ fn ah_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
 	call: IntegriteePolkadotCall,
 	local_as_cousin: Location,
 	integritee_cousin_as_sibling: (Location, Balance),
+	integritee_cousin_treasury: AccountId,
 ) -> Xcm<Call> {
 	Xcm(vec![
 		SetAppendix(Xcm(vec![
@@ -145,15 +148,24 @@ fn ah_cousin_xcm<Call, IntegriteePolkadotCall: Encode>(
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: integritee_cousin_xcm(call),
+			remote_xcm: integritee_cousin_xcm(call, integritee_cousin_treasury),
 		},
 	])
 }
 
 fn integritee_cousin_xcm<Call, IntegriteeCall: Encode>(
 	call: IntegriteeCall,
+	integritee_cousin_treasury: AccountId,
 ) -> Xcm<Call> {
-	Xcm(vec![Transact {
+	Xcm(vec![
+		SetAppendix(Xcm(vec![
+			RefundSurplus,
+			DepositAsset {
+				assets: AssetFilter::Wild(WildAsset::All),
+				beneficiary: AccountId32 { network: None, id: integritee_cousin_treasury.into() }.into(),
+			},
+		])),
+		Transact {
 		origin_kind: OriginKind::SovereignAccount,
 		fallback_max_weight: None,
 		call: call.encode().into(),
