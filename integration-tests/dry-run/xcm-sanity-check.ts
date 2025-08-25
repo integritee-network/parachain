@@ -238,6 +238,15 @@ async function checkBalances() {
         checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(KAH_FROM_SIBLING), 5n * TEER_UNITS, "KAH Sovereign on ITK [TEER]"),
         checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(PAH_FROM_SIBLING), 5n * TEER_UNITS, "PAH Sovereign on ITP [TEER]"),
     ])
+    console.log("checking (foreign) asset balances")
+    await Promise.all([
+        printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ITK_FROM_SIBLING), XcmVersionedLocation.V5(ITK_FROM_SIBLING), "ITK Sovereign on KAH [TEER]"),
+        printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ITP_FROM_SIBLING), XcmVersionedLocation.V5(ITP_FROM_SIBLING), "ITP Sovereign on PAH [TEER]"),
+        printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), XcmVersionedLocation.V5(KSM_FROM_COUSIN_PARACHAINS), "ITK Sovereign on PAH [KSM]"),
+        printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), XcmVersionedLocation.V5(DOT_FROM_COUSIN_PARACHAINS), "ITP Sovereign on KAH [DOT]"),
+        printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 0, "ITP Sovereign on ITK [KSM]"),
+        printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 0, "ITK Sovereign on ITP [DOT]"),
+    ])
 }
 
 async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
@@ -265,6 +274,52 @@ async function checkAccountIdBalanceOn(api: any, accountId: string, expectedBala
         }
     } else {
         console.log(`❌ ${label} Account not found`);
+    }
+}
+
+async function printLocationForeignAssetBalanceOn(api: any, account_location: XcmVersionedLocation, asset_location: XcmVersionedLocation, label: string) {
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(account_location);
+        if (accountIdResult.success) {
+            await printAccountIdForeignAssetBalanceOn(api, accountIdResult.value, asset_location, label);
+        } else {
+            console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+
+}
+
+async function printAccountIdForeignAssetBalanceOn(api: any, accountId: string, location: XcmVersionedLocation, label: string) {
+    try {
+        const assetBalanceResult = await api.query.ForeignAssets.Account.getValue(location.value, accountId);
+        console.log(`  ${label} (${accountId}) balance: ${assetBalanceResult?.balance ?? 0n}`);
+    } catch (error) {
+        console.log(`❌ ${label} (${accountId}) error:`, error?.message ?? error);
+    }
+}
+
+async function printLocationAssetBalanceOn(api: any, account_location: XcmVersionedLocation, asset_id: number, label: string) {
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(account_location);
+        if (accountIdResult.success) {
+            await printAccountIdAssetBalanceOn(api, accountIdResult.value, asset_id, label);
+        } else {
+            console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+
+}
+
+async function printAccountIdAssetBalanceOn(api: any, accountId: string, asset_id: number, label: string) {
+    try {
+        const assetBalanceResult = await api.query.Assets.Account.getValue(asset_id, accountId);
+        console.log(`  ${label} (${accountId}) balance: ${assetBalanceResult?.balance ?? 0n}`);
+    } catch (error) {
+        console.log(`❌ ${label} (${accountId}) error:`, error?.message ?? error);
     }
 }
 
