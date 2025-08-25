@@ -207,19 +207,19 @@ async function main() {
         amount: transferAmount,
         forwardTokensToLocation: null
     });
-    const setFeesTx = itkApi.tx.Porteer.set_xcm_fee_params({
-        fees: {
-            hop1: 701987734047n,
-            hop2: 97085698579n,
-            hop3: 4886724760n
-        }
-    });
+    // const setFeesTx = itkApi.tx.Porteer.set_xcm_fee_params({
+    //     fees: {
+    //         hop1: 701987734047n,
+    //         hop2: 97085698579n,
+    //         hop3: 4886724760n
+    //     }
+    // });
     const watchdogTx = itkApi.tx.Porteer.watchdog_heartbeat([]);
-    const calls = [setFeesTx.decodedCall, watchdogTx.decodedCall, portTokensTx.decodedCall];
+    const calls = [watchdogTx.decodedCall, portTokensTx.decodedCall];
     const batchTx = itkApi.tx.Utility.batch({calls: calls});
     // console.log("tentative call on source chain (e.g. to try with chopsticks): ", batchTx.decodedCall);
 
-    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await setFeesTx.getEncodedData()).asHex());
+    console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await batchTx.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
     const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimateKsm, remote3FeesEstimateDot] =
@@ -229,6 +229,21 @@ async function main() {
     console.log("Remote 1 fees estimate [TEER]: ", remote1FeesEstimate);
     console.log("Remote 2 fees estimate [KSM]: ", remote2FeesEstimateKsm);
     console.log("Remote 3 fees estimate [DOT]: ", remote3FeesEstimateDot);
+
+    const setFeesTx = itkApi.tx.Porteer.set_xcm_fee_params({
+        fees: {
+            hop1: 701987734047n,
+            hop2: 97085698579n,
+            hop3: 4886724760n
+        }
+    });
+    const setFeesProposalTx = itkApi.tx.TechnicalCommittee.propose({
+        threshold: 2,
+        proposal: setFeesTx.decodedCall,
+        length_bound: 51,
+    });
+    console.log("encoded suggested call to set updated fees on source chain (to propose to TC / PorteerAdmin): ", (await setFeesTx.getEncodedData()).asHex());
+    console.log("encoded proposal to TC (to submit as member of TC): ", (await setFeesProposalTx.getEncodedData()).asHex());
 
     await itkClient.destroy();
     await kahClient.destroy();
