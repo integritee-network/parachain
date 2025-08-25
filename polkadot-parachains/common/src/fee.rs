@@ -12,6 +12,8 @@ use smallvec::smallvec;
 // not existing upstream
 pub use polkadot_runtime_common::SlowAdjustingFeeUpdate;
 
+use crate::currency;
+use frame_support::{pallet_prelude::Weight, weights::FeePolynomial};
 pub use sp_runtime::Perbill;
 
 /// The block saturation level. Fees will be updates based on this value.
@@ -28,13 +30,28 @@ pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25); // <- unus
 ///   - Setting it to `0` will essentially disable the weight fee.
 ///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
 pub struct WeightToFee;
-impl WeightToFeePolynomial for WeightToFee {
+impl frame_support::weights::WeightToFee for WeightToFee {
+	type Balance = Balance;
+
+	fn weight_to_fee(weight: &Weight) -> Self::Balance {
+		let time_poly: FeePolynomial<Balance> = RefTimeToFee::polynomial().into();
+		let proof_poly: FeePolynomial<Balance> = ProofSizeToFee::polynomial().into();
+
+		// Take the maximum instead of the sum to charge by the more scarce resource.
+		time_poly.eval(weight.ref_time()).max(proof_poly.eval(weight.proof_size()))
+	}
+}
+
+/// Maps the reference time component of `Weight` to a fee.
+pub struct RefTimeToFee;
+impl WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// in Kusama, extrinsic base weight (smallest non-zero weight) is mapped to 1/10 CENT:
-		// in Statemine, we map to 1/10 of that, or 1/100 CENT
-		let p = super::currency::CENTS;
+		// In Kusama, extrinsic base weight (smallest non-zero weight) is mapped to 1/10 CENT:
+		// The standard system parachain configuration is 1/10 of that, as in 1/100 CENT.
+		let p = currency::CENTS;
 		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+
 		smallvec![WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
@@ -42,4 +59,26 @@ impl WeightToFeePolynomial for WeightToFee {
 			coeff_integer: p / q,
 		}]
 	}
+}
+
+/// Maps the proof size component of `Weight` to a fee.
+pub struct ProofSizeToFee;
+impl WeightToFeePolynomial for ProofSizeToFee {
+	type Balance = Balance;
+	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+		// Map 10kb proof to 1 CENT.
+		let p = currency::CENTS;
+		let q = 10_000;
+
+		smallvec![WeightToFeeCoefficient {
+			degree: 1,
+			negative: false,
+			coeff_frac: Perbill::from_rational(p % q, q),
+			coeff_integer: p / q,
+		}]
+	}
+}
+
+pub fn calculate_weight_to_fee(weight: &Weight) -> Balance {
+	<WeightToFee as frame_support::weights::WeightToFee>::weight_to_fee(weight)
 }
