@@ -208,14 +208,14 @@ async function main(plan: any) {
     }
 
     const referenceAmountTeer = 1000000000000n;
-    const remote2FeesHighEstimateTeerConverted = await plan.sourceAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.source.native_from_sibling, plan.sourceAH.native_from_sibling, referenceAmountTeer, true);
-    const teerPerKsm = Number(remote2FeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
-    console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, remote2FeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerKsm, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
+    const destinationAHFeesHighEstimateTeerConverted = await plan.sourceAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.source.native_from_sibling, plan.sourceAH.native_from_sibling, referenceAmountTeer, true);
+    const teerPerSourceAHNative = Number(destinationAHFeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
+    console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNative, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
 
-    const referenceAmountKsm = 100000000000n;
-    const remote3FeesHighEstimateKsmConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountKsm, true);
-    const ksmPerDot = Number(remote3FeesHighEstimateKsmConverted) / Number(referenceAmountKsm)
-    console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, remote3FeesHighEstimateKsmConverted, " in ", referenceAmountKsm, ` ${plan.sourceAH.native_symbol}. price: `, ksmPerDot / 100.0, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
+    const referenceAmountSourceAHNative = 100000000000n;
+    const destinationFeesHighEstimateSourceAHNativeConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountSourceAHNative, true);
+    const sourceAHNativePerDestinationAHNative = Number(destinationFeesHighEstimateSourceAHNativeConverted) / Number(referenceAmountSourceAHNative)
+    console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, destinationFeesHighEstimateSourceAHNativeConverted, " in ", referenceAmountSourceAHNative, ` ${plan.sourceAH.native_symbol}. price: `, sourceAHNativePerDestinationAHNative / 100.0, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
 
     // We can now query the root account on the source chain.
     const rootAccountLocal = await plan.source.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.sovereign_self))
@@ -227,14 +227,14 @@ async function main(plan: any) {
     const rootAccountInfo = await plan.source.api.query.System.Account.getValue(rootAccountLocal.value)
     console.log("Root account on source chain: ", rootAccountLocal, " with AccountInfo ", rootAccountInfo);
 
-    const rootAccountRemote2 = await plan.destinationAH.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.native_from_cousin))
-    if (!rootAccountRemote2.success) {
-        console.error("Failed to get root account on remote2 chain: ", rootAccountRemote2);
+    const rootAccountDestinationAH = await plan.destinationAH.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.native_from_cousin))
+    if (!rootAccountDestinationAH.success) {
+        console.error("Failed to get root account on destinationAH chain: ", rootAccountDestinationAH);
         await plan.destroy();
         return;
     }
-    const sovereignAccountInfoRemote2 = await plan.source.api.query.System.Account.getValue(rootAccountLocal.value)
-    console.log(`Sovereign account of ITK on remote2 ITP chain: `, rootAccountRemote2, " with AccountInfo ", sovereignAccountInfoRemote2);
+    const sovereignAccountInfoDestinationAH = await plan.source.api.query.System.Account.getValue(rootAccountLocal.value)
+    console.log(`Sovereign account of ${plan.source.name} on destinationAH ${plan.destination.name} chain: `, rootAccountDestinationAH, " with AccountInfo ", sovereignAccountInfoDestinationAH);
 
     // the actual extrinsic we would send to bridge TEER from IK to IP
     const portTokensTx = plan.source.api.tx.Porteer.port_tokens({
@@ -256,13 +256,13 @@ async function main(plan: any) {
     console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await batchTx.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
-    const [localFeesEstimate, remote1FeesEstimate, remote2FeesEstimateKsm, remote3FeesEstimateDot] =
+    const [localFeesEstimate, sourceAHFeesEstimate, destinationAHFeesEstimateSourceAHNative, destinationFeesEstimateDestinationAHNative] =
         (await estimateFees(plan, batchTx))!;
 
     console.log(`Local fees estimate [TEER]: `, localFeesEstimate);
-    console.log(`Remote 1 fees estimate [TEER]: `, remote1FeesEstimate);
-    console.log(`Remote 2 fees estimate [KSM]: `, remote2FeesEstimateKsm);
-    console.log(`Remote 3 fees estimate [DOT]: `, remote3FeesEstimateDot);
+    console.log(`Remote 1 fees estimate [TEER]: `, sourceAHFeesEstimate);
+    console.log(`Remote 2 fees estimate [${plan.sourceAH.native_symbol}]: `, destinationAHFeesEstimateSourceAHNative);
+    console.log(`Remote 3 fees estimate [${plan.destinationAH.native_symbol}]: `, destinationFeesEstimateDestinationAHNative);
 
     const setFeesTx = plan.source.api.tx.Porteer.set_xcm_fee_params({
         fees: {
@@ -376,14 +376,14 @@ async function estimateFees(
         console.error("deliveryFees failed: ", deliveryFees);
         return;
     }
-    const deliveryFeesToRemote1Teer = deliveryFees.value.value[0].fun.value;
-    console.log("deliveryFees to remote1 [TEER]: ", deliveryFeesToRemote1Teer);
+    const deliveryFeesTosourceAHTeer = deliveryFees.value.value[0].fun.value;
+    console.log("deliveryFees to sourceAH [TEER]: ", deliveryFeesTosourceAHTeer);
 
     // Local fees for execution (which is virtual as root won't pay execution).
     const localExecutionFees = 0n;
 
     // Now we dry run on the destination.
-    const remote1DryRunResult = await plan.sourceAH.api.apis.DryRunApi.dry_run_xcm(
+    const sourceAHDryRunResult = await plan.sourceAH.api.apis.DryRunApi.dry_run_xcm(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(plan.source.para_id)),
@@ -391,15 +391,15 @@ async function estimateFees(
         messageToKah,
     );
     if (
-        !remote1DryRunResult.success ||
-        remote1DryRunResult.value.execution_result.type !== "Complete"
+        !sourceAHDryRunResult.success ||
+        sourceAHDryRunResult.value.execution_result.type !== "Complete"
     ) {
-        console.error("remote1DryRunResult failed: ", remote1DryRunResult);
-        console.error("remote1DryRun Error: ", remote1DryRunResult.value.execution_result);
+        console.error("sourceAHDryRunResult failed: ", sourceAHDryRunResult);
+        console.error("sourceAHDryRun Error: ", sourceAHDryRunResult.value.execution_result);
         return;
     }
-    console.log("remote1DryRunResult: ", remote1DryRunResult.value);
-    const swapCreditEvent = remote1DryRunResult.value.emitted_events.find(
+    console.log("sourceAHDryRunResult: ", sourceAHDryRunResult.value);
+    const swapCreditEvent = sourceAHDryRunResult.value.emitted_events.find(
         (event: any) =>
             event.type === "AssetConversion" &&
             event.value?.type === "SwapCreditExecuted"
@@ -417,32 +417,32 @@ async function estimateFees(
         console.error("SwapCreditExecuted event not found or malformed.", swapCreditEvent);
         return;
     }
-    const teerPerKsm = Number(swapCreditEvent.value?.value?.amount_in) / Number(swapCreditEvent?.value?.value?.amount_out);
+    const teerPerSourceAHNative = Number(swapCreditEvent.value?.value?.amount_in) / Number(swapCreditEvent?.value?.value?.amount_out);
     const teerSpent = swapCreditEvent.value?.value?.amount_in;
 
-    const remote1Weight =
+    const sourceAHWeight =
         await plan.sourceAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
-    if (!remote1Weight.success) {
-        console.error("remote1Weight failed: ", remote1Weight);
+    if (!sourceAHWeight.success) {
+        console.error("sourceAHWeight failed: ", sourceAHWeight);
         return;
     }
-    console.log("remote1Weight: ", remote1Weight.value);
+    console.log("sourceAHWeight: ", sourceAHWeight.value);
 
     // Remote fees are only execution.
-    const remote1FeesInKsm =
+    const sourceAHFeesInNative =
         await plan.sourceAH.api.apis.XcmPaymentApi.query_weight_to_asset_fee(
-            remote1Weight.value,
+            sourceAHWeight.value,
             XcmVersionedAssetId.V5(plan.sourceAH.native_from_sibling),
         );
 
-    if (!remote1FeesInKsm.success) {
-        console.error(`remote1FeesInKsm failed: `, remote1FeesInKsm);
+    if (!sourceAHFeesInNative.success) {
+        console.error(`sourceAHFeesInNative failed: `, sourceAHFeesInNative);
         return;
     }
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
-    const [_dummy, messages2] = remote1DryRunResult.value.forwarded_xcms.find(
+    const [_dummy, messages2] = sourceAHDryRunResult.value.forwarded_xcms.find(
         ([location, message]) =>
             location.type === "V5"
     )!;
@@ -465,25 +465,25 @@ async function estimateFees(
     console.log("messageToPah: ", messageToPah);
 
     // We get the delivery fees using the size of the forwarded xcm.
-    const deliveryFeesToRemote2 = await plan.sourceAH.api.apis.XcmPaymentApi.query_delivery_fees(
+    const deliveryFeesToDestinationAH = await plan.sourceAH.api.apis.XcmPaymentApi.query_delivery_fees(
         XcmVersionedLocation.V5(plan.destinationAH.native_from_cousin),
         messageToKbh, // unclear if this should be messagetoKbh or Pah. doesn't seem to include bridge relayer fee
     );
     // Fees should be of the version we expect and fungible tokens, in particular, KSM.
     if (
-        !deliveryFeesToRemote2.success ||
-        deliveryFeesToRemote2.value.type !== "V5" ||
-        deliveryFeesToRemote2.value.value.length < 1 ||
-        deliveryFeesToRemote2.value.value[0]?.fun?.type !== "Fungible"
+        !deliveryFeesToDestinationAH.success ||
+        deliveryFeesToDestinationAH.value.type !== "V5" ||
+        deliveryFeesToDestinationAH.value.value.length < 1 ||
+        deliveryFeesToDestinationAH.value.value[0]?.fun?.type !== "Fungible"
     ) {
-        console.error("deliveryFeesToRemote2 failed: ", deliveryFeesToRemote2);
+        console.error("deliveryFeesToDestinationAH failed: ", deliveryFeesToDestinationAH);
         return;
     }
-    const deliveryFeesToRemote2Ksm = deliveryFeesToRemote2.value.value[0].fun.value
-    console.log(`deliveryFees KAH to PAH [KSM]: `, deliveryFeesToRemote2Ksm);
+    const deliveryFeesToDestinationAHSourceAHNative = deliveryFeesToDestinationAH.value.value[0].fun.value
+    console.log(`deliveryFees ${plan.sourceAH.name} to ${plan.destinationAH.name} [${plan.sourceAH.native_symbol}]: `, deliveryFeesToDestinationAHSourceAHNative);
 
     // Now we dry run on the destination.
-    const remote2DryRunResult = await plan.destinationAH.api.apis.DryRunApi.dry_run_xcm(
+    const destinationAHDryRunResult = await plan.destinationAH.api.apis.DryRunApi.dry_run_xcm(
         // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
         // see runtime patch to allow this: https://github.com/polkadot-fellows/runtimes/compare/main...encointer:runtimes:ab/trusted-aliaser-patch
         XcmVersionedLocation.V5({
@@ -496,18 +496,18 @@ async function estimateFees(
         messageToPah,
     );
     if (
-        !remote2DryRunResult.success ||
-        remote2DryRunResult.value.execution_result.type !== "Complete"
+        !destinationAHDryRunResult.success ||
+        destinationAHDryRunResult.value.execution_result.type !== "Complete"
     ) {
-        console.error("remote2DryRunResult failed: ", remote2DryRunResult);
-        console.error("remote2DryRun Error: ", remote2DryRunResult.value.execution_result);
+        console.error("destinationAHDryRunResult failed: ", destinationAHDryRunResult);
+        console.error("destinationAHDryRun Error: ", destinationAHDryRunResult.value.execution_result);
         return;
     }
-    console.log("remote2DryRunResult: ", remote2DryRunResult.value);
+    console.log("destinationAHDryRunResult: ", destinationAHDryRunResult.value);
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
-    const [_dummy3, messages3] = remote2DryRunResult.value.forwarded_xcms.find(
+    const [_dummy3, messages3] = destinationAHDryRunResult.value.forwarded_xcms.find(
         ([location, _]) =>
             location.type === "V5" &&
             location.value.parents === 1 &&
@@ -519,7 +519,7 @@ async function estimateFees(
     const messageToItp = messages3[0];
     console.log("messageToItp: ", messageToItp);
 
-    const swapCreditEvent2 = remote2DryRunResult.value.emitted_events.find(
+    const swapCreditEvent2 = destinationAHDryRunResult.value.emitted_events.find(
         (event: any) =>
             event.type === "AssetConversion" &&
             event.value?.type === "SwapCreditExecuted"
@@ -537,31 +537,31 @@ async function estimateFees(
         console.error("SwapCreditExecuted event not found or malformed.", swapCreditEvent2);
         return;
     }
-    const ksmPerDot = Number(swapCreditEvent2.value?.value?.amount_in) / Number(swapCreditEvent2?.value?.value?.amount_out);
-    const ksmSpent = swapCreditEvent2.value?.value?.amount_in;
+    const sourceAHNativePerDestinationAHNative = Number(swapCreditEvent2.value?.value?.amount_in) / Number(swapCreditEvent2?.value?.value?.amount_out);
+    const sourceAHNativeSpent = swapCreditEvent2.value?.value?.amount_in;
 
-    const remote2Weight =
+    const destinationAHWeight =
         await plan.destinationAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
-    if (!remote2Weight.success) {
-        console.error("remote2Weight failed: ", remote2Weight);
+    if (!destinationAHWeight.success) {
+        console.error("destinationAHWeight failed: ", destinationAHWeight);
         return;
     }
-    console.log("API: remote2Weight: ", remote2Weight.value);
+    console.log("API: destinationAHWeight: ", destinationAHWeight.value);
 
     // Remote fees are only execution.
-    const remote2FeesInDot =
+    const destinationAHFeesInNative =
         await plan.destinationAH.api.apis.XcmPaymentApi.query_weight_to_asset_fee(
-            remote2Weight.value,
+            destinationAHWeight.value,
             XcmVersionedAssetId.V5(plan.destinationAH.native_from_sibling),
         );
 
-    if (!remote2FeesInDot.success) {
-        console.error(`remote2FeesInDot failed: `, remote2FeesInDot);
+    if (!destinationAHFeesInNative.success) {
+        console.error(`destinationAHFeesInNative failed: `, destinationAHFeesInNative);
         return;
     }
 
     // Now we dry run on the destination.
-    const remote3DryRunResult = await plan.destination.api.apis.DryRunApi.dry_run_xcm(
+    const destinationDryRunResult = await plan.destination.api.apis.DryRunApi.dry_run_xcm(
         // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
         // see runtime patch to allow this: https://github.com/polkadot-fellows/runtimes/compare/main...encointer:runtimes:ab/trusted-aliaser-patch
         XcmVersionedLocation.V5({
@@ -573,17 +573,17 @@ async function estimateFees(
         messageToItp,
     );
     if (
-        !remote3DryRunResult.success ||
-        remote3DryRunResult.value.execution_result.type !== "Complete"
+        !destinationDryRunResult.success ||
+        destinationDryRunResult.value.execution_result.type !== "Complete"
     ) {
-        console.error("remote3DryRunResult failed: ", remote3DryRunResult);
-        console.error("remote3DryRun Error: ", remote3DryRunResult.value.execution_result);
+        console.error("destinationDryRunResult failed: ", destinationDryRunResult);
+        console.error("destinationDryRun Error: ", destinationDryRunResult.value.execution_result);
         return;
     }
-    console.log("remote3DryRunResult: ", remote3DryRunResult.value);
+    console.log("destinationDryRunResult: ", destinationDryRunResult.value);
 
     // We get the delivery fees using the size of the forwarded xcm.
-    const deliveryFeesToRemote3 = await plan.destinationAH.api.apis.XcmPaymentApi.query_delivery_fees(
+    const deliveryFeesToDestination = await plan.destinationAH.api.apis.XcmPaymentApi.query_delivery_fees(
         XcmVersionedLocation.V5({
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(plan.destination.para_id)),
@@ -592,63 +592,63 @@ async function estimateFees(
     );
     // Fees should be of the version we expect and fungible tokens, in particular, KSM.
     if (
-        !deliveryFeesToRemote3.success ||
-        deliveryFeesToRemote3.value.type !== "V5" ||
-        deliveryFeesToRemote3.value.value.length < 1 ||
-        deliveryFeesToRemote3.value.value[0]?.fun?.type !== "Fungible"
+        !deliveryFeesToDestination.success ||
+        deliveryFeesToDestination.value.type !== "V5" ||
+        deliveryFeesToDestination.value.value.length < 1 ||
+        deliveryFeesToDestination.value.value[0]?.fun?.type !== "Fungible"
     ) {
-        console.error("deliveryFeesToRemote3 failed: ", deliveryFeesToRemote3);
+        console.error("deliveryFeesToDestination failed: ", deliveryFeesToDestination);
         return;
     }
-    const deliveryFeesToRemote3Dot = deliveryFeesToRemote3.value.value[0].fun.value
-    console.log(`deliveryFees PAH to ITP [DOT]: `, deliveryFeesToRemote3Dot);
+    const deliveryFeesToDestinationInDestinationAHNative = deliveryFeesToDestination.value.value[0].fun.value
+    console.log(`deliveryFees ${plan.destinationAH.name} to ${plan.destination.name} [${plan.destinationAH.native_symbol}]: `, deliveryFeesToDestinationInDestinationAHNative);
 
-    const remote3Weight =
+    const destinationWeight =
         await plan.destination.api.apis.XcmPaymentApi.query_xcm_weight(messageToItp);
-    if (!remote3Weight.success) {
-        console.error("remote3Weight failed: ", remote3Weight);
+    if (!destinationWeight.success) {
+        console.error("destinationWeight failed: ", destinationWeight);
         return;
     }
-    console.log("API: remote3Weight: ", remote3Weight.value);
+    console.log("API: destinationWeight: ", destinationWeight.value);
 
     // Remote fees are only execution.
-    const resultRemote3FeesInDot =
+    const resultDestinationFeesInDestinationRelayNative =
         await plan.destination.api.apis.XcmPaymentApi.query_weight_to_asset_fee(
-            remote3Weight.value,
+            destinationWeight.value,
             XcmVersionedAssetId.V5(plan.destinationAH.native_from_sibling),
         );
 
-    if (!resultRemote3FeesInDot.success) {
-        console.error(`remote3FeesInDot failed: `, resultRemote3FeesInDot);
+    if (!resultDestinationFeesInDestinationRelayNative.success) {
+        console.error(`destinationFeesInDestinationRelayNative failed: `, resultDestinationFeesInDestinationRelayNative);
         return;
     }
-    const remote3FeesInDot = 4580824760n //TODO: weight_2_fee on ITP seems off:  resultRemote3FeesInDot.value. See: https://github.com/integritee-network/parachain/issues/329
+    const destinationFeesInDestinationRelayNative = 4580824760n //TODO: weight_2_fee on ITP seems off:  resultDestinationFeesInDestinationRelayNative.value. See: https://github.com/integritee-network/parachain/issues/329
 
     console.log(`API: localExecutionFees (virtual) [TEER]: `, localExecutionFees);
-    console.log(`API: deliveryFeesToRemote1Teer    [TEER]: `, deliveryFeesToRemote1Teer);
-    console.log(`API: remote1FeesInKsm*            [KSM] : `, remote1FeesInKsm.value);
-    console.log(`API: deliveryFeesToRemote2Ksm     [KSM] : `, deliveryFeesToRemote2Ksm);
-    console.log(`API: remote2FeesInDot*            [DOT] : `, remote2FeesInDot.value);
-    console.log(`API: deliveryFeesToRemote3Dot     [DOT] : `, deliveryFeesToRemote3Dot);
-    console.log(`API: remote3FeesInDot             [DOT] : `, remote3FeesInDot);
+    console.log(`API: deliveryFeesTosourceAHTeer    [TEER]: `, deliveryFeesTosourceAHTeer);
+    console.log(`API: sourceAHFeesInNative*            [${plan.sourceAH.native_symbol}] : `, sourceAHFeesInNative.value);
+    console.log(`API: deliveryFeesToDestinationAHSourceAHNative     [${plan.sourceAH.native_symbol}] : `, deliveryFeesToDestinationAHSourceAHNative);
+    console.log(`API: destinationAHFeesInNative*            [${plan.destinationAH.native_symbol}] : `, destinationAHFeesInNative.value);
+    console.log(`API: deliveryFeesToDestinationInDestinationAHNative     [${plan.destinationAH.native_symbol}] : `, deliveryFeesToDestinationInDestinationAHNative);
+    console.log(`API: destinationFeesInDestinationRelayNative             [${plan.destinationAH.native_symbol}] : `, destinationFeesInDestinationRelayNative);
 
-    console.log(`simulated rate as TEER per KSM: `, teerPerKsm, ` with TEER converted for fees: `, teerSpent, ` equal to fees in KSM: `, swapCreditEvent.value.value.amount_out);
-    console.log(`simulated rate as KSM per DOT: `, ksmPerDot / 100, ` with KSM converted for fees: `, ksmSpent, ` equal to fees in DOT: `, swapCreditEvent2.value.value.amount_out);
+    console.log(`simulated rate as TEER per ${plan.sourceAH.native_symbol}: `, teerPerSourceAHNative, ` with TEER converted for fees: `, teerSpent, ` equal to fees in ${plan.sourceAH.native_symbol}: `, swapCreditEvent.value.value.amount_out);
+    console.log(`simulated rate as ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}: `, sourceAHNativePerDestinationAHNative / 100, ` with ${plan.sourceAH.native_symbol} converted for fees: `, sourceAHNativeSpent, ` equal to fees in ${plan.destinationAH.native_symbol}: `, swapCreditEvent2.value.value.amount_out);
 
 
-    const remote1FeesInTeer = BigInt(Math.round(Number(remote1FeesInKsm.value + deliveryFeesToRemote2Ksm) * teerPerKsm * 1.1));
-    console.log(`remote1FeesInTeer (with margin*): `, remote1FeesInTeer);
+    const sourceAHFeesInTeer = BigInt(Math.round(Number(sourceAHFeesInNative.value + deliveryFeesToDestinationAHSourceAHNative) * teerPerSourceAHNative * 1.1));
+    console.log(`sourceAHFeesInTeer (with margin*): `, sourceAHFeesInTeer);
 
-    const remote2FeesInKsm = BigInt(Math.round(Number(remote2FeesInDot.value + deliveryFeesToRemote3Dot) * ksmPerDot * 1.1));
-    console.log(`remote2FeesInKsm (with margin*): `, remote2FeesInKsm);
+    const destinationAHFeesInSourceAHNative = BigInt(Math.round(Number(destinationAHFeesInNative.value + deliveryFeesToDestinationInDestinationAHNative) * sourceAHNativePerDestinationAHNative * 1.1));
+    console.log(`destinationAHFeesInSourceAHNative (with margin*): `, destinationAHFeesInSourceAHNative);
 
     const totalCallerFeesInTeer = localExecutionFees +
-        deliveryFeesToRemote1Teer + remote1FeesInTeer +
-        BigInt(Math.round(Number(remote2FeesInKsm + deliveryFeesToRemote2Ksm) * teerPerKsm +
-            Number(remote3FeesInDot + deliveryFeesToRemote3Dot) * teerPerKsm * ksmPerDot))
+        deliveryFeesTosourceAHTeer + sourceAHFeesInTeer +
+        BigInt(Math.round(Number(destinationAHFeesInSourceAHNative + deliveryFeesToDestinationAHSourceAHNative) * teerPerSourceAHNative +
+            Number(destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative) * teerPerSourceAHNative * sourceAHNativePerDestinationAHNative))
     console.log("to be paid by caller to cover everything: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS), ` TEER`);
 
-    return [deliveryFeesToRemote1Teer, remote1FeesInTeer, remote2FeesInKsm, remote3FeesInDot + deliveryFeesToRemote3Dot];
+    return [deliveryFeesTosourceAHTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
 }
 
 // Just a helper function to get a signer for ALICE.
