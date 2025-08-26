@@ -22,7 +22,8 @@ use crate::{
 		assert_asset_hub_kusama_message_processed, assert_asset_hub_polkadot_message_processed,
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		integritee_bridge_setup::{ik_to_ip_bridge_setup, DOT},
-		query_integritee_kusama_xcm_execution_fee, query_integritee_polkadot_xcm_execution_fee,
+		ip_asset_balance, query_integritee_kusama_xcm_execution_fee,
+		query_integritee_polkadot_xcm_execution_fee,
 	},
 	*,
 };
@@ -32,37 +33,43 @@ use kusama_polkadot_system_emulated_network::{
 		genesis::AssetHubLocation,
 		integritee_kusama_runtime::{integritee_common::xcm_helpers::burn_native_xcm, TEER},
 	},
-	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
+	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::{
+		ExistentialDeposit, TreasuryAccount as IpTreasuryAccount,
+	},
 };
+use pallet_porteer::XcmFeeParams;
 use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
 
 #[test]
-fn ik_to_ip_xcm_works_without_forwarding_with_endowed_ip_beneficiary() {
-	ik_to_pk_xcm(None, true)
+fn ik_to_ip_xcm_works_without_forwarding_with_endowed_beneficiary_on_cousin() {
+	ik_to_ip_xcm(None, true)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_with_forwarding_with_endowed_ip_beneficiary() {
-	ik_to_pk_xcm(Some(AssetHubLocation::get()), true)
+fn ik_to_ip_xcm_works_with_forwarding_with_endowed_beneficiary_on_cousin() {
+	ik_to_ip_xcm(Some(AssetHubLocation::get()), true)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_without_forwarding_with_nonexisting_ip_beneficiary() {
-	ik_to_pk_xcm(None, false)
+fn ik_to_ip_xcm_works_without_forwarding_with_nonexisting_beneficiary_on_cousin() {
+	ik_to_ip_xcm(None, false)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_with_forwarding_with_nonexisting_ip_beneficiary() {
-	ik_to_pk_xcm(Some(AssetHubLocation::get()), false)
+fn ik_to_ip_xcm_works_with_forwarding_with_nonexisting_beneficiary_on_cousin() {
+	ik_to_ip_xcm(Some(AssetHubLocation::get()), false)
 }
 
-fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip: bool) {
+fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip: bool) {
 	ik_to_ip_bridge_setup();
 
 	log::info!("Setup Done! Sending XCM.");
 
 	let token_owner = get_account_id_from_seed::<sr25519::Public>("teer_hodler");
+	let dot_asset_id = 0;
+	let ip_treasury_account = IpTreasuryAccount::get();
+	let ip_treasury_asset_balance_before = ip_asset_balance(&ip_treasury_account, dot_asset_id);
 
 	// Token Owner needs to have some DOT on AssetHub
 	AssetHubPolkadot::fund_accounts(vec![(token_owner.clone(), 100 * DOT)]);
@@ -114,7 +121,7 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	assert_asset_hub_polkadot_message_processed();
 
-	assert_integritee_polkadot_tokens_minted(
+	let ip_xcm_execution_fee_dot = assert_integritee_polkadot_tokens_minted(
 		token_owner.clone(),
 		port_tokens_amount,
 		forward_teer_location.is_some(),
@@ -127,10 +134,16 @@ fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	let xcm = burn_native_xcm(Location::here(), 0, 0);
 	let local_fee = query_integritee_kusama_xcm_execution_fee(xcm);
-	let ah_sibling_fee = query_integritee_kusama_ah_sibling_remote_fee();
+	let ah_sibling_fee = query_ik_porteer_xcm_fee_config().hop1;
+	let ip_cousin_fee = query_ik_porteer_xcm_fee_config().hop3;
 	assert_eq!(
 		IntegriteeKusama::account_data_of(token_owner.clone()).free,
 		token_owner_balance_before_on_ik - port_tokens_amount - local_fee - ah_sibling_fee
+	);
+
+	assert_eq!(
+		ip_asset_balance(&ip_treasury_account, dot_asset_id),
+		ip_treasury_asset_balance_before + ip_cousin_fee - ip_xcm_execution_fee_dot,
 	);
 
 	if forward_teer_location.is_some() {
@@ -176,14 +189,15 @@ fn assert_asset_hub_polkadot_tokens_forwarded(who: AccountId) {
 	});
 }
 
+// Returns the fee in DOT that had to be paid on Integritee
 fn assert_integritee_polkadot_tokens_minted(
 	beneficiary: AccountId,
 	ported_tokens_amount: Balance,
 	tokens_forwarded: bool,
-) {
-	// We can see the following logs, but these are expected, as the first 2 traders fail until
-	// we get the right one:
-	// 2025-07-19T18:42:17.124871Z ERROR xcm::weight: FixedRateOfFungible::buy_weight Failed to substract from payment amount=3275251420 error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: Here }): 20000000000}, non_fungible: {} }
+) -> Balance {
+	let mut xcm_execution_fee = 0;
+
+	#[allow(unused_assignments)] // false positive: xcm_execution_fee = *amount_in
 	<IntegriteePolkadot as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
 
@@ -197,6 +211,10 @@ fn assert_integritee_polkadot_tokens_minted(
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
 						who, amount,
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
+					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
+						xcm_execution_fee = *amount_in;
+						true
+					}, },
 					RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::XcmpMessageSent { .. }) => {},
 				]
 			);
@@ -210,15 +228,21 @@ fn assert_integritee_polkadot_tokens_minted(
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
 						who, amount,
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
+					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
+						xcm_execution_fee = *amount_in;
+						true
+					}, },
 				]
 			);
 		}
 	});
+
+	xcm_execution_fee
 }
 
-fn query_integritee_kusama_ah_sibling_remote_fee() -> Balance {
+fn query_ik_porteer_xcm_fee_config() -> XcmFeeParams<Balance> {
 	<IntegriteeKusama as TestExt>::execute_with(|| {
 		type Porteer = <IntegriteeKusama as IntegriteeKusamaPallet>::Porteer;
-		Porteer::xcm_fee_config().hop1
+		Porteer::xcm_fee_config()
 	})
 }

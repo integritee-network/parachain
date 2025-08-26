@@ -17,7 +17,7 @@
 
 use crate::{
 	xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig},
-	Balances, ExistentialDeposit, ParachainInfo, Porteer, Runtime,
+	Balances, ExistentialDeposit, ParachainInfo, Porteer, Runtime, TreasuryAccount,
 };
 use alloc::vec;
 use frame_support::ord_parameter_types;
@@ -78,6 +78,7 @@ impl PortTokens for PortTokensToKusama {
 			ip_cousin_v5(),
 			(ahk_cousin_location(), fees.hop2),
 			(ik_sibling_v5(), fees.hop3),
+			TreasuryAccount::get(),
 		);
 		execute_local_and_remote_xcm::<XcmConfig, <XcmConfig as xcm_executor::Config>::RuntimeCall>(
 			who_location,
