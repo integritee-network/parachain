@@ -1252,6 +1252,11 @@ mod benches {
 		[pallet_xcm_benchmarks::generic, XcmGeneric]
 	);
 
+	// The below setup is very similar to the one from the fellowship/runtimes repository.
+	// Notable differences:
+	// 1. Use the TEER (Location::here()) instead of DOT (Location::parent()) in all cases.
+	// 2. Configure `reserve_transferable_asset_and_dest`, which is None upstream.
+
 	impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 	impl frame_system_benchmarking::Config for Runtime {
 		fn setup_set_code_requirements(code: &Vec<u8>) -> Result<(), BenchmarkError> {
