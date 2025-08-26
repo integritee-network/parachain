@@ -259,10 +259,10 @@ async function main(plan: any) {
     const [localFeesEstimate, sourceAHFeesEstimate, destinationAHFeesEstimateSourceAHNative, destinationFeesEstimateDestinationAHNative] =
         (await estimateFees(plan, batchTx))!;
 
-    console.log(`Local fees estimate [TEER]: `, localFeesEstimate);
+    console.log(`Local fees estimate    [TEER]: `, localFeesEstimate);
     console.log(`Remote 1 fees estimate [TEER]: `, sourceAHFeesEstimate);
-    console.log(`Remote 2 fees estimate [${plan.sourceAH.native_symbol}]: `, destinationAHFeesEstimateSourceAHNative);
-    console.log(`Remote 3 fees estimate [${plan.destinationAH.native_symbol}]: `, destinationFeesEstimateDestinationAHNative);
+    console.log(`Remote 2 fees estimate  [${plan.sourceAH.native_symbol}]: `, destinationAHFeesEstimateSourceAHNative);
+    console.log(`Remote 3 fees estimate  [${plan.destinationAH.native_symbol}]: `, destinationFeesEstimateDestinationAHNative);
 
     const setFeesTx = plan.source.api.tx.Porteer.set_xcm_fee_params({
         fees: {
@@ -376,8 +376,8 @@ async function estimateFees(
         console.error("deliveryFees failed: ", deliveryFees);
         return;
     }
-    const deliveryFeesTosourceAHTeer = deliveryFees.value.value[0].fun.value;
-    console.log("deliveryFees to sourceAH [TEER]: ", deliveryFeesTosourceAHTeer);
+    const deliveryFeesToSourceAHInTeer = deliveryFees.value.value[0].fun.value;
+    console.log("deliveryFees to sourceAH [TEER]: ", deliveryFeesToSourceAHInTeer);
 
     // Local fees for execution (which is virtual as root won't pay execution).
     const localExecutionFees = 0n;
@@ -479,8 +479,8 @@ async function estimateFees(
         console.error("deliveryFeesToDestinationAH failed: ", deliveryFeesToDestinationAH);
         return;
     }
-    const deliveryFeesToDestinationAHSourceAHNative = deliveryFeesToDestinationAH.value.value[0].fun.value
-    console.log(`deliveryFees ${plan.sourceAH.name} to ${plan.destinationAH.name} [${plan.sourceAH.native_symbol}]: `, deliveryFeesToDestinationAHSourceAHNative);
+    const deliveryFeesToDestinationAHInSourceAHNative = deliveryFeesToDestinationAH.value.value[0].fun.value
+    console.log(`deliveryFees ${plan.sourceAH.name} to ${plan.destinationAH.name} [${plan.sourceAH.native_symbol}]: `, deliveryFeesToDestinationAHInSourceAHNative);
 
     // Now we dry run on the destination.
     const destinationAHDryRunResult = await plan.destinationAH.api.apis.DryRunApi.dry_run_xcm(
@@ -625,30 +625,30 @@ async function estimateFees(
     const destinationFeesInDestinationRelayNative = 4580824760n //TODO: weight_2_fee on ITP seems off:  resultDestinationFeesInDestinationRelayNative.value. See: https://github.com/integritee-network/parachain/issues/329
 
     console.log(`API: localExecutionFees (virtual) [TEER]: `, localExecutionFees);
-    console.log(`API: deliveryFeesTosourceAHTeer    [TEER]: `, deliveryFeesTosourceAHTeer);
-    console.log(`API: sourceAHFeesInNative*            [${plan.sourceAH.native_symbol}] : `, sourceAHFeesInNative.value);
-    console.log(`API: deliveryFeesToDestinationAHSourceAHNative     [${plan.sourceAH.native_symbol}] : `, deliveryFeesToDestinationAHSourceAHNative);
-    console.log(`API: destinationAHFeesInNative*            [${plan.destinationAH.native_symbol}] : `, destinationAHFeesInNative.value);
-    console.log(`API: deliveryFeesToDestinationInDestinationAHNative     [${plan.destinationAH.native_symbol}] : `, deliveryFeesToDestinationInDestinationAHNative);
-    console.log(`API: destinationFeesInDestinationRelayNative             [${plan.destinationAH.native_symbol}] : `, destinationFeesInDestinationRelayNative);
+    console.log(`API: delivery fees to ${plan.sourceAH.name}         [TEER]: `, deliveryFeesToSourceAHInTeer);
+    console.log(`API: ${plan.sourceAH.name} fees*                     [${plan.sourceAH.native_symbol}]: `, sourceAHFeesInNative.value);
+    console.log(`API: delivery fees to ${plan.destinationAH.name}          [${plan.sourceAH.native_symbol}]: `, deliveryFeesToDestinationAHInSourceAHNative);
+    console.log(`API: ${plan.destinationAH.name} fees*                     [${plan.destinationAH.native_symbol}]: `, destinationAHFeesInNative.value);
+    console.log(`API: delivery fees to ${plan.destination.name}          [${plan.destinationAH.native_symbol}]: `, deliveryFeesToDestinationInDestinationAHNative);
+    console.log(`API: ${plan.destination.name} fees                      [${plan.destinationAH.native_symbol}]: `, destinationFeesInDestinationRelayNative);
 
     console.log(`simulated rate as TEER per ${plan.sourceAH.native_symbol}: `, teerPerSourceAHNative, ` with TEER converted for fees: `, teerSpent, ` equal to fees in ${plan.sourceAH.native_symbol}: `, swapCreditEvent.value.value.amount_out);
     console.log(`simulated rate as ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}: `, sourceAHNativePerDestinationAHNative / 100, ` with ${plan.sourceAH.native_symbol} converted for fees: `, sourceAHNativeSpent, ` equal to fees in ${plan.destinationAH.native_symbol}: `, swapCreditEvent2.value.value.amount_out);
 
 
-    const sourceAHFeesInTeer = BigInt(Math.round(Number(sourceAHFeesInNative.value + deliveryFeesToDestinationAHSourceAHNative) * teerPerSourceAHNative * 1.1));
-    console.log(`sourceAHFeesInTeer (with margin*): `, sourceAHFeesInTeer);
+    const sourceAHFeesInTeer = BigInt(Math.round(Number(sourceAHFeesInNative.value + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative * 1.1));
+    console.log(`${plan.sourceAH.name} fees before swap (with margin*) [TEER]: `, sourceAHFeesInTeer);
 
     const destinationAHFeesInSourceAHNative = BigInt(Math.round(Number(destinationAHFeesInNative.value + deliveryFeesToDestinationInDestinationAHNative) * sourceAHNativePerDestinationAHNative * 1.1));
-    console.log(`destinationAHFeesInSourceAHNative (with margin*): `, destinationAHFeesInSourceAHNative);
+    console.log(`${plan.destinationAH.name} fees before swap (with margin*) [${plan.sourceAH.native_symbol}]: `, destinationAHFeesInSourceAHNative);
 
     const totalCallerFeesInTeer = localExecutionFees +
-        deliveryFeesTosourceAHTeer + sourceAHFeesInTeer +
-        BigInt(Math.round(Number(destinationAHFeesInSourceAHNative + deliveryFeesToDestinationAHSourceAHNative) * teerPerSourceAHNative +
+        deliveryFeesToSourceAHInTeer + sourceAHFeesInTeer +
+        BigInt(Math.round(Number(destinationAHFeesInSourceAHNative + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative +
             Number(destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative) * teerPerSourceAHNative * sourceAHNativePerDestinationAHNative))
-    console.log("to be paid by caller to cover everything: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS), ` TEER`);
+    console.log("to be paid by caller to cover everything [TEER]: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS));
 
-    return [deliveryFeesTosourceAHTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
+    return [deliveryFeesToSourceAHInTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
 }
 
 // Just a helper function to get a signer for ALICE.
