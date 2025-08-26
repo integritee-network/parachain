@@ -19,9 +19,10 @@
 //!
 
 use super::{
-	AccountId, AssetConversion, AssetRegistry, Assets, Balance, Balances, MaxInstructions,
+	deposit, AccountId, AssetConversion, AssetRegistry, Assets, Balance, Balances, MaxInstructions,
 	MessageQueue, Native, NativeAndAssets, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
-	RuntimeCall, RuntimeEvent, RuntimeOrigin, TransactionByteFee, TreasuryAccount, XcmpQueue, TEER,
+	RuntimeCall, RuntimeEvent, RuntimeHoldReason, RuntimeOrigin, TransactionByteFee,
+	TreasuryAccount, XcmpQueue, TEER,
 };
 use crate::weights;
 use assets_common::matching::ParentLocation;
@@ -32,8 +33,10 @@ use frame_support::{
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
 	traits::{
-		fungible::NativeOrWithId, tokens::imbalance::ResolveAssetTo, Contains, ContainsPair,
-		Disabled, Equals, Everything, Nothing, TransformOrigin,
+		fungible::{HoldConsideration, NativeOrWithId},
+		tokens::imbalance::{ResolveAssetTo, ResolveTo},
+		Contains, ContainsPair, Disabled, Equals, Everything, LinearStoragePrice, Nothing,
+		TransformOrigin,
 	},
 };
 use frame_system::EnsureRoot;
@@ -68,7 +71,7 @@ use xcm_builder::{
 	HashedDescription, MatchedConvertedConcreteId, NoChecking, ParentAsSuperuser, ParentIsPreset,
 	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
 	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	TrailingSetTopicAsId, WeightInfoBounds, WithComputedOrigin, WithUniqueTopic,
+	TrailingSetTopicAsId, UsingComponents, WeightInfoBounds, WithComputedOrigin, WithUniqueTopic,
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, AssetLocationGetter, ConvertedRegisteredAssetId};
@@ -315,14 +318,20 @@ impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
 
 pub type Traders = (
 	// for TEER
-	FixedRateOfFungible<
-		NativePerSecond,
-		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
+	UsingComponents<
+		WeightToFee,
+		TeerNative,
+		AccountId,
+		Balances,
+		ResolveTo<TreasuryAccount, Balances>,
 	>,
 	// for TEER for XCM from Karura, Bifrost, Moonriver
-	FixedRateOfFungible<
-		NativeAliasPerSecond,
-		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
+	UsingComponents<
+		WeightToFee,
+		TeerAlias,
+		AccountId,
+		Balances,
+		ResolveTo<TreasuryAccount, Balances>,
 	>,
 	// This trader allows to pay with the relay chain token iff there is a pool to trade it for TEER.
 	cumulus_primitives_utility::SwapFirstAssetTrader<
@@ -367,6 +376,10 @@ impl MaybeEquivalence<Location, NativeOrWithId<u32>> for ReserveAssetsRegistry {
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub NativePerSecond: (AssetId, u128,u128) = (Location::new(0,Here).into(), TEER * 70, 0u128);
+
+	pub TeerNative: Location = Location::here();
+	pub TeerAlias: Location = Location::new(0,[TEER_GENERAL_KEY]);
+
 	pub NativeAliasPerSecond: (AssetId, u128,u128) = (Location::new(0,[TEER_GENERAL_KEY]).into(), TEER * 70, 0u128);
 	pub RelayNativePerSecond: (AssetId, u128,u128) = (Location::new(1,Here).into(), TEER * 70, 0u128);
 	// Weight for one XCM operation.
@@ -465,6 +478,13 @@ impl xcm_executor::Config for XcmConfig {
 /// Forms the basis for local origins sending/executing XCMs.
 pub type LocalSignedOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
 
+parameter_types! {
+	pub const DepositPerItem: Balance = deposit(1, 0);
+	pub const DepositPerByte: Balance = deposit(0, 1);
+	pub const AuthorizeAliasHoldReason: RuntimeHoldReason =
+		RuntimeHoldReason::PolkadotXcm(pallet_xcm::HoldReason::AuthorizeAlias);
+}
+
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalSignedOriginToLocation>; // Allow sending arbitrary XCMs from users of this chain
@@ -489,7 +509,13 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type MaxRemoteLockConsumers = ConstU32<0>;
 	type RemoteLockConsumerIdentifier = ();
-	type AuthorizedAliasConsideration = Disabled;
+	// xcm_executor::Config::Aliasers uses pallet_xcm::AuthorizedAliasers.
+	type AuthorizedAliasConsideration = HoldConsideration<
+		AccountId,
+		Balances,
+		AuthorizeAliasHoldReason,
+		LinearStoragePrice<DepositPerItem, DepositPerByte, Balance>,
+	>;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {

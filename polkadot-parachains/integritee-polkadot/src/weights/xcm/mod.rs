@@ -97,15 +97,15 @@ impl<Call> XcmWeightInfo<Call> for IntegriteePolkadotXcmWeight<Call> {
 		_max_capacity: &u32,
 	) -> Weight {
 		// XCM Executor does not currently support HRMP channel operations
-		Weight::MAX
+		Weight::zero()
 	}
 	fn hrmp_channel_accepted(_recipient: &u32) -> Weight {
 		// XCM Executor does not currently support HRMP channel operations
-		Weight::MAX
+		Weight::zero()
 	}
 	fn hrmp_channel_closing(_initiator: &u32, _sender: &u32, _recipient: &u32) -> Weight {
 		// XCM Executor does not currently support HRMP channel operations
-		Weight::MAX
+		Weight::zero()
 	}
 	fn clear_origin() -> Weight {
 		XcmGeneric::<Runtime>::clear_origin()
@@ -124,7 +124,7 @@ impl<Call> XcmWeightInfo<Call> for IntegriteePolkadotXcmWeight<Call> {
 		assets.weigh_assets(XcmFungibleWeight::<Runtime>::deposit_reserve_asset())
 	}
 	fn exchange_asset(_give: &AssetFilter, _receive: &Assets, _maximal: &bool) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn initiate_reserve_withdraw(
 		assets: &AssetFilter,
@@ -200,22 +200,22 @@ impl<Call> XcmWeightInfo<Call> for IntegriteePolkadotXcmWeight<Call> {
 		XcmGeneric::<Runtime>::clear_transact_status()
 	}
 	fn universal_origin(_: &Junction) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn export_message(_: &NetworkId, _: &Junctions, _: &Xcm<()>) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn lock_asset(_: &Asset, _: &Location) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn unlock_asset(_: &Asset, _: &Location) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn note_unlockable(_: &Asset, _: &Location) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn request_unlock(_: &Asset, _: &Location) -> Weight {
-		Weight::MAX
+		Weight::zero()
 	}
 	fn set_fees_mode(_: &bool) -> Weight {
 		XcmGeneric::<Runtime>::set_fees_mode()
