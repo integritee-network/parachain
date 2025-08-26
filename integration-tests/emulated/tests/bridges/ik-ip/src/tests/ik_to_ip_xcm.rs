@@ -237,7 +237,7 @@ fn assert_integritee_polkadot_tokens_minted(
 			);
 		}
 	});
-
+	
 	ip_fee_dot
 }
 
