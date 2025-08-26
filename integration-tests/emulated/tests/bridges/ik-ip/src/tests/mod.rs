@@ -587,4 +587,3 @@ fn ik_asset_balance(who: &AccountId, asset_id: AssetIdForTrustBackedAssets) -> B
 		Assets::balance(asset_id, who)
 	})
 }
-

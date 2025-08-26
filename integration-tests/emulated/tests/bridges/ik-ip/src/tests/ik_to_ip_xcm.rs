@@ -22,23 +22,24 @@ use crate::{
 		assert_asset_hub_kusama_message_processed, assert_asset_hub_polkadot_message_processed,
 		assert_bridge_hub_kusama_message_accepted, assert_bridge_hub_polkadot_message_received,
 		integritee_bridge_setup::{ik_to_ip_bridge_setup, DOT},
-		query_integritee_kusama_xcm_execution_fee, query_integritee_polkadot_xcm_execution_fee,
+		ip_asset_balance, query_integritee_kusama_xcm_execution_fee,
+		query_integritee_polkadot_xcm_execution_fee,
 	},
 	*,
 };
 use emulated_integration_tests_common::xcm_emulator::log;
-use pallet_porteer::XcmFeeParams;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
 		integritee_kusama_runtime::{integritee_common::xcm_helpers::burn_native_xcm, TEER},
 	},
-	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
+	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::{
+		ExistentialDeposit, TreasuryAccount as IpTreasuryAccount,
+	},
 };
+use pallet_porteer::XcmFeeParams;
 use sp_core::sr25519;
 use system_parachains_constants::genesis_presets::get_account_id_from_seed;
-use kusama_polkadot_system_emulated_network::integritee_polkadot_emulated_chain::integritee_polkadot_runtime::TreasuryAccount as IpTreasuryAccount;
-use crate::tests::ip_asset_balance;
 
 #[test]
 fn ik_to_ip_xcm_works_without_forwarding_with_endowed_beneficiary_on_cousin() {

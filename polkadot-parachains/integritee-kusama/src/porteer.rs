@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig}, Balances, ExistentialDeposit, ParachainInfo, Porteer, Runtime, TreasuryAccount};
+use crate::{
+	xcm_config::{AccountIdToLocation, AssetHubLocation, XcmConfig},
+	Balances, ExistentialDeposit, ParachainInfo, Porteer, Runtime, TreasuryAccount,
+};
 use alloc::vec;
 use frame_support::ord_parameter_types;
 use integritee_parachains_common::{
@@ -76,7 +79,7 @@ impl PortTokens for PortTokensToPolkadot {
 			ik_cousin_v5(),
 			(ahp_cousin_location(), fees.hop2),
 			(ip_sibling_v5(), fees.hop3),
-			TreasuryAccount::get()
+			TreasuryAccount::get(),
 		);
 		execute_local_and_remote_xcm::<XcmConfig, <XcmConfig as xcm_executor::Config>::RuntimeCall>(
 			who_location,

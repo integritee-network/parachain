@@ -27,11 +27,11 @@ use xcm::{
 		WildAsset, Xcm,
 	},
 	prelude::{
-		DepositAsset, Fungible, GlobalConsensus, InitiateTransfer, Kusama, Parachain, PayFees,
-		Polkadot, ReceiveTeleportedAsset, RefundSurplus, SetAppendix, Transact, WithdrawAsset,
+		AccountId32, DepositAsset, Fungible, GlobalConsensus, InitiateTransfer, Kusama, Parachain,
+		PayFees, Polkadot, ReceiveTeleportedAsset, RefundSurplus, SetAppendix, Transact,
+		WithdrawAsset,
 	},
 };
-use xcm::prelude::AccountId32;
 
 pub const IK_FEE: u128 = 1000000000000;
 pub const AHK_FEE: u128 = 33849094374679;
@@ -119,7 +119,12 @@ pub fn ah_sibling_xcm<Call, IntegriteePolkadotCall: Encode>(
 			))),
 			preserve_origin: true,
 			assets: Default::default(),
-			remote_xcm: ah_cousin_xcm(call, local_as_cousin, integritee_cousin_as_sibling, integritee_cousin_treasury),
+			remote_xcm: ah_cousin_xcm(
+				call,
+				local_as_cousin,
+				integritee_cousin_as_sibling,
+				integritee_cousin_treasury,
+			),
 		},
 	])
 }
@@ -162,12 +167,14 @@ fn integritee_cousin_xcm<Call, IntegriteeCall: Encode>(
 			RefundSurplus,
 			DepositAsset {
 				assets: AssetFilter::Wild(WildAsset::All),
-				beneficiary: AccountId32 { network: None, id: integritee_cousin_treasury.into() }.into(),
+				beneficiary: AccountId32 { network: None, id: integritee_cousin_treasury.into() }
+					.into(),
 			},
 		])),
 		Transact {
-		origin_kind: OriginKind::SovereignAccount,
-		fallback_max_weight: None,
-		call: call.encode().into(),
-	}])
+			origin_kind: OriginKind::SovereignAccount,
+			fallback_max_weight: None,
+			call: call.encode().into(),
+		},
+	])
 }
