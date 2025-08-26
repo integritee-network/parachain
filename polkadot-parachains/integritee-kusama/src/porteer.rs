@@ -68,7 +68,8 @@ impl PortTokens for PortTokensToPolkadot {
 		let tentative_xcm = burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), 0);
 		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
-		let local_xcm = burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
+		let local_xcm =
+			burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
 
 		let remote_xcm = ah_sibling_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),

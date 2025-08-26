@@ -31,10 +31,7 @@ use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
-		integritee_kusama_runtime::{
-			integritee_common::xcm_helpers::{burn_asset_xcm},
-			TEER,
-		},
+		integritee_kusama_runtime::{integritee_common::xcm_helpers::burn_asset_xcm, TEER},
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::{
 		ExistentialDeposit, TreasuryAccount as IpTreasuryAccount,
