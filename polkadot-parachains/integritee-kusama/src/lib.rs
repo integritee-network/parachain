@@ -1213,10 +1213,7 @@ mod benches {
 		xcm_config::{AssetHubLocation, AssetHubParaId, PriceForSiblingParachainDelivery},
 		AccountId, Balances, ExistentialDeposit, ParachainSystem, Runtime, RuntimeCall, System,
 	};
-	use alloc::{
-		boxed::Box,
-		vec::{Vec}, vec,
-	};
+	use alloc::{boxed::Box, vec, vec::Vec};
 
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
@@ -1334,10 +1331,8 @@ mod benches {
 		}
 		fn worst_case_holding(_depositable_count: u32) -> Assets {
 			// just concrete assets according to relay chain.
-			let assets: Vec<Asset> = vec![Asset {
-				id: AssetId(Location::here()),
-				fun: Fungible(1_000_000 * UNITS),
-			}];
+			let assets: Vec<Asset> =
+				vec![Asset { id: AssetId(Location::here()), fun: Fungible(1_000_000 * UNITS) }];
 			assets.into()
 		}
 	}

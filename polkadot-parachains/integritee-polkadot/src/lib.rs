@@ -1220,10 +1220,7 @@ mod benches {
 		xcm_config::{AssetHubLocation, AssetHubParaId, PriceForSiblingParachainDelivery},
 		AccountId, Balances, ExistentialDeposit, ParachainSystem, Runtime, RuntimeCall, System,
 	};
-	use alloc::{
-		boxed::Box,
-		vec::{Vec}, vec,
-	};
+	use alloc::{boxed::Box, vec, vec::Vec};
 
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
