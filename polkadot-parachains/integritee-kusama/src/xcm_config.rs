@@ -342,6 +342,7 @@ pub type Traders = (
 	>,
 );
 
+// Debug Hint: For weighing debugging, the definition can be copied here, and we can add some logs.
 type Weigher = WeightInfoBounds<
 	weights::xcm::IntegriteeKusamaXcmWeight<RuntimeCall>,
 	RuntimeCall,
