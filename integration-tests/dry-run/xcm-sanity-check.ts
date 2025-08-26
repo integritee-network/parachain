@@ -11,10 +11,10 @@ import {
     XcmV5Junction,
     XcmV5Junctions,
     XcmV5NetworkId,
-    XcmVersionedLocation,
+    XcmVersionedLocation, XcmV3JunctionBodyId, XcmV2JunctionBodyPart
 } from "@polkadot-api/descriptors";
 import {
-    createClient,
+    createClient, FixedSizeBinary
 } from "polkadot-api";
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
@@ -120,6 +120,25 @@ const ITP_FROM_COUSIN = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
 };
+const ALICE_PUB = FixedSizeBinary.fromHex("0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"); // well-known alice account
+const ALICE_LOCAL = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: ALICE_PUB}))
+}
+const palletId = Buffer.from("py/trsry", "utf8"); // 8 bytes
+const padded = Buffer.concat([palletId, Buffer.alloc(32 - palletId.length, 0)]);
+const treasuryAccount = FixedSizeBinary.fromHex(padded);
+const TREASURY_LOCAL = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: padded}))
+}
+// const TREASURY_LOCAL = {
+//     parents: 0,
+//     interior: XcmV5Junctions.X1(XcmV5Junction.Plurality({
+//         id: XcmV3JunctionBodyId.Treasury(),
+//         part: XcmV2JunctionBodyPart.Voice()
+//     }))
+// }
 
 // Setup clients...
 const pahClient = createClient(
@@ -246,7 +265,22 @@ async function checkBalances() {
         printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), XcmVersionedLocation.V5(DOT_FROM_COUSIN_PARACHAINS), "ITP Sovereign on KAH [DOT]"),
         printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 0, "ITP Sovereign on ITK [KSM]"),
         printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 0, "ITK Sovereign on ITP [DOT]"),
+
     ])
+    if ((ENDPOINTS === CHOPSTICKS) || (ENDPOINTS === ZOMBIENET)) {
+        // Assume alice is porting TEER to test, so check relevant balances additionally
+        console.log("checking (foreign) asset balances for well-known keys")
+        await Promise.all([
+            printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0, "Alice on ITP [DOT]"),
+            printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0, "Alice on ITK [KSM]"),
+            checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0n, "Alice on ITP [TEER]"),
+            checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0n, "Alice on ITK [TEER]"),
+            printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0, "Treasury on ITP [DOT]"),
+            printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0, "Treasury on ITK [KSM]"),
+            checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITP [TEER]"),
+            checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITK [TEER]"),
+        ])
+    }
 }
 
 async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
