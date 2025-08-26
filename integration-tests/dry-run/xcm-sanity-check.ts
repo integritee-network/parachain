@@ -125,20 +125,13 @@ const ALICE_LOCAL = {
     parents: 0,
     interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: ALICE_PUB}))
 }
-const palletId = Buffer.from("py/trsry", "utf8"); // 8 bytes
+const palletId = Buffer.from("modlpy/trsry", "utf8"); // 8 bytes
 const padded = Buffer.concat([palletId, Buffer.alloc(32 - palletId.length, 0)]);
-const treasuryAccount = FixedSizeBinary.fromHex(padded);
+const treasuryAccount = FixedSizeBinary.fromHex(padded.toHex());
 const TREASURY_LOCAL = {
     parents: 0,
-    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: padded}))
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: treasuryAccount}))
 }
-// const TREASURY_LOCAL = {
-//     parents: 0,
-//     interior: XcmV5Junctions.X1(XcmV5Junction.Plurality({
-//         id: XcmV3JunctionBodyId.Treasury(),
-//         part: XcmV2JunctionBodyPart.Voice()
-//     }))
-// }
 
 // Setup clients...
 const pahClient = createClient(
