@@ -1279,7 +1279,7 @@ mod benches {
 		}
 
 		fn teleportable_asset_and_dest() -> Option<(Asset, Location)> {
-			// Relay/native token can be teleported from Integritee to Asset Hub.
+			// Native token can be teleported from Integritee to Asset Hub.
 			Some((
 				Asset { fun: Fungible(ExistentialDeposit::get()), id: AssetId(Here.into()) },
 				AssetHubLocation::get(),
@@ -1287,7 +1287,11 @@ mod benches {
 		}
 
 		fn reserve_transferable_asset_and_dest() -> Option<(Asset, Location)> {
-			None
+			// Native token can be reserve transferred from Integritee to Asset Hub.
+			Some((
+				Asset { fun: Fungible(ExistentialDeposit::get()), id: AssetId(Here.into()) },
+				AssetHubLocation::get(),
+			))
 		}
 
 		fn set_up_complex_asset_transfer() -> Option<(Assets, u32, Location, Box<dyn FnOnce()>)> {
@@ -1343,7 +1347,10 @@ mod benches {
 			Asset { fun: Fungible(UNITS), id: AssetId(RelayChainLocation::get()) },
 		));
 		pub const CheckedAccount: Option<(AccountId, xcm_builder::MintLocation)> = None;
-		pub const TrustedReserve: Option<(Location, Asset)> = None;
+		pub TrustedReserve: Option<(Location, Asset)> = Some((
+			AssetHubLocation::get(),
+			Asset { fun: Fungible(UNITS), id: AssetId(RelayChainLocation::get()) },
+		));
 	}
 
 	impl pallet_xcm_benchmarks::fungible::Config for Runtime {
