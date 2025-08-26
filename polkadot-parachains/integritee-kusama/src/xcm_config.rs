@@ -323,7 +323,7 @@ pub type Traders = (
 		NativeAliasPerSecond,
 		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
 	>,
-	// This trader allows to pay with the relay chain token iff there is a pool to trade if for TEER.
+	// This trader allows to pay with the relay chain token iff there is a pool to trade it for TEER.
 	cumulus_primitives_utility::SwapFirstAssetTrader<
 		Native,
 		AssetConversion,
@@ -366,9 +366,6 @@ parameter_types! {
 	pub UnitWeightCost: Weight = Weight::from_parts(1_000_000u64, DEFAULT_PROOF_SIZE);
 	pub const IntegriteeNative: AssetFilter = Wild(AllOf { fun: WildFungible, id: AssetId(Location::here()) });
 	pub AssetHubTrustedTeleporter: (AssetFilter, Location) = (IntegriteeNative::get(), AssetHubLocation::get());
-
-	pub TrustBackedAssetsPalletIndex: u8 = <Assets as PalletInfoAccess>::index() as u8;
-	pub TrustBackedAssetsPalletLocation: Location = PalletInstance(TrustBackedAssetsPalletIndex::get()).into();
 
 	pub const RelayLocation: Location = Location::parent();
 	pub RelayLocationFilter: AssetFilter = Wild(AllOf {

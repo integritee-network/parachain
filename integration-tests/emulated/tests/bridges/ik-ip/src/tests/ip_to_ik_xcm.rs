@@ -66,9 +66,9 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	log::info!("Setup Done! Sending XCM.");
 
 	let token_owner = get_account_id_from_seed::<sr25519::Public>("teer_hodler");
-	let dot_asset_id = 0;
+	let ksm_asset_id = 0;
 	let ik_treasury_account = IkTreasuryAccount::get();
-	let ik_treasury_asset_balance_before = ik_asset_balance(&ik_treasury_account, dot_asset_id);
+	let ik_treasury_asset_balance_before = ik_asset_balance(&ik_treasury_account, ksm_asset_id);
 
 	// Token Owner needs to have some KSM on AssetHub
 	AssetHubKusama::fund_accounts(vec![(token_owner.clone(), 100 * KSM)]);
@@ -144,7 +144,7 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	);
 
 	assert_eq!(
-		ik_asset_balance(&ik_treasury_account, dot_asset_id),
+		ik_asset_balance(&ik_treasury_account, ksm_asset_id),
 		ik_treasury_asset_balance_before + ik_cousin_fee - ik_xcm_execution_fee_ksm,
 	);
 

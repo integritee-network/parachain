@@ -145,8 +145,6 @@ pub(crate) fn ip_to_ik_bridge_setup() {
 	create_foreign_on_ah_kusama(ik_sibling(), false, vec![]);
 	set_up_pool_with_ksm_on_ah_kusama(ik_sibling(), true);
 
-	// Add setup to exchange assets
-
 	create_reserve_asset_on_ik(0, Parent.into(), true, vec![]);
 	set_up_pool_with_teer_on_ik(0);
 }

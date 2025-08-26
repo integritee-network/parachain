@@ -323,7 +323,7 @@ pub type Traders = (
 		NativeAliasPerSecond,
 		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
 	>,
-	// This trader allows to pay with the relay chain token iff there is a pool to trade if for TEER.
+	// This trader allows to pay with the relay chain token iff there is a pool to trade it for TEER.
 	cumulus_primitives_utility::SwapFirstAssetTrader<
 		Native,
 		AssetConversion,
