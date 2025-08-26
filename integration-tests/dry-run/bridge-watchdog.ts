@@ -688,7 +688,7 @@ async function estimateFees(
         console.error(`destinationFeesInDestinationRelayNative failed: `, resultDestinationFeesInDestinationRelayNative);
         return;
     }
-    const destinationFeesInDestinationRelayNative = 4580824760n //TODO: weight_2_fee on ITP seems off:  resultDestinationFeesInDestinationRelayNative.value. See: https://github.com/integritee-network/parachain/issues/329
+    const destinationFeesInDestinationRelayNative = resultDestinationFeesInDestinationRelayNative.value;
 
     console.log(`API: localExecutionFees (virtual) [TEER]: `, localExecutionFees);
     console.log(`API: delivery fees to ${plan.sourceAH.name}         [TEER]: `, deliveryFeesToSourceAHInTeer);
