@@ -122,7 +122,8 @@ impl Convert<Asset, Option<CurrencyId>> for CurrencyIdConvert {
 
 parameter_types! {
 	pub const RelayChainLocation: Location = Location::parent();
-	pub AssetHubLocation: Location = Location::new(1, [Parachain(1000)]);
+	pub AssetHubParaId: ParaId = 1000.into();
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(AssetHubParaId::get().into())]);
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// The universal location within the global consensus system

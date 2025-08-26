@@ -1206,8 +1206,20 @@ extern crate frame_benchmarking;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
+	use crate::{
+		integritee_common::currency::UNITS,
+		parameter_types,
+		xcm_config::{AssetHubLocation, AssetHubParaId, PriceForSiblingParachainDelivery},
+		AccountId, Balances, ExistentialDeposit, ParachainSystem, Runtime, RuntimeCall, System,
+	};
+	use alloc::{
+		boxed::Box,
+		vec::{Vec}, vec,
+	};
+
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
+		[frame_system_extensions, SystemExtensionsBench::<Runtime>]
 		[pallet_asset_conversion, AssetConversion]
 		[pallet_asset_registry, AssetRegistry]
 		[pallet_assets, Assets]
@@ -1297,11 +1309,11 @@ mod benches {
 	}
 
 	use xcm::latest::prelude::{Location, *};
-	use xcm_config::KsmRelayLocation;
+	use xcm_config::RelayChainLocation;
 
 	parameter_types! {
 		pub ExistentialDepositAsset: Option<Asset> = Some((
-			KsmRelayLocation::get(),
+			RelayChainLocation::get(),
 			ExistentialDeposit::get()
 		).into());
 	}
@@ -1322,7 +1334,7 @@ mod benches {
 		fn worst_case_holding(_depositable_count: u32) -> Assets {
 			// just concrete assets according to relay chain.
 			let assets: Vec<Asset> = vec![Asset {
-				id: AssetId(KsmRelayLocation::get()),
+				id: AssetId(RelayChainLocation::get()),
 				fun: Fungible(1_000_000 * UNITS),
 			}];
 			assets.into()
@@ -1332,7 +1344,7 @@ mod benches {
 	parameter_types! {
 		pub TrustedTeleporter: Option<(Location, Asset)> = Some((
 			AssetHubLocation::get(),
-			Asset { fun: Fungible(UNITS), id: AssetId(KsmRelayLocation::get()) },
+			Asset { fun: Fungible(UNITS), id: AssetId(RelayChainLocation::get()) },
 		));
 		pub const CheckedAccount: Option<(AccountId, xcm_builder::MintLocation)> = None;
 		pub const TrustedReserve: Option<(Location, Asset)> = None;
@@ -1346,7 +1358,7 @@ mod benches {
 		type TrustedReserve = TrustedReserve;
 
 		fn get_asset() -> Asset {
-			Asset { id: AssetId(KsmRelayLocation::get()), fun: Fungible(UNITS) }
+			Asset { id: AssetId(RelayChainLocation::get()), fun: Fungible(UNITS) }
 		}
 	}
 
@@ -1360,6 +1372,10 @@ mod benches {
 
 		fn worst_case_asset_exchange() -> Result<(Assets, Assets), BenchmarkError> {
 			Err(BenchmarkError::Skip)
+		}
+
+		fn fee_asset() -> Result<Asset, BenchmarkError> {
+			Ok(Asset { id: Here.into(), fun: Fungible(1_000_000 * UNITS) })
 		}
 
 		fn universal_alias() -> Result<(Location, Junction), BenchmarkError> {
@@ -1379,17 +1395,17 @@ mod benches {
 
 		fn claimable_asset() -> Result<(Location, Location, Assets), BenchmarkError> {
 			let origin = AssetHubLocation::get();
-			let assets: Assets = (AssetId(KsmRelayLocation::get()), 1_000 * UNITS).into();
+			let assets: Assets = (AssetId(RelayChainLocation::get()), 1_000 * UNITS).into();
 			let ticket = Location::new(0, []);
 			Ok((origin, ticket, assets))
 		}
 
-		fn worst_case_for_trader() -> Result<(Asset, WeightLimit), BenchmarkError> {
-			Ok((
-				Asset { id: AssetId(KsmRelayLocation::get()), fun: Fungible(1_000_000 * UNITS) },
-				Limited(Weight::from_parts(5000, 5000)),
-			))
-		}
+		// fn worst_case_for_trader() -> Result<(Asset, WeightLimit), BenchmarkError> {
+		// 	Ok((
+		// 		Asset { id: AssetId(RelayChainLocation::get()), fun: Fungible(1_000_000 * UNITS) },
+		// 		Limited(Weight::from_parts(5000, 5000)),
+		// 	))
+		// }
 
 		fn unlockable_asset() -> Result<(Location, Location, Asset), BenchmarkError> {
 			Err(BenchmarkError::Skip)
@@ -1416,7 +1432,9 @@ mod benches {
 	};
 	pub use pallet_xcm::benchmarking::Pallet as PalletXcmExtrinsicsBenchmark;
 	pub type XcmBalances = pallet_xcm_benchmarks::fungible::Pallet<Runtime>;
+	use crate::xcm_config;
 	pub use frame_support::traits::{TrackedStorageKey, WhitelistedStorageKeys};
+
 	pub type XcmGeneric = pallet_xcm_benchmarks::generic::Pallet<Runtime>;
 }
 
