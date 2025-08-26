@@ -194,11 +194,9 @@ fn assert_integritee_polkadot_tokens_minted(
 	ported_tokens_amount: Balance,
 	tokens_forwarded: bool,
 ) -> Balance {
-	let mut ip_fee_dot= 0;
+	let mut xcm_execution_fee = 0;
 
-	// We can see the following logs, but these are expected, as the first 2 traders fail until
-	// we get the right one:
-	// 2025-07-19T18:42:17.124871Z ERROR xcm::weight: FixedRateOfFungible::buy_weight Failed to substract from payment amount=3275251420 error=AssetsInHolding { fungible: {AssetId(Location { parents: 1, interior: Here }): 20000000000}, non_fungible: {} }
+	#[allow(unused_assignments)] // false positive: xcm_execution_fee = *amount_in
 	<IntegriteePolkadot as TestExt>::execute_with(|| {
 		type RuntimeEvent = <IntegriteePolkadot as Chain>::RuntimeEvent;
 
@@ -213,7 +211,7 @@ fn assert_integritee_polkadot_tokens_minted(
 						who, amount,
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
-						ip_fee_dot = *amount_in;
+						xcm_execution_fee = *amount_in;
 						true
 					}, },
 					RuntimeEvent::XcmpQueue(cumulus_pallet_xcmp_queue::Event::XcmpMessageSent { .. }) => {},
@@ -230,15 +228,15 @@ fn assert_integritee_polkadot_tokens_minted(
 						who, amount,
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
-						ip_fee_dot = *amount_in;
+						xcm_execution_fee = *amount_in;
 						true
 					}, },
 				]
 			);
 		}
 	});
-	
-	ip_fee_dot
+
+	xcm_execution_fee
 }
 
 fn query_ik_porteer_xcm_fee_config() -> XcmFeeParams<Balance> {
