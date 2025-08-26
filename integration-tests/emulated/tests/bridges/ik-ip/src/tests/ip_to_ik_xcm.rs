@@ -39,22 +39,22 @@ use kusama_polkadot_system_emulated_network::integritee_kusama_emulated_chain::i
 use crate::tests::ik_asset_balance;
 
 #[test]
-fn ip_to_ik_xcm_works_without_forwarding_with_endowed_ik_beneficiary() {
+fn ip_to_ik_xcm_works_without_forwarding_with_endowed_beneficiary_on_cousin() {
 	ip_to_ik_xcm(None, true)
 }
 
 #[test]
-fn ip_to_ik_xcm_works_with_forwarding_with_endowed_ik_beneficiary() {
+fn ip_to_ik_xcm_works_with_forwarding_with_endowed_beneficiary_on_cousin() {
 	ip_to_ik_xcm(Some(AssetHubLocation::get()), true)
 }
 
 #[test]
-fn ip_to_ik_xcm_works_without_forwarding_with_nonexisting_ik_beneficiary() {
+fn ip_to_ik_xcm_works_without_forwarding_with_nonexisting_beneficiary_on_cousin() {
 	ip_to_ik_xcm(None, false)
 }
 
 #[test]
-fn ip_to_ik_xcm_works_with_forwarding_with_nonexisting_ik_beneficiary() {
+fn ip_to_ik_xcm_works_with_forwarding_with_nonexisting_beneficiary_on_cousiny() {
 	ip_to_ik_xcm(Some(AssetHubLocation::get()), false)
 }
 

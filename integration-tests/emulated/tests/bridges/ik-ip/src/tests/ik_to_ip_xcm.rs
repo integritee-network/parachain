@@ -41,26 +41,26 @@ use kusama_polkadot_system_emulated_network::integritee_polkadot_emulated_chain:
 use crate::tests::ip_asset_balance;
 
 #[test]
-fn ik_to_ip_xcm_works_without_forwarding_with_endowed_ip_beneficiary() {
-	ik_to_pk_xcm(None, true)
+fn ik_to_ip_xcm_works_without_forwarding_with_endowed_beneficiary_on_cousin() {
+	ik_to_ip_xcm(None, true)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_with_forwarding_with_endowed_ip_beneficiary() {
-	ik_to_pk_xcm(Some(AssetHubLocation::get()), true)
+fn ik_to_ip_xcm_works_with_forwarding_with_endowed_beneficiary_on_cousin() {
+	ik_to_ip_xcm(Some(AssetHubLocation::get()), true)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_without_forwarding_with_nonexisting_ip_beneficiary() {
-	ik_to_pk_xcm(None, false)
+fn ik_to_ip_xcm_works_without_forwarding_with_nonexisting_beneficiary_on_cousin() {
+	ik_to_ip_xcm(None, false)
 }
 
 #[test]
-fn ik_to_ip_xcm_works_with_forwarding_with_nonexisting_ip_beneficiary() {
-	ik_to_pk_xcm(Some(AssetHubLocation::get()), false)
+fn ik_to_ip_xcm_works_with_forwarding_with_nonexisting_beneficiary_on_cousin() {
+	ik_to_ip_xcm(Some(AssetHubLocation::get()), false)
 }
 
-fn ik_to_pk_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip: bool) {
+fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip: bool) {
 	ik_to_ip_bridge_setup();
 
 	log::info!("Setup Done! Sending XCM.");
