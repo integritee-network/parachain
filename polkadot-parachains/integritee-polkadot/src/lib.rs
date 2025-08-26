@@ -1286,20 +1286,24 @@ mod benches {
 		}
 
 		fn teleportable_asset_and_dest() -> Option<(Asset, Location)> {
-			// Relay/native token can be teleported between Encointer and Asset Hub.
+			// Native token can be teleported from Integritee to Asset Hub.
 			Some((
-				Asset { fun: Fungible(ExistentialDeposit::get()), id: AssetId(Parent.into()) },
+				Asset { fun: Fungible(ExistentialDeposit::get()), id: AssetId(Here.into()) },
 				AssetHubLocation::get(),
 			))
 		}
 
 		fn reserve_transferable_asset_and_dest() -> Option<(Asset, Location)> {
-			None
+			// Native token can be reserve transferred from Integritee to Asset Hub.
+			Some((
+				Asset { fun: Fungible(ExistentialDeposit::get()), id: AssetId(Here.into()) },
+				AssetHubLocation::get(),
+			))
 		}
 
 		fn set_up_complex_asset_transfer() -> Option<(Assets, u32, Location, Box<dyn FnOnce()>)> {
-			// Only supports native token teleports to system parachain
-			let native_location = Parent.into();
+			// Only supports native token teleports to asset parachain
+			let native_location = Here.into();
 			let dest = AssetHubLocation::get();
 
 			pallet_xcm::benchmarking::helpers::native_teleport_as_asset_transfer::<Runtime>(
@@ -1309,7 +1313,7 @@ mod benches {
 		}
 
 		fn get_asset() -> Asset {
-			Asset { id: AssetId(Location::parent()), fun: Fungible(ExistentialDeposit::get()) }
+			Asset { id: AssetId(Location::here()), fun: Fungible(ExistentialDeposit::get()) }
 		}
 	}
 
@@ -1318,7 +1322,7 @@ mod benches {
 
 	parameter_types! {
 		pub ExistentialDepositAsset: Option<Asset> = Some((
-			RelayChainLocation::get(),
+			Location::here(),
 			ExistentialDeposit::get()
 		).into());
 	}
@@ -1338,10 +1342,8 @@ mod benches {
 		}
 		fn worst_case_holding(_depositable_count: u32) -> Assets {
 			// just concrete assets according to relay chain.
-			let assets: Vec<Asset> = vec![Asset {
-				id: AssetId(RelayChainLocation::get()),
-				fun: Fungible(1_000_000 * UNITS),
-			}];
+			let assets: Vec<Asset> =
+				vec![Asset { id: AssetId(Location::here()), fun: Fungible(1_000_000 * UNITS) }];
 			assets.into()
 		}
 	}
@@ -1352,7 +1354,10 @@ mod benches {
 			Asset { fun: Fungible(UNITS), id: AssetId(RelayChainLocation::get()) },
 		));
 		pub const CheckedAccount: Option<(AccountId, xcm_builder::MintLocation)> = None;
-		pub const TrustedReserve: Option<(Location, Asset)> = None;
+		pub TrustedReserve: Option<(Location, Asset)> = Some((
+			AssetHubLocation::get(),
+			Asset { fun: Fungible(UNITS), id: AssetId(RelayChainLocation::get()) },
+		));
 	}
 
 	impl pallet_xcm_benchmarks::fungible::Config for Runtime {
@@ -1363,7 +1368,7 @@ mod benches {
 		type TrustedReserve = TrustedReserve;
 
 		fn get_asset() -> Asset {
-			Asset { id: AssetId(RelayChainLocation::get()), fun: Fungible(UNITS) }
+			Asset { id: AssetId(Location::here()), fun: Fungible(UNITS) }
 		}
 	}
 
@@ -1400,7 +1405,7 @@ mod benches {
 
 		fn claimable_asset() -> Result<(Location, Location, Assets), BenchmarkError> {
 			let origin = AssetHubLocation::get();
-			let assets: Assets = (AssetId(RelayChainLocation::get()), 1_000 * UNITS).into();
+			let assets: Assets = (AssetId(Location::here()), 1_000 * UNITS).into();
 			let ticket = Location::new(0, []);
 			Ok((origin, ticket, assets))
 		}
