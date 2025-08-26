@@ -46,7 +46,7 @@ fn ik_porteer_sovereign_account_matches() {
 fn integritee_polkadot_porteer_mint_is_correct() {
 	let beneficiary = IntegriteeKusamaSovereignAccount::get();
 	let amount = 10;
-	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None);
+	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None, 0);
 
 	let decoded = RuntimeCall::decode(&mut call.encode().as_slice()).unwrap();
 
@@ -56,6 +56,7 @@ fn integritee_polkadot_porteer_mint_is_correct() {
 			beneficiary,
 			amount,
 			forward_tokens_to_location: None,
+			source_nonce: 0,
 		})
 	)
 }
@@ -102,6 +103,7 @@ fn porteer_mint_from_ik_works_without_forwarding() {
 					beneficiary: bob.clone(),
 					amount: mint_amount,
 					forward_tokens_to_location: None,
+					source_nonce: 0,
 				})
 				.encode()
 				.into(),

@@ -209,7 +209,7 @@ fn assert_integritee_polkadot_tokens_minted(
 						pallet_message_queue::Event::Processed { success: true, .. }
 					) => {},
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
+						who, amount, source_nonce: _
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
 						xcm_execution_fee = *amount_in;
@@ -226,7 +226,7 @@ fn assert_integritee_polkadot_tokens_minted(
 						pallet_message_queue::Event::Processed { success: true, .. }
 					) => {},
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
+						who, amount, source_nonce: _
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
 						xcm_execution_fee = *amount_in;
