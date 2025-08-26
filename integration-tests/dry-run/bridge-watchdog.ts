@@ -59,7 +59,7 @@ const WATCHDOG_ACCOUNT = "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // 
 const CHOPSTICKS: boolean = false;
 
 const DIRECTION = "IK>IP";
-// const DIRECTION = "IP>IK";
+//const DIRECTION = "IP>IK";
 
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
@@ -100,11 +100,27 @@ const KSM_FROM_POLKADOT_PARACHAINS = {
     parents: 2,
     interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
 };
+const KAH_FROM_KUSAMA_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
+};
+const KAH_FROM_POLKADOT_PARACHAINS = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
+};
 const DOT_FROM_POLKADOT_PARACHAINS = {
     parents: 1,
     interior: XcmV5Junctions.Here(),
 };
 const DOT_FROM_KUSAMA_PARACHAINS = {
+    parents: 2,
+    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
+};
+const PAH_FROM_POLKADOT_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
+};
+const PAH_FROM_KUSAMA_PARACHAINS = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
 };
@@ -114,11 +130,19 @@ const TEER_FROM_SELF = {
 };
 const ITK_FROM_SIBLING = {
     parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(2015)),
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
 };
 const ITK_FROM_COUSIN = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IK_PARA_ID)]),
+};
+const ITP_FROM_SIBLING = {
+    parents: 1,
+    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
+};
+const ITP_FROM_COUSIN = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
 };
 
 // Setup clients...
@@ -142,7 +166,7 @@ const itpClient = createClient(
 );
 const itpApi = itpClient.getTypedApi(itp);
 
-const portPlan = {
+const portPlanK2P = {
     source: {
         api: itkApi,
         name: "ITK",
@@ -160,7 +184,8 @@ const portPlan = {
         native_units: KSM_UNITS,
         native_symbol: "KSM",
         native_from_sibling: KSM_FROM_KUSAMA_PARACHAINS,
-        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS
+        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS,
+        self_from_cousin: KAH_FROM_POLKADOT_PARACHAINS
     },
     destinationAH: {
         api: pahApi,
@@ -169,7 +194,9 @@ const portPlan = {
         native_units: DOT_UNITS,
         native_symbol: "DOT",
         native_from_sibling: DOT_FROM_POLKADOT_PARACHAINS,
-        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS
+        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS,
+        self_from_sibling: PAH_FROM_POLKADOT_PARACHAINS,
+        self_from_cousin: PAH_FROM_KUSAMA_PARACHAINS,
     },
     destination: {
         api: itpApi,
@@ -187,8 +214,61 @@ const portPlan = {
     }
 }
 
+const portPlanP2K = {
+    source: {
+        api: itpApi,
+        name: "ITP",
+        para_id: IP_PARA_ID,
+        native_units: TEER_UNITS,
+        native_symbol: "TEER",
+        native_from_sibling: ITP_FROM_SIBLING,
+        native_from_cousin: ITP_FROM_COUSIN,
+        sovereign_self: TEER_FROM_SELF,
+    },
+    sourceAH: {
+        api: pahApi,
+        name: "PAH",
+        para_id: PAH_PARA_ID,
+        native_units: DOT_UNITS,
+        native_symbol: "DOT",
+        native_from_sibling: DOT_FROM_POLKADOT_PARACHAINS,
+        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS,
+        self_from_cousin: PAH_FROM_KUSAMA_PARACHAINS
+    },
+    destinationAH: {
+        api: kahApi,
+        name: "KAH",
+        para_id: KAH_PARA_ID,
+        native_units: KSM_UNITS,
+        native_symbol: "KSM",
+        native_from_sibling: KSM_FROM_KUSAMA_PARACHAINS,
+        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS,
+        self_from_sibling: KAH_FROM_KUSAMA_PARACHAINS,
+        self_from_cousin: KAH_FROM_POLKADOT_PARACHAINS
+    },
+    destination: {
+        api: itkApi,
+        name: "ITK",
+        para_id: IK_PARA_ID,
+        native_units: TEER_UNITS,
+    },
+    destroy: () => {
+        return Promise.all([
+            itkClient.destroy(),
+            kahClient.destroy(),
+            pahClient.destroy(),
+            itpClient.destroy(),
+        ]);
+    }
+}
+
 // The whole execution of the script.
-main(portPlan);
+if (DIRECTION === "IK>IP") {
+    main(portPlanK2P);
+} else {
+    main(portPlanP2K);
+}
+
 
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
@@ -334,9 +414,9 @@ async function estimateFees(
             location.value.interior.value.value === plan.sourceAH.para_id,
     )!;
     // Found it.
-    const messageToKah = messages[0];
+    const messageToSourceAH = messages[0];
 
-    const exchangeAssetInstruction = messageToKah?.value.find((instruction: any) =>
+    const exchangeAssetInstruction = messageToSourceAH?.value.find((instruction: any) =>
         instruction.type === "ExchangeAsset"
     )
     if (
@@ -353,8 +433,8 @@ async function estimateFees(
     }
 
     // We're only dealing with version 4.
-    if (messageToKah?.type !== "V5") {
-        console.error("messageToKah failed: expected XCMv5");
+    if (messageToSourceAH?.type !== "V5") {
+        console.error("messageToSourceAH failed: expected XCMv5");
         return;
     }
 
@@ -364,7 +444,7 @@ async function estimateFees(
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(plan.sourceAH.para_id)),
         }),
-        messageToKah,
+        messageToSourceAH,
     );
     // Fees should be of the version we expect and fungible tokens, in particular, KSM.
     if (
@@ -384,11 +464,8 @@ async function estimateFees(
 
     // Now we dry run on the destination.
     const sourceAHDryRunResult = await plan.sourceAH.api.apis.DryRunApi.dry_run_xcm(
-        XcmVersionedLocation.V5({
-            parents: 1,
-            interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(plan.source.para_id)),
-        }),
-        messageToKah,
+        XcmVersionedLocation.V5(plan.source.native_from_sibling),
+        messageToSourceAH,
     );
     if (
         !sourceAHDryRunResult.success ||
@@ -421,7 +498,7 @@ async function estimateFees(
     const teerSpent = swapCreditEvent.value?.value?.amount_in;
 
     const sourceAHWeight =
-        await plan.sourceAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
+        await plan.sourceAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToSourceAH);
     if (!sourceAHWeight.success) {
         console.error("sourceAHWeight failed: ", sourceAHWeight);
         return;
@@ -447,29 +524,29 @@ async function estimateFees(
             location.type === "V5"
     )!;
 
-    const messageToKbh = messages2[0];
+    const messageToSourceBH = messages2[0];
     // Found it.
-    console.log("messageToKbh: ", messageToKbh);
+    console.log("messageToSourceBH: ", messageToSourceBH);
 
-    const exportMessageInstruction = messageToKbh?.value.find((instruction: any) =>
+    const exportMessageInstruction = messageToSourceBH?.value.find((instruction: any) =>
         instruction.type === "ExportMessage" &&
         typeof instruction.value === "object" &&
         instruction.value !== null &&
         "xcm" in instruction.value
     )
     console.log(exportMessageInstruction)
-    const messageToPah = {
-        type: messageToKbh.type,
+    const messageToDestinationAH = {
+        type: messageToSourceBH.type,
         value: exportMessageInstruction?.value?.xcm
     };
-    console.log("messageToPah: ", messageToPah);
+    console.log("messageToDestinationAH: ", messageToDestinationAH);
 
     // We get the delivery fees using the size of the forwarded xcm.
     const deliveryFeesToDestinationAH = await plan.sourceAH.api.apis.XcmPaymentApi.query_delivery_fees(
-        XcmVersionedLocation.V5(plan.destinationAH.native_from_cousin),
-        messageToKbh, // unclear if this should be messagetoKbh or Pah. doesn't seem to include bridge relayer fee
+        XcmVersionedLocation.V5(plan.destinationAH.self_from_cousin),
+        messageToSourceBH, // unclear if this should be messageToSourceBH or destinationAH. doesn't seem to include bridge relayer fee
     );
-    // Fees should be of the version we expect and fungible tokens, in particular, KSM.
+    // Fees should be of the version we expect and fungible tokens, in particular, sourceRelayNative.
     if (
         !deliveryFeesToDestinationAH.success ||
         deliveryFeesToDestinationAH.value.type !== "V5" ||
@@ -486,14 +563,8 @@ async function estimateFees(
     const destinationAHDryRunResult = await plan.destinationAH.api.apis.DryRunApi.dry_run_xcm(
         // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
         // see runtime patch to allow this: https://github.com/polkadot-fellows/runtimes/compare/main...encointer:runtimes:ab/trusted-aliaser-patch
-        XcmVersionedLocation.V5({
-            parents: 2,
-            interior: XcmV5Junctions.X2([
-                XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()),
-                XcmV5Junction.Parachain(plan.sourceAH.para_id)
-            ]),
-        }),
-        messageToPah,
+        XcmVersionedLocation.V5(plan.sourceAH.self_from_cousin),
+        messageToDestinationAH,
     );
     if (
         !destinationAHDryRunResult.success ||
@@ -516,8 +587,8 @@ async function estimateFees(
             location.value.interior.value.value === plan.destination.para_id,
     )!;
     // Found it.
-    const messageToItp = messages3[0];
-    console.log("messageToItp: ", messageToItp);
+    const messageToDestination = messages3[0];
+    console.log("messageToDestination: ", messageToDestination);
 
     const swapCreditEvent2 = destinationAHDryRunResult.value.emitted_events.find(
         (event: any) =>
@@ -541,7 +612,7 @@ async function estimateFees(
     const sourceAHNativeSpent = swapCreditEvent2.value?.value?.amount_in;
 
     const destinationAHWeight =
-        await plan.destinationAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToKah);
+        await plan.destinationAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToSourceAH);
     if (!destinationAHWeight.success) {
         console.error("destinationAHWeight failed: ", destinationAHWeight);
         return;
@@ -562,15 +633,10 @@ async function estimateFees(
 
     // Now we dry run on the destination.
     const destinationDryRunResult = await plan.destination.api.apis.DryRunApi.dry_run_xcm(
-        // XCM origin has to be KAH. It will then AliasOrigin into IK upon execution
+        // XCM origin has to be AH. It will then AliasOrigin into IK upon execution
         // see runtime patch to allow this: https://github.com/polkadot-fellows/runtimes/compare/main...encointer:runtimes:ab/trusted-aliaser-patch
-        XcmVersionedLocation.V5({
-            parents: 1,
-            interior: XcmV5Junctions.X1(
-                XcmV5Junction.Parachain(plan.destinationAH.para_id)
-            ),
-        }),
-        messageToItp,
+        XcmVersionedLocation.V5(plan.destinationAH.self_from_sibling),
+        messageToDestination,
     );
     if (
         !destinationDryRunResult.success ||
@@ -588,7 +654,7 @@ async function estimateFees(
             parents: 1,
             interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(plan.destination.para_id)),
         }),
-        messageToItp,
+        messageToDestination,
     );
     // Fees should be of the version we expect and fungible tokens, in particular, KSM.
     if (
@@ -604,7 +670,7 @@ async function estimateFees(
     console.log(`deliveryFees ${plan.destinationAH.name} to ${plan.destination.name} [${plan.destinationAH.native_symbol}]: `, deliveryFeesToDestinationInDestinationAHNative);
 
     const destinationWeight =
-        await plan.destination.api.apis.XcmPaymentApi.query_xcm_weight(messageToItp);
+        await plan.destination.api.apis.XcmPaymentApi.query_xcm_weight(messageToDestination);
     if (!destinationWeight.success) {
         console.error("destinationWeight failed: ", destinationWeight);
         return;
