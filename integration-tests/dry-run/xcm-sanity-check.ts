@@ -272,6 +272,12 @@ async function checkBalances() {
             printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0, "Treasury on ITK [KSM]"),
             checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITP [TEER]"),
             checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITK [TEER]"),
+            printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITK_FROM_SIBLING), "Alice on KAH [TEER]"),
+            printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITP_FROM_SIBLING), "Alice on PAH [TEER]"),
+            printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(KSM_FROM_SIBLING_PARACHAINS), "Alice on KAH [KSM]"),
+            printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(DOT_FROM_SIBLING_PARACHAINS), "Alice on PAH [DOT]"),
+            printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(DOT_FROM_COUSIN_PARACHAINS), "Alice on KAH [DOT]"),
+            printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(KSM_FROM_COUSIN_PARACHAINS), "Alice on PAH [KSM]"),
         ])
     }
 }
