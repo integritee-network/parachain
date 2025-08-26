@@ -121,7 +121,7 @@ fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	assert_asset_hub_polkadot_message_processed();
 
-	let ip_dot_fee = assert_integritee_polkadot_tokens_minted(
+	let ip_xcm_execution_fee_dot = assert_integritee_polkadot_tokens_minted(
 		token_owner.clone(),
 		port_tokens_amount,
 		forward_teer_location.is_some(),
@@ -143,7 +143,7 @@ fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	assert_eq!(
 		ip_asset_balance(&ip_treasury_account, dot_asset_id),
-		ip_treasury_asset_balance_before + ip_cousin_fee - ip_dot_fee,
+		ip_treasury_asset_balance_before + ip_cousin_fee - ip_xcm_execution_fee_dot,
 	);
 
 	if forward_teer_location.is_some() {

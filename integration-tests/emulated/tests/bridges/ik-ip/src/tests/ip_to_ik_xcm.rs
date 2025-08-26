@@ -123,7 +123,7 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	assert_asset_hub_kusama_message_processed();
 
-	let ik_dot_fee = assert_integritee_kusama_tokens_minted(
+	let ik_xcm_execution_fee_ksm = assert_integritee_kusama_tokens_minted(
 		token_owner.clone(),
 		port_tokens_amount,
 		forward_teer_location.is_some(),
@@ -145,7 +145,7 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 
 	assert_eq!(
 		ik_asset_balance(&ik_treasury_account, dot_asset_id),
-		ik_treasury_asset_balance_before + ik_cousin_fee - ik_dot_fee,
+		ik_treasury_asset_balance_before + ik_cousin_fee - ik_xcm_execution_fee_ksm,
 	);
 
 	if forward_teer_location.is_some() {
