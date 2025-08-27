@@ -13,10 +13,10 @@
 
 // `pah` and 'kah' are the names we gave to `bun papi add`.
 import {
-    itk, // bun papi add itk -w http://localhost:8001
-    itp, // bun papi add itp -w http://localhost:8003
-    kah, // bun papi add kah -w http://localhost:8000
-    pah, // bun papi add pah -w http://localhost:8002
+    itk, // bun papi add itk -w http://localhost:8001 | bun papi add itk -w http://localhost:9144
+    itp, // bun papi add itp -w http://localhost:8003 | bun papi add itp -w http://localhost:9244
+    kah, // bun papi add kah -w http://localhost:8000 | bun papi add kah -w http://localhost:9010
+    pah, // bun papi add pah -w http://localhost:8002 | bun papi add pah -w http://localhost:9910
     DispatchRawOrigin,
     XcmV5Junction,
     XcmV5Junctions,
@@ -336,28 +336,31 @@ async function main(plan: any) {
     console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await batchTx.getEncodedData()).asHex());
 
     // This will give us the adjusted estimates, much more accurate than before.
-    const [localFeesEstimate, sourceAHFeesEstimate, destinationAHFeesEstimateSourceAHNative, destinationFeesEstimateDestinationAHNative] =
+    const [localEquivalentFeesEstimate, sourceAHFeesEstimate, destinationAHFeesEstimateSourceAHNative, destinationFeesEstimateDestinationAHNative] =
         (await estimateFees(plan, batchTx))!;
 
-    console.log(`Local fees estimate    [TEER]: `, localFeesEstimate);
+    console.log(`Local equivalent fees estimate    [TEER]: `, localEquivalentFeesEstimate);
     console.log(`Remote 1 fees estimate [TEER]: `, sourceAHFeesEstimate);
     console.log(`Remote 2 fees estimate  [${plan.sourceAH.native_symbol}]: `, destinationAHFeesEstimateSourceAHNative);
     console.log(`Remote 3 fees estimate  [${plan.destinationAH.native_symbol}]: `, destinationFeesEstimateDestinationAHNative);
 
     const setFeesTx = plan.source.api.tx.Porteer.set_xcm_fee_params({
         fees: {
-            hop1: 701987734047n,
-            hop2: 97085698579n,
-            hop3: 4886724760n
+            local_equivalent_sum: localEquivalentFeesEstimate,
+            hop1: sourceAHFeesEstimate,
+            hop2: destinationAHFeesEstimateSourceAHNative,
+            hop3: destinationFeesEstimateDestinationAHNative
         }
     });
+    // const members = plan.source.api.query.TechnicalCommittee.Members.getValue();
+    // console.log(members)
     const setFeesProposalTx = plan.source.api.tx.TechnicalCommittee.propose({
-        threshold: 2,
+        threshold: 1,
         proposal: setFeesTx.decodedCall,
         length_bound: 51,
     });
-    console.log("encoded suggested call to set updated fees on source chain (to propose to TC / PorteerAdmin): ", (await setFeesTx.getEncodedData()).asHex());
-    console.log("encoded proposal to TC (to submit as member of TC): ", (await setFeesProposalTx.getEncodedData()).asHex());
+    console.log(`${plan.source.name} encoded suggested call to set updated fees on source chain (to propose to TC / PorteerAdmin): `, (await setFeesTx.getEncodedData()).asHex());
+    console.log(`${plan.source.name} encoded proposal to TC (to submit as member of TC): `, (await setFeesProposalTx.getEncodedData()).asHex());
 
     await plan.destroy();
 }
@@ -714,7 +717,7 @@ async function estimateFees(
             Number(destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative) * teerPerSourceAHNative * sourceAHNativePerDestinationAHNative))
     console.log("to be paid by caller to cover everything [TEER]: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS));
 
-    return [deliveryFeesToSourceAHInTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
+    return [totalCallerFeesInTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
 }
 
 // Just a helper function to get a signer for ALICE.
