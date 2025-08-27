@@ -44,7 +44,7 @@ cd
 git clone https://github.com/integritee-network/parachain.git
 cd parachain
 git apply ./integration-tests/bridges/sudo-integritee.patch
-cargo build --release
+cargo build --release -p integritee-collator
 cp ./target/release/integritee-collator ~/local_bridge_testing/bin/
 ```
 

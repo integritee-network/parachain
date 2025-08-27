@@ -5,6 +5,7 @@
 
 pub mod cumulus_pallet_parachain_system;
 pub mod frame_system;
+pub mod frame_system_extensions;
 pub mod pallet_asset_conversion;
 pub mod pallet_asset_registry;
 pub mod pallet_assets;
@@ -31,3 +32,4 @@ pub mod pallet_treasury;
 pub mod pallet_utility;
 pub mod pallet_vesting;
 pub mod pallet_xcm;
+pub mod xcm;

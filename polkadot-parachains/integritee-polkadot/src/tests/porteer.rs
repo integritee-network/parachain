@@ -46,7 +46,7 @@ fn ik_porteer_sovereign_account_matches() {
 fn integritee_polkadot_porteer_mint_is_correct() {
 	let beneficiary = IntegriteeKusamaSovereignAccount::get();
 	let amount = 10;
-	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None);
+	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None, 0);
 
 	let decoded = RuntimeCall::decode(&mut call.encode().as_slice()).unwrap();
 
@@ -56,74 +56,7 @@ fn integritee_polkadot_porteer_mint_is_correct() {
 			beneficiary,
 			amount,
 			forward_tokens_to_location: None,
+			source_nonce: 0,
 		})
 	)
-}
-
-#[test]
-fn porteer_mint_from_ik_works_without_forwarding() {
-	// Need to run with `RUST_LOG=DEBUG` to see the logs.
-	sp_tracing::init_for_tests();
-	sp_io::TestExternalities::default().execute_with(|| {
-		let fee_asset: Asset = (Junctions::Here, TEER).into();
-
-		let bob = sp_keyring::Sr25519Keyring::Bob.to_account_id();
-		let mint_amount = TEER;
-		let bob_balance_before = Balances::free_balance(&bob);
-
-		Balances::make_free_balance_be(&IntegriteeKusamaSovereignAccount::get(), 4 * TEER);
-		Porteer::set_porteer_config(
-			RawOrigin::Root.into(),
-			PorteerConfig { send_enabled: true, receive_enabled: true },
-		)
-		.unwrap();
-
-		let message = Xcm(vec![
-			// Assume that the IntegriteeKusamaSovereign account has some TEER
-			WithdrawAsset(fee_asset.clone().into()),
-			PayFees { asset: fee_asset },
-			SetAppendix(Xcm::<()>(vec![
-				// Not sure if we can use this across the bridge...
-				// ReportError(QueryResponseInfo {
-				// 	destination: (Parent, Parachain(42)).into(),
-				// 	query_id: 1,
-				// 	max_weight: Weight::zero(),
-				// }),
-				RefundSurplus,
-				DepositAsset {
-					assets: AssetFilter::Wild(WildAsset::All),
-					beneficiary: IntegriteeKusamaLocation::get(),
-				},
-			])),
-			Transact {
-				origin_kind: OriginKind::SovereignAccount,
-				fallback_max_weight: None,
-				call: RuntimeCall::Porteer(pallet_porteer::Call::mint_ported_tokens {
-					beneficiary: bob.clone(),
-					amount: mint_amount,
-					forward_tokens_to_location: None,
-				})
-				.encode()
-				.into(),
-			},
-		]);
-
-		let message =
-			Xcm::<<XcmConfig as xcm_executor::Config>::RuntimeCall>::from(message.clone());
-		let mut hash = Default::default();
-
-		// Execute message in this parachain with IntegriteeKusamaOrigin
-		let result = XcmExecutor::<XcmConfig>::prepare_and_execute(
-			IntegriteeKusamaLocation::get(),
-			message,
-			&mut hash,
-			Weight::MAX,
-			Weight::zero(),
-		);
-
-		// This does not catch errors from within the Porteer pallet.
-		assert!(matches!(result, Outcome::Complete { .. }));
-
-		assert_eq!(Balances::free_balance(&bob), bob_balance_before + mint_amount);
-	});
 }

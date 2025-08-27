@@ -19,7 +19,7 @@
 
 use crate::{AccountId, Balance};
 use pallet_porteer::XcmFeeParams;
-use parity_scale_codec::Encode;
+use parity_scale_codec::{Compact, Encode};
 use sp_std::vec;
 use xcm::{
 	latest::{
@@ -39,13 +39,22 @@ pub const AHP_FEE: u128 = 3000000000000;
 pub const IP_FEE: u128 = 1000000000000;
 
 // hop1: [TEER], hop2: [KSM], hope: [DOT]. Each hop must include the fees of all subsequent hops (consider swapping)
-pub const DEFAULT_XCM_FEES_IK_PERSPECTIVE: XcmFeeParams<Balance> =
-	XcmFeeParams { hop1: AHK_FEE, hop2: AHP_FEE, hop3: IP_FEE };
+pub const DEFAULT_XCM_FEES_IK_PERSPECTIVE: XcmFeeParams<Balance> = XcmFeeParams {
+	local_equivalent_sum: 10_000_000_000_000u128,
+	hop1: AHK_FEE,
+	hop2: AHP_FEE,
+	hop3: IP_FEE,
+};
 
 // hop1: [TEER], hop2: [DOT], hope: [KSM]. Each hop must include the fees of all subsequent hops (consider swapping)
-pub const DEFAULT_XCM_FEES_IP_PERSPECTIVE: XcmFeeParams<Balance> =
-	XcmFeeParams { hop1: AHP_FEE, hop2: AHK_FEE, hop3: IK_FEE };
+pub const DEFAULT_XCM_FEES_IP_PERSPECTIVE: XcmFeeParams<Balance> = XcmFeeParams {
+	local_equivalent_sum: 10_000_000_000_000u128,
+	hop1: AHP_FEE,
+	hop2: AHK_FEE,
+	hop3: IK_FEE,
+};
 
+pub type PortTokensNonce = u64;
 /// The porteer::mint call used by both runtimes.
 ///
 /// We have tests in the runtimes that ensure that the
@@ -54,9 +63,10 @@ pub fn integritee_runtime_porteer_mint(
 	beneficiary: AccountId,
 	amount: Balance,
 	location: Option<Location>,
-) -> ([u8; 2], AccountId, Balance, Option<Location>) {
+	nonce: PortTokensNonce,
+) -> ([u8; 2], AccountId, Compact<Balance>, Option<Location>, Compact<PortTokensNonce>) {
 	// ([pallet_index, call_index], ...)
-	([56, 7], beneficiary, amount, location)
+	([56, 7], beneficiary, amount.into(), location, nonce.into())
 }
 
 pub const INTEGRITEE_KUSAMA_PARA_ID: u32 = 2015;

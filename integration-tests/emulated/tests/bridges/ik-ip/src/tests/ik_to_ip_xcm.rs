@@ -31,7 +31,7 @@ use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
-		integritee_kusama_runtime::{integritee_common::xcm_helpers::burn_native_xcm, TEER},
+		integritee_kusama_runtime::{integritee_common::xcm_helpers::burn_asset_xcm, TEER},
 	},
 	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::{
 		ExistentialDeposit, TreasuryAccount as IpTreasuryAccount,
@@ -132,13 +132,22 @@ fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	// Todo: Assert Sovereign Account balances on the different chains
 	// https://github.com/integritee-network/parachain/issues/337
 
-	let xcm = burn_native_xcm(Location::here(), 0, 0);
-	let local_fee = query_integritee_kusama_xcm_execution_fee(xcm);
-	let ah_sibling_fee = query_ik_porteer_xcm_fee_config().hop1;
-	let ip_cousin_fee = query_ik_porteer_xcm_fee_config().hop3;
+	// Can be any asset besides native for the correct fee estimate
+	let burn_asset = (Location::new(1, Parachain(1000)), 1);
+	let burn_xcm = burn_asset_xcm(Location::here(), burn_asset.into(), 0);
+	let xcm_fee_config = query_ik_porteer_xcm_fee_config();
+
+	let local_xcm_execution_fee = query_integritee_kusama_xcm_execution_fee(burn_xcm.clone());
+	let local_equivalent_fee = xcm_fee_config.local_equivalent_sum;
+	let ah_sibling_fee = xcm_fee_config.hop1;
+	let ip_cousin_fee = xcm_fee_config.hop3;
 	assert_eq!(
 		IntegriteeKusama::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_on_ik - port_tokens_amount - local_fee - ah_sibling_fee
+		token_owner_balance_before_on_ik -
+			port_tokens_amount -
+			local_xcm_execution_fee -
+			local_equivalent_fee -
+			ah_sibling_fee
 	);
 
 	assert_eq!(
@@ -150,8 +159,7 @@ fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 		assert_asset_hub_polkadot_tokens_forwarded(token_owner.clone());
 
 		if fund_token_holder_on_ip {
-			let xcm = burn_native_xcm(Location::here(), 0, 0);
-			let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
+			let local_fee = query_integritee_polkadot_xcm_execution_fee(burn_xcm);
 
 			assert_eq!(
 				IntegriteePolkadot::account_data_of(token_owner.clone()).free,
@@ -209,7 +217,7 @@ fn assert_integritee_polkadot_tokens_minted(
 						pallet_message_queue::Event::Processed { success: true, .. }
 					) => {},
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
+						who, amount, source_nonce: _
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
 						xcm_execution_fee = *amount_in;
@@ -226,7 +234,7 @@ fn assert_integritee_polkadot_tokens_minted(
 						pallet_message_queue::Event::Processed { success: true, .. }
 					) => {},
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
+						who, amount, source_nonce: _
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
 						xcm_execution_fee = *amount_in;

@@ -68,7 +68,7 @@ use xcm_builder::{
 	HashedDescription, MatchedConvertedConcreteId, NoChecking, ParentAsSuperuser, ParentIsPreset,
 	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
 	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	TrailingSetTopicAsId, WithComputedOrigin, WithUniqueTopic,
+	TrailingSetTopicAsId, WeightInfoBounds, WithComputedOrigin, WithUniqueTopic,
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, AssetLocationGetter, ConvertedRegisteredAssetId};
@@ -122,7 +122,8 @@ impl Convert<Asset, Option<CurrencyId>> for CurrencyIdConvert {
 
 parameter_types! {
 	pub const RelayChainLocation: Location = Location::parent();
-	pub AssetHubLocation: Location = Location::new(1, [Parachain(1000)]);
+	pub AssetHubParaId: ParaId = 1000.into();
+	pub AssetHubLocation: Location = Location::new(1, [Parachain(AssetHubParaId::get().into())]);
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 	// The universal location within the global consensus system
@@ -341,6 +342,13 @@ pub type Traders = (
 	>,
 );
 
+// Debug Hint: For weighing debugging, the definition can be copied here, and we can add some logs.
+type Weigher = WeightInfoBounds<
+	weights::xcm::IntegriteeKusamaXcmWeight<RuntimeCall>,
+	RuntimeCall,
+	MaxInstructions,
+>;
+
 pub struct ReserveAssetsRegistry;
 impl MaybeEquivalence<Location, NativeOrWithId<u32>> for ReserveAssetsRegistry {
 	fn convert(location: &Location) -> Option<NativeOrWithId<u32>> {
@@ -423,6 +431,7 @@ pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
+	type XcmRecorder = PolkadotXcm;
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = AssetTransactors;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
@@ -430,7 +439,7 @@ impl xcm_executor::Config for XcmConfig {
 	type IsTeleporter = TrustedTeleporters;
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = Weigher;
 	type Trader = Traders;
 	type ResponseHandler = PolkadotXcm;
 	type SubscriptionService = PolkadotXcm;
@@ -450,7 +459,6 @@ impl xcm_executor::Config for XcmConfig {
 	type HrmpNewChannelOpenRequestHandler = ();
 	type HrmpChannelAcceptedHandler = ();
 	type HrmpChannelClosingHandler = ();
-	type XcmRecorder = ();
 	type XcmEventEmitter = PolkadotXcm;
 }
 
@@ -467,7 +475,7 @@ impl pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = OnlyTeleportNative;
 	type XcmReserveTransferFilter = Everything; // Transfer are allowed
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+	type Weigher = Weigher;
 	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
