@@ -135,10 +135,12 @@ fn ik_to_ip_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	// Can be any asset besides native for the correct fee estimate
 	let burn_asset = (Location::new(1, Parachain(1000)), 1);
 	let burn_xcm = burn_asset_xcm(Location::here(), burn_asset.into(), 0);
+	let xcm_fee_config = query_ik_porteer_xcm_fee_config();
+
 	let local_xcm_execution_fee = query_integritee_kusama_xcm_execution_fee(burn_xcm.clone());
-	let local_equivalent_fee = query_ik_porteer_xcm_fee_config().local_equivalent_sum;
-	let ah_sibling_fee = query_ik_porteer_xcm_fee_config().hop1;
-	let ip_cousin_fee = query_ik_porteer_xcm_fee_config().hop3;
+	let local_equivalent_fee = xcm_fee_config.local_equivalent_sum;
+	let ah_sibling_fee = xcm_fee_config.hop1;
+	let ip_cousin_fee = xcm_fee_config.hop3;
 	assert_eq!(
 		IntegriteeKusama::account_data_of(token_owner.clone()).free,
 		token_owner_balance_before_on_ik -
