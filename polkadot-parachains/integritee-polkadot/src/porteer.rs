@@ -24,7 +24,7 @@ use frame_support::ord_parameter_types;
 use integritee_parachains_common::{
 	porteer::{
 		ah_sibling_xcm, ahk_cousin_location, ik_sibling_v5, integritee_runtime_porteer_mint,
-		ip_cousin_v5, ip_sibling_v5,
+		ip_cousin_v5, ip_sibling_v5, PortTokensNonce,
 	},
 	xcm_helpers::{burn_asset_xcm, execute_local_and_remote_xcm, teleport_asset},
 	AccountId, Balance,
@@ -52,6 +52,7 @@ pub struct PortTokensToKusama;
 impl PortTokens for PortTokensToKusama {
 	type AccountId = AccountId;
 	type Balance = Balance;
+	type Nonce = PortTokensNonce;
 	type Location = Location;
 	type Error = XcmError;
 
@@ -59,6 +60,7 @@ impl PortTokens for PortTokensToKusama {
 		who: Self::AccountId,
 		amount: Self::Balance,
 		location: Option<Self::Location>,
+		nonce: Self::Nonce,
 	) -> Result<(), Self::Error> {
 		let who_location = AccountIdToLocation::convert(who.clone());
 		let fees = Porteer::xcm_fee_config();
@@ -72,7 +74,7 @@ impl PortTokens for PortTokensToKusama {
 			burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
 
 		let remote_xcm = ah_sibling_xcm(
-			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
+			integritee_runtime_porteer_mint(who.clone(), amount, location.clone(), nonce),
 			ah_sibling_fee.into(),
 			ip_sibling_v5(),
 			ip_cousin_v5(),

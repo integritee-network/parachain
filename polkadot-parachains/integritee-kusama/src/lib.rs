@@ -802,6 +802,7 @@ impl pallet_porteer::Config for Runtime {
 		EnsureRoot<AccountId32>,
 	>;
 	type PortTokensToDestination = PortTokensToPolkadot;
+	type FeeCollectorAccount = TreasuryAccount;
 	type ForwardPortedTokensToDestinations = PortTokensToPolkadot;
 	type Location = Location;
 	type Fungible = Balances;

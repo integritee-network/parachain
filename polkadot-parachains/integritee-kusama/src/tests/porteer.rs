@@ -37,7 +37,7 @@ fn integritee_kusama_porteer_mint_is_correct() {
 	let beneficiary = IntegriteePolkadotSovereignAccount::get();
 	let amount = 10;
 
-	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None);
+	let call = integritee_runtime_porteer_mint(beneficiary.clone(), amount, None, 0);
 
 	let decoded = RuntimeCall::decode(&mut call.encode().as_slice()).unwrap();
 
@@ -47,6 +47,7 @@ fn integritee_kusama_porteer_mint_is_correct() {
 			beneficiary,
 			amount,
 			forward_tokens_to_location: None,
+			source_nonce: 0,
 		})
 	)
 }

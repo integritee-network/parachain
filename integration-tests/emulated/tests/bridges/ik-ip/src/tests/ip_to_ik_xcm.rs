@@ -136,12 +136,19 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	// Can be any asset besides native for the correct fee estimate
 	let burn_asset = (Location::new(1, Parachain(1000)), 1);
 	let burn_xcm = burn_asset_xcm(Location::here(), burn_asset.into(), 0);
-	let local_fee = query_integritee_polkadot_xcm_execution_fee(burn_xcm.clone());
-	let ah_sibling_fee = query_ip_porteer_fee_config().hop1;
-	let ik_cousin_fee = query_ip_porteer_fee_config().hop3;
+	let xcm_fee_config = query_ip_porteer_fee_config();
+
+	let local_xcm_exectution_fee = query_integritee_polkadot_xcm_execution_fee(burn_xcm.clone());
+	let local_equivalent_fee = xcm_fee_config.local_equivalent_sum;
+	let ah_sibling_fee = xcm_fee_config.hop1;
+	let ik_cousin_fee = xcm_fee_config.hop3;
 	assert_eq!(
 		IntegriteePolkadot::account_data_of(token_owner.clone()).free,
-		token_owner_balance_before_on_ip - port_tokens_amount - local_fee - ah_sibling_fee
+		token_owner_balance_before_on_ip -
+			port_tokens_amount -
+			local_xcm_exectution_fee -
+			local_equivalent_fee -
+			ah_sibling_fee
 	);
 
 	assert_eq!(
@@ -211,7 +218,7 @@ fn assert_integritee_kusama_tokens_minted(
 						pallet_message_queue::Event::Processed { success: true, .. }
 					) => {},
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
+						who, amount, source_nonce: _
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
 						xcm_execution_fee = *amount_in;
@@ -228,7 +235,7 @@ fn assert_integritee_kusama_tokens_minted(
 						pallet_message_queue::Event::Processed { success: true, .. }
 					) => {},
 					RuntimeEvent::Porteer(pallet_porteer::Event::MintedPortedTokens {
-						who, amount,
+						who, amount, source_nonce: _
 					}) => { who: *who == beneficiary, amount: *amount == ported_tokens_amount, },
 					RuntimeEvent::AssetConversion(pallet_asset_conversion::Event::SwapCreditExecuted { amount_in, ..}) => { amount_in: {
 						xcm_execution_fee = *amount_in;
