@@ -29,12 +29,11 @@ use emulated_integration_tests_common::xcm_emulator::log;
 use kusama_polkadot_system_emulated_network::{
 	integritee_kusama_emulated_chain::{
 		genesis::AssetHubLocation,
-		integritee_kusama_runtime::{
-			integritee_common::xcm_helpers::burn_native_xcm, TreasuryAccount as IkTreasuryAccount,
-			TEER,
-		},
+		integritee_kusama_runtime::{TreasuryAccount as IkTreasuryAccount, TEER},
 	},
-	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::ExistentialDeposit,
+	integritee_polkadot_emulated_chain::integritee_polkadot_runtime::{
+		integritee_common::xcm_helpers::burn_asset_xcm, ExistentialDeposit,
+	},
 };
 use pallet_porteer::XcmFeeParams;
 use sp_core::sr25519;
@@ -134,8 +133,10 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 	// Todo: Assert Sovereign Account balances on the different chains
 	// https://github.com/integritee-network/parachain/issues/337
 
-	let xcm = burn_native_xcm(Location::here(), 0, 0);
-	let local_fee = query_integritee_polkadot_xcm_execution_fee(xcm);
+	// Can be any asset besides native for the correct fee estimate
+	let burn_asset = (Location::new(1, Parachain(1000)), 1);
+	let burn_xcm = burn_asset_xcm(Location::here(), burn_asset.into(), 0);
+	let local_fee = query_integritee_polkadot_xcm_execution_fee(burn_xcm.clone());
 	let ah_sibling_fee = query_ip_porteer_fee_config().hop1;
 	let ik_cousin_fee = query_ip_porteer_fee_config().hop3;
 	assert_eq!(
@@ -152,8 +153,7 @@ fn ip_to_ik_xcm(forward_teer_location: Option<Location>, fund_token_holder_on_ip
 		assert_asset_hub_kusama_tokens_forwarded(token_owner.clone());
 
 		if fund_token_holder_on_ip {
-			let xcm = burn_native_xcm(Location::here(), 0, 0);
-			let local_fee = query_integritee_kusama_xcm_execution_fee(xcm);
+			let local_fee = query_integritee_kusama_xcm_execution_fee(burn_xcm);
 
 			assert_eq!(
 				IntegriteeKusama::account_data_of(token_owner.clone()).free,

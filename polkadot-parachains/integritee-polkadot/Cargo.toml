@@ -72,6 +72,7 @@ pallet-treasury = { workspace = true }
 pallet-utility = { workspace = true }
 pallet-vesting = { workspace = true }
 pallet-xcm = { workspace = true }
+pallet-xcm-benchmarks = { optional = true, workspace = true }
 parachains-common = { workspace = true }
 polkadot-parachain-primitives = { workspace = true }
 polkadot-runtime-common = { workspace = true }
@@ -169,6 +170,7 @@ std = [
     "pallet-utility/std",
     "pallet-vesting/std",
     "pallet-xcm/std",
+    "pallet-xcm-benchmarks?/std",
     "parachains-common/std",
     "parity-scale-codec/std",
     "polkadot-parachain-primitives/std",
@@ -237,6 +239,7 @@ runtime-benchmarks = [
     "pallet-utility/runtime-benchmarks",
     "pallet-vesting/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
+    "pallet-xcm-benchmarks/runtime-benchmarks",
     "parachains-common/runtime-benchmarks",
     "polkadot-parachain-primitives/runtime-benchmarks",
     "polkadot-runtime-common/runtime-benchmarks",

@@ -30,3 +30,7 @@ while read -r line; do
   --output=./$INTEGRITEE_RUNTIME_WEIGHT_DIR/"$pallet".rs
 done < "integritee_runtime_pallets"
 rm "integritee_runtime_pallets"
+
+# Todo: This is a hack now, see https://github.com/integritee-network/parachain/issues/343
+mv $INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_xcm_benchmarks::fungible.rs $INTEGRITEE_RUNTIME_WEIGHT_DIR/xcm/pallet_xcm_benchmarks_fungible.rs
+mv $INTEGRITEE_RUNTIME_WEIGHT_DIR/pallet_xcm_benchmarks::generic.rs $INTEGRITEE_RUNTIME_WEIGHT_DIR/xcm/pallet_xcm_benchmarks_generic.rs
