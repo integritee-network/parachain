@@ -5,13 +5,13 @@
     "dot": {
       "wsUrl": "ws://localhost:9942",
       "metadata": ".papi/metadata/dot.scale",
-      "genesis": "0x30512d0d2fdcc32f7ea80a7ef5122cee1a6c5047dfc7e56c0eda80e4920bbed9",
+      "genesis": "0x6c8ab43473cd6b3a401ceea649ca9e00694894583c74b89010a56107485aee19",
       "codeHash": "0xea6404a29b4e4f41fcd46c3a39b1b003c51ce2625a211e08ec0dd2c3da2cef9a"
     },
     "ksm": {
       "wsUrl": "ws://localhost:9945",
       "metadata": ".papi/metadata/ksm.scale",
-      "genesis": "0x53ff4fffe425b519a5fc5d672b900e7f8c868241afd12e7323571c79e9a36124",
+      "genesis": "0x7174ab280914afc3cc722b2b77284aab1fa95618de256a0448b552898dfe1d30",
       "codeHash": "0xf97c2a20fb37a81cc1d0a1a780a61525338d00f25a8a342b7dcec517feec0091"
     },
     "kah": {
@@ -42,19 +42,19 @@
       "chain": "polkadot_people",
       "metadata": ".papi/metadata/ppeople.scale",
       "genesis": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
-      "codeHash": "0x5ad90a21b395a16a6d720983bb9fdd096577710beea33c7882bb61a7518dbb79"
+      "codeHash": "0xd05d6b6d1a9bb0cdd0f472a6fab2685aa84fc5203911b7fab132fd10b1867562"
     },
     "itk": {
       "wsUrl": "http://localhost:9144",
       "metadata": ".papi/metadata/itk.scale",
-      "genesis": "0x9d5385990512beff1ad28c9a9dde212381902fc8aa680db340f53a839a137c6a",
-      "codeHash": "0x41e546f4ef0644c754ddfd7f7c53527b7ece5d44e88efca7775e0e51c91c7525"
+      "genesis": "0x133ca424c3cbad393ca3e8eb5c8ad6776f54d39008e95f500b7887fdac41de81",
+      "codeHash": "0xbd9b74166900d1c9fb0a80a5345b2eb31337bcf4410f4e20853b3c86db220575"
     },
     "itp": {
       "wsUrl": "http://localhost:9244",
       "metadata": ".papi/metadata/itp.scale",
-      "genesis": "0x7ae0f3b73bef426d5536c47bca76fc9a11badf15e0c76386971087a5de24ab75",
-      "codeHash": "0x2fa292db34a21abac69c926fb8b86eb6e691ad8e7f9d2f6d7ddf582be4f94b2a"
+      "genesis": "0x88ad11886429dab31ef26cc16b9d1d93cad0be7c515beae79a26fa217182fa34",
+      "codeHash": "0xcbac0355ba6b8416bed82807bd65813fc3839046312ef02a1a6abc820067ef50"
     }
   }
 }

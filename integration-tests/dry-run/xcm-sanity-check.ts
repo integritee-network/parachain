@@ -14,7 +14,7 @@ import {
     XcmVersionedLocation, XcmV3JunctionBodyId, XcmV2JunctionBodyPart
 } from "@polkadot-api/descriptors";
 import {
-    createClient, FixedSizeBinary
+    createClient, FixedSizeBinary, Enum
 } from "polkadot-api";
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
@@ -371,8 +371,8 @@ async function checkAssetConversions() {
         checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on KAH"),
         checkAssetConversionOn(kahApi, DOT_FROM_COUSIN_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), toleranceFactor, "DOT per KSM on KAH"),
         checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on PAH"),
-        checkAssetConversionOn(itpApi, '{ "Native" }', '{ "WithId": 0 }', referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on ITP"),
-        checkAssetConversionOn(itkApi, '{ "Native" }', '{ "WithId": 0 }', referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on ITK"),
+        checkAssetConversionOn(itpApi, Enum("Native"), Enum("WithId", 0), referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on ITP"),
+        checkAssetConversionOn(itkApi, Enum("Native"), Enum("WithId", 0), referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on ITK"),
     ]);
 }
 
