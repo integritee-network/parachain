@@ -1560,6 +1560,25 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl pallet_asset_conversion::AssetConversionApi<
+		Block,
+		Balance,
+		NativeOrWithId<AssetIdForTrustBackedAssets>,
+	> for Runtime
+	{
+		fn quote_price_exact_tokens_for_tokens(asset1: NativeOrWithId<AssetIdForTrustBackedAssets>, asset2: NativeOrWithId<AssetIdForTrustBackedAssets>, amount: Balance, include_fee: bool) -> Option<Balance> {
+			AssetConversion::quote_price_exact_tokens_for_tokens(asset1, asset2, amount, include_fee)
+		}
+
+		fn quote_price_tokens_for_exact_tokens(asset1: NativeOrWithId<AssetIdForTrustBackedAssets>, asset2: NativeOrWithId<AssetIdForTrustBackedAssets>, amount: Balance, include_fee: bool) -> Option<Balance> {
+			AssetConversion::quote_price_tokens_for_exact_tokens(asset1, asset2, amount, include_fee)
+		}
+
+		fn get_reserves(asset1: NativeOrWithId<AssetIdForTrustBackedAssets>, asset2: NativeOrWithId<AssetIdForTrustBackedAssets>) -> Option<(Balance, Balance)> {
+			AssetConversion::get_reserves(asset1, asset2).ok()
+		}
+	}
+
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
 		fn query_info(
 			uxt: <Block as BlockT>::Extrinsic,
