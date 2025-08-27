@@ -26,7 +26,7 @@ use integritee_parachains_common::{
 		ah_sibling_xcm, ahk_cousin_location, ik_sibling_v5, integritee_runtime_porteer_mint,
 		ip_cousin_v5, ip_sibling_v5,
 	},
-	xcm_helpers::{burn_asset_xcm, burn_native_xcm, execute_local_and_remote_xcm, teleport_asset},
+	xcm_helpers::{burn_asset_xcm, execute_local_and_remote_xcm, teleport_asset},
 	AccountId, Balance,
 };
 use pallet_porteer::{ForwardPortedTokens, PortTokens};
@@ -63,14 +63,14 @@ impl PortTokens for PortTokensToKusama {
 		let who_location = AccountIdToLocation::convert(who.clone());
 		let fees = Porteer::xcm_fee_config();
 
-		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
-		let local_fee = Self::query_native_fee(tentative_xcm)?;
-
 		let ah_sibling_fee =
 			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), fees.hop1);
+		let tentative_xcm = burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), 0);
+		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
 		let local_xcm =
 			burn_asset_xcm(who_location.clone(), ah_sibling_fee.clone().into(), local_fee);
+
 		let remote_xcm = ah_sibling_xcm(
 			integritee_runtime_porteer_mint(who.clone(), amount, location.clone()),
 			ah_sibling_fee.into(),
@@ -122,7 +122,11 @@ impl ForwardPortedTokens for PortTokensToKusama {
 		destination: Self::Location,
 	) -> Result<(), Self::Error> {
 		let who_location = AccountIdToLocation::convert(who.clone());
-		let tentative_xcm = burn_native_xcm(who_location.clone(), amount, 0);
+
+		// Value must not be 0. Type conversion will panic
+		let tentative_asset =
+			(Location::new(1, Parachain(ParachainInfo::parachain_id().into())), 100_000_000);
+		let tentative_xcm = burn_asset_xcm(who_location.clone(), tentative_asset.into(), 0);
 		let local_fee = Self::query_native_fee(tentative_xcm)?;
 
 		let forward_amount = sp_std::cmp::min(
