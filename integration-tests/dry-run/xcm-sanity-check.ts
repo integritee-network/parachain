@@ -187,6 +187,14 @@ async function main() {
     await checkAssetConversions();
     await checkReasonablePorteerXcmFeeParams(itkApi, "ITK XcmFeeConfig");
     await checkReasonablePorteerXcmFeeParams(itpApi, "ITP XcmFeeConfig");
+    await printTotalNativeSupply(itkApi, "ITK Total Supply [TEER]");
+    await printTotalNativeSupply(itpApi, "ITP Total Supply [TEER]");
+    await printTotalNativeSupply(kahApi, "KAH Total Supply  [KSM]");
+    await printTotalNativeSupply(pahApi, "PAH Total Supply  [DOT]");
+    await printTotalNativeAssetSupply(itkApi, 0, "ITK Asset Supply [KSM]");
+    await printTotalNativeAssetSupply(itpApi, 0, "ITK Asset Supply [DOT]");
+    await printTotalForeignAssetSupply(kahApi, ITK_FROM_SIBLING, "KAH Asset Supply [TEER]");
+    await printTotalForeignAssetSupply(pahApi, ITP_FROM_SIBLING, "PAH Asset Supply [TEER]");
     await itkClient.destroy();
     await kahClient.destroy();
     await pahClient.destroy();
@@ -355,6 +363,33 @@ async function printAccountIdAssetBalanceOn(api: any, accountId: string, asset_i
         console.log(`  ${label} (${accountId}) balance: ${assetBalanceResult?.balance ?? 0n}`);
     } catch (error) {
         console.log(`❌ ${label} (${accountId}) error:`, error?.message ?? error);
+    }
+}
+
+async function printTotalNativeSupply(api: any, label: string) {
+    try {
+        const totalIssuance = await api.query.Balances.TotalIssuance.getValue();
+        console.log(`  ${label} total native supply: ${totalIssuance}`);
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
+async function printTotalNativeAssetSupply(api: any, assetId: number, label: string) {
+    try {
+        const assetData = await api.query.Assets.Asset.getValue(assetId);
+        console.log(`  ${label} total native asset supply: ${assetData.supply}`);
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
+async function printTotalForeignAssetSupply(api: any, location: any, label: string) {
+    try {
+        const assetData = await api.query.ForeignAssets.Asset.getValue(location);
+        console.log(`  ${label} total native asset supply: ${assetData.supply}`);
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
     }
 }
 

@@ -26,8 +26,8 @@ def compare_files(file1, file2):
         l1 = lines1[i] if i < len(lines1) else ""
         l2 = lines2[i] if i < len(lines2) else ""
 
-        if l1 == l2:
-            continue  # identical line, skip
+        #if l1 == l2:
+        #    continue  # identical line, skip
 
         nums1 = extract_numbers(l1)
         nums2 = extract_numbers(l2)
