@@ -185,6 +185,8 @@ async function main() {
     }
     await checkBalances()
     await checkAssetConversions();
+    await checkReasonablePorteerXcmFeeParams(itkApi, "ITK XcmFeeConfig");
+    await checkReasonablePorteerXcmFeeParams(itpApi, "ITP XcmFeeConfig");
     await itkClient.destroy();
     await kahClient.destroy();
     await pahClient.destroy();
@@ -387,5 +389,18 @@ async function checkAssetConversionOn(api: any, inLocation: any, outLocation: an
         }
     } catch (error) {
         console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
+async function checkReasonablePorteerXcmFeeParams(api: any, label: string) {
+    try {
+        const fees = await api.query.Porteer.XcmFeeConfig.getValue();
+        if ((fees.hop1 > 0n) && (fees.hop2 > 0n) && (fees.hop3 > 0n) && (fees.local_equivalent_sum > 0n)) {
+            console.log(`✅ ${label}: hop1: ${fees.hop1.toString()}, hop2: ${fees.hop2.toString()}, hop3: ${fees.hop3.toString()}, local_equivalent_sum: ${fees.local_equivalent_sum.toString()}`);
+        } else {
+            console.log(`❌ ${label} has unreasonable values: hop1: ${fees.hop1.toString()}, hop2: ${fees.hop2.toString()}, hop3: ${fees.hop3.toString()}, local_equivalent_sum: ${fees.local_equivalent_sum.toString()}`)
+        }
+    } catch (e) {
+        console.error(e);
     }
 }

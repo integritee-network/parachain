@@ -58,8 +58,8 @@ const WATCHDOG_ACCOUNT = "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // 
 // if false, we assume zombienet
 const CHOPSTICKS: boolean = false;
 
-const DIRECTION = "IK>IP";
-//const DIRECTION = "IP>IK";
+//const DIRECTION = "IK>IP";
+const DIRECTION = "IP>IK";
 
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
