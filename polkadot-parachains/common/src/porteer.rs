@@ -19,7 +19,7 @@
 
 use crate::{AccountId, Balance};
 use pallet_porteer::XcmFeeParams;
-use parity_scale_codec::Encode;
+use parity_scale_codec::{Compact, Encode};
 use sp_std::vec;
 use xcm::{
 	latest::{
@@ -64,9 +64,9 @@ pub fn integritee_runtime_porteer_mint(
 	amount: Balance,
 	location: Option<Location>,
 	nonce: PortTokensNonce,
-) -> ([u8; 2], AccountId, Balance, Option<Location>, PortTokensNonce) {
+) -> ([u8; 2], AccountId, Compact<Balance>, Option<Location>, Compact<PortTokensNonce>) {
 	// ([pallet_index, call_index], ...)
-	([56, 7], beneficiary, amount, location, nonce)
+	([56, 7], beneficiary, amount.into(), location, nonce.into())
 }
 
 pub const INTEGRITEE_KUSAMA_PARA_ID: u32 = 2015;
