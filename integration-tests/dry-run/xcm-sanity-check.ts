@@ -14,7 +14,7 @@ import {
     XcmVersionedLocation, XcmV3JunctionBodyId, XcmV2JunctionBodyPart
 } from "@polkadot-api/descriptors";
 import {
-    createClient, FixedSizeBinary, Enum
+    createClient, FixedSizeBinary, Enum, AccountId, Binary
 } from "polkadot-api";
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
@@ -104,6 +104,14 @@ const PAH_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
 };
+const KAH_FROM_COUSIN = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
+};
+const PAH_FROM_COUSIN = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
+};
 const ITK_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
@@ -131,6 +139,10 @@ const treasuryAccount = FixedSizeBinary.fromHex(padded.toHex());
 const TREASURY_LOCAL = {
     parents: 0,
     interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: treasuryAccount}))
+}
+const TREASURY_PAH = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("14xmwinmCEz6oRrFdczHKqHgWNMiCysE2KrA4jXXAAM1Eogk"))}))
 }
 
 // Setup clients...
@@ -259,6 +271,8 @@ async function checkBalances() {
         // AH sovereign
         checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(KAH_FROM_SIBLING), 5n * TEER_UNITS, "KAH Sovereign on ITK [TEER]"),
         checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(PAH_FROM_SIBLING), 5n * TEER_UNITS, "PAH Sovereign on ITP [TEER]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(PAH_FROM_COUSIN), 0n, "PAH Sovereign on KAH [KSM]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(KAH_FROM_COUSIN), 0n, "KAH Sovereign on PAH [DOT]"),
     ])
     console.log("checking (foreign) asset balances")
     await Promise.all([
@@ -282,6 +296,8 @@ async function checkBalances() {
             printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0, "Treasury on ITK [KSM]"),
             checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITP [TEER]"),
             checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITK [TEER]"),
+            checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(TREASURY_PAH), 0n, "Treasury on PAH [DOT]"),
+            //checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(TREASURY_KAH), 0n, "Treasury on KAH [KSM]"),
             printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITK_FROM_SIBLING), "Alice on KAH [TEER]"),
             printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITP_FROM_SIBLING), "Alice on PAH [TEER]"),
             printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(KSM_FROM_SIBLING_PARACHAINS), "Alice on KAH [KSM]"),
