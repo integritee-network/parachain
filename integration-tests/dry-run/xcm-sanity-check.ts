@@ -144,6 +144,10 @@ const TREASURY_PAH = {
     parents: 0,
     interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("14xmwinmCEz6oRrFdczHKqHgWNMiCysE2KrA4jXXAAM1Eogk"))}))
 }
+const TREASURY_KAH = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("HWZmQq6zMMk7TxixHfseFT2ewicT6UofPa68VCn3gkXrdJF"))}))
+}
 
 // Setup clients...
 const pahClient = createClient(
@@ -297,7 +301,7 @@ async function checkBalances() {
             checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITP [TEER]"),
             checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITK [TEER]"),
             checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(TREASURY_PAH), 0n, "Treasury on PAH [DOT]"),
-            //checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(TREASURY_KAH), 0n, "Treasury on KAH [KSM]"),
+            checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(TREASURY_KAH), 0n, "Treasury on KAH [KSM]"),
             printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITK_FROM_SIBLING), "Alice on KAH [TEER]"),
             printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITP_FROM_SIBLING), "Alice on PAH [TEER]"),
             printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(KSM_FROM_SIBLING_PARACHAINS), "Alice on KAH [KSM]"),

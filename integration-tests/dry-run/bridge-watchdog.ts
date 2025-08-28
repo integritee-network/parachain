@@ -61,6 +61,9 @@ const CHOPSTICKS: boolean = false;
 //const DIRECTION = "IK>IP";
 const DIRECTION = "IP>IK";
 
+// safety factor to account for price fluctuations in asset swaps
+const MARGIN = 1.2;
+
 // We're running against chopsticks with wasm-override to get XCMv5 support.
 // `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
 const KAH_WS_URL = CHOPSTICKS
@@ -316,6 +319,9 @@ async function main(plan: any) {
     const sovereignAccountInfoDestinationAH = await plan.source.api.query.System.Account.getValue(rootAccountLocal.value)
     //console.log(`Sovereign account of ${plan.source.name} on destinationAH ${plan.destination.name} chain: `, rootAccountDestinationAH, " with AccountInfo ", sovereignAccountInfoDestinationAH);
 
+    const currentFees = await plan.source.api.query.Porteer.XcmFeeConfig.getValue();
+    console.log("Current fees config on source chain: ", stringifyJsonWithBigInt(currentFees));
+
     // the actual extrinsic we would send to bridge TEER from IK to IP
     const portTokensTx = plan.source.api.tx.Porteer.port_tokens({
         amount: transferAmount,
@@ -404,7 +410,7 @@ async function estimateFees(
         console.error("localDryRun Error: ", dryRunResult.value.execution_result);
         return;
     }
-    console.log("########### \ndryRunResult: ", stringifyJsonWithBigInt(dryRunResult.value.execution_result));
+    console.log(`########### ${plan.source.name}\ndryRunResult: `, stringifyJsonWithBigInt(dryRunResult.value.execution_result));
     printEvents(dryRunResult.value.emitted_events);
 
     // XCM execution might result in multiple messages being sent.
@@ -479,7 +485,7 @@ async function estimateFees(
         console.error("sourceAHDryRun Error: ", sourceAHDryRunResult.value.execution_result);
         return;
     }
-    console.log("########### \nsourceAHDryRunResult: ", stringifyJsonWithBigInt(sourceAHDryRunResult.value.execution_result));
+    console.log(`########### ${plan.sourceAH.name}\nsourceAHDryRunResult: `, stringifyJsonWithBigInt(sourceAHDryRunResult.value.execution_result));
     printEvents(sourceAHDryRunResult.value.emitted_events);
     const swapCreditEvent = sourceAHDryRunResult.value.emitted_events.find(
         (event: any) =>
@@ -579,7 +585,7 @@ async function estimateFees(
         console.error("destinationAHDryRun Error: ", destinationAHDryRunResult.value.execution_result);
         return;
     }
-    console.log("########### \ndestinationAHDryRunResult: ", stringifyJsonWithBigInt(destinationAHDryRunResult.value.execution_result));
+    console.log(`########### ${plan.destinationAH.name}\ndestinationAHDryRunResult: `, stringifyJsonWithBigInt(destinationAHDryRunResult.value.execution_result));
     printEvents(destinationAHDryRunResult.value.emitted_events);
 
     // XCM execution might result in multiple messages being sent.
@@ -652,7 +658,7 @@ async function estimateFees(
         console.error("destinationDryRun Error: ", destinationDryRunResult.value.execution_result);
         return;
     }
-    console.log("########### \ndestinationDryRunResult: ", stringifyJsonWithBigInt(destinationDryRunResult.value.execution_result));
+    console.log(`########### ${plan.destination.name}\ndestinationDryRunResult: `, stringifyJsonWithBigInt(destinationDryRunResult.value.execution_result));
     printEvents(destinationAHDryRunResult.value.emitted_events);
 
     // We get the delivery fees using the size of the forwarded xcm.
@@ -696,7 +702,7 @@ async function estimateFees(
         return;
     }
     const destinationFeesInDestinationRelayNative = resultDestinationFeesInDestinationRelayNative.value;
-
+    console.log(`########### SUMMARY OF FEES ###########`);
     console.log(`API: localExecutionFees (virtual) [TEER]: `, localExecutionFees);
     console.log(`API: delivery fees to ${plan.sourceAH.name}         [TEER]: `, deliveryFeesToSourceAHInTeer);
     console.log(`API: ${plan.sourceAH.name} fees*                     [${plan.sourceAH.native_symbol}]: `, sourceAHFeesInNative.value);
@@ -709,10 +715,10 @@ async function estimateFees(
     console.log(`simulated rate as ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}: `, sourceAHNativePerDestinationAHNative / 100, ` with ${plan.sourceAH.native_symbol} converted for fees: `, sourceAHNativeSpent, ` equal to fees in ${plan.destinationAH.native_symbol}: `, swapCreditEvent2.value.value.amount_out);
 
 
-    const sourceAHFeesInTeer = BigInt(Math.round(Number(sourceAHFeesInNative.value + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative * 1.1));
+    const sourceAHFeesInTeer = BigInt(Math.round(Number(sourceAHFeesInNative.value + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative * MARGIN));
     console.log(`${plan.sourceAH.name} fees before swap (with margin*) [TEER]: `, sourceAHFeesInTeer);
 
-    const destinationAHFeesInSourceAHNative = BigInt(Math.round(Number(destinationAHFeesInNative.value + deliveryFeesToDestinationInDestinationAHNative) * sourceAHNativePerDestinationAHNative * 1.1));
+    const destinationAHFeesInSourceAHNative = BigInt(Math.round(Number(destinationAHFeesInNative.value + deliveryFeesToDestinationInDestinationAHNative) * sourceAHNativePerDestinationAHNative * MARGIN));
     console.log(`${plan.destinationAH.name} fees before swap (with margin*) [${plan.sourceAH.native_symbol}]: `, destinationAHFeesInSourceAHNative);
 
     const totalCallerFeesInTeer = localExecutionFees +
