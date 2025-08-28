@@ -27,13 +27,13 @@ use crate::weights;
 use assets_common::matching::ParentLocation;
 use core::marker::PhantomData;
 use cumulus_primitives_core::{AggregateMessageOrigin, GlobalConsensus, ParaId};
-use cumulus_primitives_utility::XcmFeesTo32ByteAccount;
 use frame_support::{
 	pallet_prelude::{Get, PalletInfoAccess, Weight},
 	parameter_types,
 	traits::{
-		fungible::NativeOrWithId, tokens::imbalance::ResolveAssetTo, Contains, ContainsPair,
-		Disabled, Equals, Everything, Nothing, TransformOrigin,
+		fungible::NativeOrWithId,
+		tokens::imbalance::{ResolveAssetTo, ResolveTo},
+		Contains, ContainsPair, Disabled, Equals, Everything, Nothing, TransformOrigin,
 	},
 };
 use frame_system::EnsureRoot;
@@ -63,12 +63,12 @@ use xcm_builder::{
 	AccountId32Aliases, AliasChildLocation, AliasOriginRootUsingFilter, AllowKnownQueryResponses,
 	AllowSubscriptionsFrom, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, Case,
 	DenyReserveTransferToRelayChain, DenyThenTry, DescribeAllTerminal, DescribeFamily,
-	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor, FixedRateOfFungible,
+	DescribeTerminus, EnsureXcmOrigin, ExternalConsensusLocationsConverterFor,
 	FixedWeightBounds, FrameTransactionalProcessor, FungibleAdapter, FungiblesAdapter,
 	HashedDescription, MatchedConvertedConcreteId, NoChecking, ParentAsSuperuser, ParentIsPreset,
 	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
 	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
-	TrailingSetTopicAsId, WeightInfoBounds, WithComputedOrigin, WithUniqueTopic,
+	TrailingSetTopicAsId, UsingComponents, WeightInfoBounds, WithComputedOrigin, WithUniqueTopic,
 };
 use xcm_executor::{traits::JustTry, XcmExecutor};
 use xcm_primitives::{AsAssetLocation, AssetLocationGetter, ConvertedRegisteredAssetId};
@@ -315,14 +315,20 @@ impl Contains<(Location, Vec<Asset>)> for OnlyTeleportNative {
 
 pub type Traders = (
 	// for TEER
-	FixedRateOfFungible<
-		NativePerSecond,
-		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
+	UsingComponents<
+		WeightToFee,
+		TeerNative,
+		AccountId,
+		Balances,
+		ResolveTo<TreasuryAccount, Balances>,
 	>,
 	// for TEER for XCM from Karura, Bifrost, Moonriver
-	FixedRateOfFungible<
-		NativeAliasPerSecond,
-		XcmFeesTo32ByteAccount<LocalNativeTransactor, AccountId, TreasuryAccount>,
+	UsingComponents<
+		WeightToFee,
+		TeerAlias,
+		AccountId,
+		Balances,
+		ResolveTo<TreasuryAccount, Balances>,
 	>,
 	// This trader allows to pay with the relay chain token iff there is a pool to trade it for TEER.
 	cumulus_primitives_utility::SwapFirstAssetTrader<
@@ -368,6 +374,10 @@ impl MaybeEquivalence<Location, NativeOrWithId<u32>> for ReserveAssetsRegistry {
 parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub NativePerSecond: (AssetId, u128,u128) = (Location::new(0,Here).into(), TEER * 70, 0u128);
+
+	pub TeerNative: Location = Location::here();
+	pub TeerAlias: Location = Location::new(0,[TEER_GENERAL_KEY]);
+
 	pub NativeAliasPerSecond: (AssetId, u128,u128) = (Location::new(0,[TEER_GENERAL_KEY]).into(), TEER * 70, 0u128);
 	pub RelayNativePerSecond: (AssetId, u128,u128) = (Location::new(1,Here).into(), TEER * 70, 0u128);
 	// Weight for one XCM operation.
