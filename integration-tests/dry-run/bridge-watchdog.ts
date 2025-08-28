@@ -305,7 +305,7 @@ async function main(plan: any) {
         return;
     }
     const rootAccountInfo = await plan.source.api.query.System.Account.getValue(rootAccountLocal.value)
-    console.log("Root account on source chain: ", rootAccountLocal, " with AccountInfo ", rootAccountInfo);
+    //console.log("Root account on source chain: ", rootAccountLocal, " with AccountInfo ", rootAccountInfo);
 
     const rootAccountDestinationAH = await plan.destinationAH.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.native_from_cousin))
     if (!rootAccountDestinationAH.success) {
@@ -314,7 +314,7 @@ async function main(plan: any) {
         return;
     }
     const sovereignAccountInfoDestinationAH = await plan.source.api.query.System.Account.getValue(rootAccountLocal.value)
-    console.log(`Sovereign account of ${plan.source.name} on destinationAH ${plan.destination.name} chain: `, rootAccountDestinationAH, " with AccountInfo ", sovereignAccountInfoDestinationAH);
+    //console.log(`Sovereign account of ${plan.source.name} on destinationAH ${plan.destination.name} chain: `, rootAccountDestinationAH, " with AccountInfo ", sovereignAccountInfoDestinationAH);
 
     // the actual extrinsic we would send to bridge TEER from IK to IP
     const portTokensTx = plan.source.api.tx.Porteer.port_tokens({
@@ -404,7 +404,8 @@ async function estimateFees(
         console.error("localDryRun Error: ", dryRunResult.value.execution_result);
         return;
     }
-    console.log("dryRunResult: ", dryRunResult.value);
+    console.log("########### \ndryRunResult: ", stringifyJsonWithBigInt(dryRunResult.value.execution_result));
+    printEvents(dryRunResult.value.emitted_events);
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
@@ -478,7 +479,8 @@ async function estimateFees(
         console.error("sourceAHDryRun Error: ", sourceAHDryRunResult.value.execution_result);
         return;
     }
-    console.log("sourceAHDryRunResult: ", sourceAHDryRunResult.value);
+    console.log("########### \nsourceAHDryRunResult: ", stringifyJsonWithBigInt(sourceAHDryRunResult.value.execution_result));
+    printEvents(sourceAHDryRunResult.value.emitted_events);
     const swapCreditEvent = sourceAHDryRunResult.value.emitted_events.find(
         (event: any) =>
             event.type === "AssetConversion" &&
@@ -492,7 +494,7 @@ async function estimateFees(
         "amount_in" in swapCreditEvent.value.value &&
         "amount_out" in swapCreditEvent.value.value
     ) {
-        console.log("Found SwapCreditExecuted event:", swapCreditEvent.value.value);
+        console.log("Found SwapCreditExecuted event");
     } else {
         console.error("SwapCreditExecuted event not found or malformed.", swapCreditEvent);
         return;
@@ -503,10 +505,10 @@ async function estimateFees(
     const sourceAHWeight =
         await plan.sourceAH.api.apis.XcmPaymentApi.query_xcm_weight(messageToSourceAH);
     if (!sourceAHWeight.success) {
-        console.error("sourceAHWeight failed: ", sourceAHWeight);
+        console.error("sourceAHWeight failed: ", stringifyJsonWithBigInt(sourceAHWeight));
         return;
     }
-    console.log("sourceAHWeight: ", sourceAHWeight.value);
+    console.log("sourceAHWeight: ", stringifyJsonWithBigInt(sourceAHWeight.value));
 
     // Remote fees are only execution.
     const sourceAHFeesInNative =
@@ -529,7 +531,7 @@ async function estimateFees(
 
     const messageToSourceBH = messages2[0];
     // Found it.
-    console.log("messageToSourceBH: ", messageToSourceBH);
+    // console.log("messageToSourceBH: ", messageToSourceBH);
 
     const exportMessageInstruction = messageToSourceBH?.value.find((instruction: any) =>
         instruction.type === "ExportMessage" &&
@@ -537,12 +539,12 @@ async function estimateFees(
         instruction.value !== null &&
         "xcm" in instruction.value
     )
-    console.log(exportMessageInstruction)
+    //console.log(exportMessageInstruction)
     const messageToDestinationAH = {
         type: messageToSourceBH.type,
         value: exportMessageInstruction?.value?.xcm
     };
-    console.log("messageToDestinationAH: ", messageToDestinationAH);
+    //console.log("messageToDestinationAH: ", messageToDestinationAH);
 
     // We get the delivery fees using the size of the forwarded xcm.
     const deliveryFeesToDestinationAH = await plan.sourceAH.api.apis.XcmPaymentApi.query_delivery_fees(
@@ -577,7 +579,8 @@ async function estimateFees(
         console.error("destinationAHDryRun Error: ", destinationAHDryRunResult.value.execution_result);
         return;
     }
-    console.log("destinationAHDryRunResult: ", destinationAHDryRunResult.value);
+    console.log("########### \ndestinationAHDryRunResult: ", stringifyJsonWithBigInt(destinationAHDryRunResult.value.execution_result));
+    printEvents(destinationAHDryRunResult.value.emitted_events);
 
     // XCM execution might result in multiple messages being sent.
     // That's why we need to search for our message in the `forwarded_xcms` array.
@@ -591,7 +594,7 @@ async function estimateFees(
     )!;
     // Found it.
     const messageToDestination = messages3[0];
-    console.log("messageToDestination: ", messageToDestination);
+    // console.log("messageToDestination: ", messageToDestination);
 
     const swapCreditEvent2 = destinationAHDryRunResult.value.emitted_events.find(
         (event: any) =>
@@ -606,7 +609,7 @@ async function estimateFees(
         "amount_in" in swapCreditEvent2.value.value &&
         "amount_out" in swapCreditEvent2.value.value
     ) {
-        console.log("Found SwapCreditExecuted event:", swapCreditEvent2.value.value);
+        console.log("Found SwapCreditExecuted event");
     } else {
         console.error("SwapCreditExecuted event not found or malformed.", swapCreditEvent2);
         return;
@@ -620,7 +623,7 @@ async function estimateFees(
         console.error("destinationAHWeight failed: ", destinationAHWeight);
         return;
     }
-    console.log("API: destinationAHWeight: ", destinationAHWeight.value);
+    console.log("API: destinationAHWeight: ", stringifyJsonWithBigInt(destinationAHWeight.value));
 
     // Remote fees are only execution.
     const destinationAHFeesInNative =
@@ -649,7 +652,8 @@ async function estimateFees(
         console.error("destinationDryRun Error: ", destinationDryRunResult.value.execution_result);
         return;
     }
-    console.log("destinationDryRunResult: ", destinationDryRunResult.value);
+    console.log("########### \ndestinationDryRunResult: ", stringifyJsonWithBigInt(destinationDryRunResult.value.execution_result));
+    printEvents(destinationAHDryRunResult.value.emitted_events);
 
     // We get the delivery fees using the size of the forwarded xcm.
     const deliveryFeesToDestination = await plan.destinationAH.api.apis.XcmPaymentApi.query_delivery_fees(
@@ -678,7 +682,7 @@ async function estimateFees(
         console.error("destinationWeight failed: ", destinationWeight);
         return;
     }
-    console.log("API: destinationWeight: ", destinationWeight.value);
+    console.log("API: destinationWeight: ", stringifyJsonWithBigInt(destinationWeight.value));
 
     // Remote fees are only execution.
     const resultDestinationFeesInDestinationRelayNative =
@@ -732,4 +736,22 @@ function getAliceSigner(): PolkadotSigner {
         hdkdKeyPair.sign,
     );
     return aliceSigner;
+}
+
+function printEvents(events: any) {
+    for (const event of events) {
+        const type = event.type;
+        const subtype = event.value?.type;
+        const rest = {...event.value};
+        delete rest.type;
+        const prefix = subtype ? `${type}.${subtype}` : type;
+        const json = Object.keys(rest).length > 0
+            ? " " + JSON.stringify(rest, (_, v) => typeof v === "bigint" ? v.toString() : v)
+            : "";
+        console.log(prefix + json);
+    }
+}
+
+function stringifyJsonWithBigInt(obj: any): string {
+    return JSON.stringify(obj, (_, v) => typeof v === "bigint" ? v.toString() : v);
 }
