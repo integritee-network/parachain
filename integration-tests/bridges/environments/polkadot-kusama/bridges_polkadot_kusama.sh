@@ -683,7 +683,7 @@ case "$1" in
           --seed "//Alice" \
           --sudo \
           tx.porteer.setXcmFeeParams \
-              "$(jq --null-input '{ "hop1": 33000000000000, "hop2": 3000000000000, "hop3": 1000000000000 }')"
+              "$(jq --null-input '{ "local_equivalent_sum": 42, "hop1": 33000000000000, "hop2": 3000000000000, "hop3": 1000000000000 }')"
       ;;
   init-integritee-polkadot-local)
       # SA of sibling asset hub pays for the inwards execution
@@ -855,7 +855,7 @@ case "$1" in
           --seed "//Alice" \
           --sudo \
           tx.porteer.setXcmFeeParams \
-              "$(jq --null-input '{ "hop1": 10000000000000, "hop2": 10000000000, "hop3": 200000000000 }')"
+              "$(jq --null-input '{ "local_equivalent_sum": 42, "hop1": 10000000000000, "hop2": 10000000000, "hop3": 200000000000 }')"
       ;;
   reserve-transfer-assets-from-asset-hub-polkadot-local)
       amount=$2

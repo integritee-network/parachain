@@ -60,7 +60,7 @@ const CHOPSTICKS: boolean = false;
 
 //const DIRECTION = "IK>IP";
 const DIRECTION = "IP>IK";
-
+const DIRECT_FORWARD = true;
 // safety factor to account for price fluctuations in asset swaps
 const MARGIN = 1.2;
 
@@ -325,7 +325,7 @@ async function main(plan: any) {
     // the actual extrinsic we would send to bridge TEER from IK to IP
     const portTokensTx = plan.source.api.tx.Porteer.port_tokens({
         amount: transferAmount,
-        forwardTokensToLocation: null
+        forwardTokensToLocation: DIRECT_FORWARD ? plan.destinationAH.native_from_sibling : undefined,
     });
     // const setFeesTx = plan.source.api.tx.Porteer.set_xcm_fee_params({
     //     fees: {
@@ -714,20 +714,22 @@ async function estimateFees(
     console.log(`simulated rate as TEER per ${plan.sourceAH.native_symbol}: `, teerPerSourceAHNative, ` with TEER converted for fees: `, teerSpent, ` equal to fees in ${plan.sourceAH.native_symbol}: `, swapCreditEvent.value.value.amount_out);
     console.log(`simulated rate as ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}: `, sourceAHNativePerDestinationAHNative / 100, ` with ${plan.sourceAH.native_symbol} converted for fees: `, sourceAHNativeSpent, ` equal to fees in ${plan.destinationAH.native_symbol}: `, swapCreditEvent2.value.value.amount_out);
 
-
     const sourceAHFeesInTeer = BigInt(Math.round(Number(sourceAHFeesInNative.value + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative * MARGIN));
     console.log(`${plan.sourceAH.name} fees before swap (with margin*) [TEER]: `, sourceAHFeesInTeer);
 
     const destinationAHFeesInSourceAHNative = BigInt(Math.round(Number(destinationAHFeesInNative.value + deliveryFeesToDestinationInDestinationAHNative) * sourceAHNativePerDestinationAHNative * MARGIN));
     console.log(`${plan.destinationAH.name} fees before swap (with margin*) [${plan.sourceAH.native_symbol}]: `, destinationAHFeesInSourceAHNative);
 
+    const equivalentRemoteFeesInTeer = BigInt(Math.round(Number(destinationAHFeesInSourceAHNative + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative +
+        Number(destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative) * teerPerSourceAHNative * sourceAHNativePerDestinationAHNative))
+    console.log("equivalentRemoteFeesInTeer (the extra charge on sender to compensate for fees which will be paid by sovereign on remote hops): ", equivalentRemoteFeesInTeer);
+
     const totalCallerFeesInTeer = localExecutionFees +
         deliveryFeesToSourceAHInTeer + sourceAHFeesInTeer +
-        BigInt(Math.round(Number(destinationAHFeesInSourceAHNative + deliveryFeesToDestinationAHInSourceAHNative) * teerPerSourceAHNative +
-            Number(destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative) * teerPerSourceAHNative * sourceAHNativePerDestinationAHNative))
-    console.log("to be paid by caller to cover everything [TEER]: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS));
+        equivalentRemoteFeesInTeer
+    console.log("total to be paid by caller local and remote [TEER]: ", Number(totalCallerFeesInTeer) / Number(TEER_UNITS));
 
-    return [totalCallerFeesInTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
+    return [equivalentRemoteFeesInTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
 }
 
 // Just a helper function to get a signer for ALICE.
