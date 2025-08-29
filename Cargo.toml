@@ -46,7 +46,7 @@ pallet-teerex = { default-features = false, git = "https://github.com/integritee
 xcm-primitives = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-stable2503-6" }
 
 # Polkadot-sdk and ecosystem crates [no_std]
-prometheus-endpoint = { version = "0.17.2", default-features = false, package = "substrate-prometheus-endpoint" }
+prometheus-endpoint = { version = "0.17.3", default-features = false, package = "substrate-prometheus-endpoint" }
 assets-common = { version = "0.21.0", default-features = false }
 cumulus-pallet-aura-ext = { version = "0.20.0", default-features = false }
 cumulus-pallet-dmp-queue = { version = "0.20.0", default-features = false }
@@ -59,12 +59,12 @@ cumulus-primitives-aura = { version = "0.17.0", default-features = false }
 cumulus-primitives-core = { version = "0.18.1", default-features = false }
 cumulus-primitives-timestamp = { version = "0.19.0", default-features = false }
 cumulus-primitives-utility = { version = "0.20.0", default-features = false }
-frame-benchmarking = { version = "40.2.0", default-features = false }
+frame-benchmarking = { version = "40.2.1", default-features = false }
 frame-executive = { version = "40.0.1", default-features = false }
 frame-metadata-hash-extension = { version = "0.8.0", default-features = false }
 frame-support = { version = "40.1.0", default-features = false }
-frame-system = { version = "40.1.0", default-features = false }
-frame-system-benchmarking = { version = "40.0.0", default-features = false }
+frame-system = { version = "40.2.0", default-features = false }
+frame-system-benchmarking = { version = "40.0.1", default-features = false }
 frame-system-rpc-runtime-api = { version = "36.0.0", default-features = false }
 frame-try-runtime = { version = "0.46.0", default-features = false }
 orml-traits = { version = "1.4.0", default-features = false }
@@ -75,7 +75,7 @@ pallet-asset-conversion = { version = "22.0.0", default-features = false }
 pallet-assets = { version = "42.0.0", default-features = false }
 pallet-aura = { version = "39.0.0", default-features = false }
 pallet-authorship = { version = "40.0.0", default-features = false }
-pallet-balances = { version = "41.1.0", default-features = false }
+pallet-balances = { version = "41.1.1", default-features = false }
 pallet-bounties = { version = "39.0.0", default-features = false }
 pallet-child-bounties = { version = "39.0.0", default-features = false }
 pallet-collator-selection = { version = "21.0.0", default-features = false }
@@ -94,13 +94,13 @@ pallet-transaction-payment-rpc-runtime-api = { version = "40.0.0", default-featu
 pallet-treasury = { version = "39.0.0", default-features = false }
 pallet-utility = { version = "40.0.0", default-features = false }
 pallet-vesting = { version = "40.1.0", default-features = false }
-pallet-xcm = { version = "19.1.2", default-features = false }
-parachains-common = { version = "21.0.0", default-features = false }
+pallet-xcm = { version = "19.2.0", default-features = false }
+parachains-common = { version = "21.0.1", default-features = false }
 staging-parachain-info = { version = "0.20.0", default-features = false }
 polkadot-core-primitives = { version = "17.1.0", default-features = false }
 polkadot-parachain-primitives = { version = "16.1.0", default-features = false }
-polkadot-primitives = { version = "18.1.0", default-features = false }
-polkadot-runtime-common = { version = "19.1.0", default-features = false }
+polkadot-primitives = { version = "18.2.0", default-features = false }
+polkadot-runtime-common = { version = "19.1.1", default-features = false }
 sp-api = { version = "36.0.1", default-features = false }
 sp-block-builder = { version = "36.0.0", default-features = false }
 sp-consensus-aura = { version = "0.42.0", default-features = false }
@@ -118,33 +118,33 @@ sp-transaction-pool = { version = "36.0.0", default-features = false }
 sp-version = { version = "39.0.0", default-features = false }
 xcm = { version = "16.2.0", package = "staging-xcm", default-features = false }
 xcm-builder = { version = "20.1.1", package = "staging-xcm-builder", default-features = false }
-xcm-executor = { version = "19.1.2", package = "staging-xcm-executor", default-features = false }
+xcm-executor = { version = "19.1.3", package = "staging-xcm-executor", default-features = false }
 xcm-runtime-apis = { version = "0.7.1", default-features = false }
 
 # std stuff
-cumulus-client-cli = "0.22.0"
-cumulus-client-collator = "0.22.0"
-cumulus-client-consensus-aura = "0.22.1"
-cumulus-client-consensus-common = "0.22.0"
+cumulus-client-cli = "0.23.0"
+cumulus-client-collator = "0.23.0"
+cumulus-client-consensus-aura = "0.23.0"
+cumulus-client-consensus-common = "0.23.0"
 cumulus-client-consensus-proposer = "0.19.0"
-cumulus-client-service = "0.23.0"
+cumulus-client-service = "0.24.0"
 cumulus-primitives-parachain-inherent = "0.18.1"
-cumulus-relay-chain-interface = "0.22.0"
-frame-benchmarking-cli = "47.2.0"
-substrate-frame-rpc-system = "43.0.0"
+cumulus-relay-chain-interface = "0.23.0"
+frame-benchmarking-cli = "48.0.0"
+substrate-frame-rpc-system = "44.0.0"
 jsonrpsee = { version = "0.24.8", features = ["server"] }
 pallet-transaction-payment-rpc = "43.0.0"
-polkadot-cli = "23.0.0"
-polkadot-service = "23.1.0"
+polkadot-cli = "24.0.0"
+polkadot-service = "24.0.0"
 sc-basic-authorship = "0.49.0"
-sc-chain-spec = "42.0.0"
-sc-cli = "0.51.1"
+sc-chain-spec = "43.0.0"
+sc-cli = "0.52.0"
 sc-client-api = "39.0.0"
-sc-consensus = "0.48.0"
+sc-consensus = "0.49.0"
 sc-executor = "0.42.0"
-sc-network = "0.49.2"
-sc-offchain = "44.0.1"
-sc-service = "0.50.0"
+sc-network = "0.50.1"
+sc-offchain = "45.0.0"
+sc-service = "0.51.0"
 sc-sysinfo = "42.0.0"
 sc-telemetry = "28.1.0"
 sc-tracing = "39.0.0"
@@ -165,7 +165,7 @@ assert_cmd = "2.0"
 nix = "0.25"
 tempfile = "3.3.0"
 hex = "0.4.3"
-polkadot-runtime-parachains = "19.1.0"
+polkadot-runtime-parachains = "19.2.0"
 
 # build dependencies
 substrate-build-script-utils = "11.0.0"
@@ -175,7 +175,7 @@ substrate-wasm-builder = "26.0.1"
 bp-messages = { version = "0.20.1", default-features = false }
 pallet-bridge-messages = { version = "0.20.1", default-features = false }
 
-emulated-integration-tests-common = { version = "20.1.0" }
+emulated-integration-tests-common = { version = "21.1.0" }
 bp-bridge-hub-kusama = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 bridge-hub-kusama-runtime = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
 integration-tests-helpers = { git = "https://github.com/encointer/runtimes", branch = "ab/trusted-aliaser-patch" }
