@@ -11,10 +11,10 @@ import {
     XcmV5Junction,
     XcmV5Junctions,
     XcmV5NetworkId,
-    XcmVersionedLocation,
+    XcmVersionedLocation, XcmV3JunctionBodyId, XcmV2JunctionBodyPart
 } from "@polkadot-api/descriptors";
 import {
-    createClient,
+    createClient, FixedSizeBinary, Enum, AccountId, Binary
 } from "polkadot-api";
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
@@ -104,6 +104,14 @@ const PAH_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
 };
+const KAH_FROM_COUSIN = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
+};
+const PAH_FROM_COUSIN = {
+    parents: 2,
+    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
+};
 const ITK_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
@@ -120,6 +128,26 @@ const ITP_FROM_COUSIN = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
 };
+const ALICE_PUB = FixedSizeBinary.fromHex("0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"); // well-known alice account
+const ALICE_LOCAL = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: ALICE_PUB}))
+}
+const palletId = Buffer.from("modlpy/trsry", "utf8"); // 8 bytes
+const padded = Buffer.concat([palletId, Buffer.alloc(32 - palletId.length, 0)]);
+const treasuryAccount = FixedSizeBinary.fromHex(padded.toHex());
+const TREASURY_LOCAL = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: treasuryAccount}))
+}
+const TREASURY_PAH = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("14xmwinmCEz6oRrFdczHKqHgWNMiCysE2KrA4jXXAAM1Eogk"))}))
+}
+const TREASURY_KAH = {
+    parents: 0,
+    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("HWZmQq6zMMk7TxixHfseFT2ewicT6UofPa68VCn3gkXrdJF"))}))
+}
 
 // Setup clients...
 const pahClient = createClient(
@@ -173,6 +201,16 @@ async function main() {
     }
     await checkBalances()
     await checkAssetConversions();
+    await checkReasonablePorteerXcmFeeParams(itkApi, "ITK XcmFeeConfig");
+    await checkReasonablePorteerXcmFeeParams(itpApi, "ITP XcmFeeConfig");
+    await printTotalNativeSupply(itkApi, "ITK Total Supply [TEER]");
+    await printTotalNativeSupply(itpApi, "ITP Total Supply [TEER]");
+    await printTotalNativeSupply(kahApi, "KAH Total Supply  [KSM]");
+    await printTotalNativeSupply(pahApi, "PAH Total Supply  [DOT]");
+    await printTotalNativeAssetSupply(itkApi, 0, "ITK Asset Supply [KSM]");
+    await printTotalNativeAssetSupply(itpApi, 0, "ITK Asset Supply [DOT]");
+    await printTotalForeignAssetSupply(kahApi, ITK_FROM_SIBLING, "KAH Asset Supply [TEER]");
+    await printTotalForeignAssetSupply(pahApi, ITP_FROM_SIBLING, "PAH Asset Supply [TEER]");
     await itkClient.destroy();
     await kahClient.destroy();
     await pahClient.destroy();
@@ -237,7 +275,41 @@ async function checkBalances() {
         // AH sovereign
         checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(KAH_FROM_SIBLING), 5n * TEER_UNITS, "KAH Sovereign on ITK [TEER]"),
         checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(PAH_FROM_SIBLING), 5n * TEER_UNITS, "PAH Sovereign on ITP [TEER]"),
+        checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(PAH_FROM_COUSIN), 0n, "PAH Sovereign on KAH [KSM]"),
+        checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(KAH_FROM_COUSIN), 0n, "KAH Sovereign on PAH [DOT]"),
     ])
+    console.log("checking (foreign) asset balances")
+    await Promise.all([
+        printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ITK_FROM_SIBLING), XcmVersionedLocation.V5(ITK_FROM_SIBLING), "ITK Sovereign on KAH [TEER]"),
+        printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ITP_FROM_SIBLING), XcmVersionedLocation.V5(ITP_FROM_SIBLING), "ITP Sovereign on PAH [TEER]"),
+        printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), XcmVersionedLocation.V5(KSM_FROM_COUSIN_PARACHAINS), "ITK Sovereign on PAH [KSM]"),
+        printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), XcmVersionedLocation.V5(DOT_FROM_COUSIN_PARACHAINS), "ITP Sovereign on KAH [DOT]"),
+        printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 0, "ITP Sovereign on ITK [KSM]"),
+        printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 0, "ITK Sovereign on ITP [DOT]"),
+
+    ])
+    if ((ENDPOINTS === CHOPSTICKS) || (ENDPOINTS === ZOMBIENET)) {
+        // Assume alice is porting TEER to test, so check relevant balances additionally
+        console.log("checking (foreign) asset balances for well-known keys")
+        await Promise.all([
+            printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0, "Alice on ITP [DOT]"),
+            printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0, "Alice on ITK [KSM]"),
+            checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0n, "Alice on ITP [TEER]"),
+            checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(ALICE_LOCAL), 0n, "Alice on ITK [TEER]"),
+            printLocationAssetBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0, "Treasury on ITP [DOT]"),
+            printLocationAssetBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0, "Treasury on ITK [KSM]"),
+            checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITP [TEER]"),
+            checkLocationBalanceOn(itkApi, XcmVersionedLocation.V5(TREASURY_LOCAL), 0n, "Treasury on ITK [TEER]"),
+            checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(TREASURY_PAH), 0n, "Treasury on PAH [DOT]"),
+            checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(TREASURY_KAH), 0n, "Treasury on KAH [KSM]"),
+            printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITK_FROM_SIBLING), "Alice on KAH [TEER]"),
+            printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(ITP_FROM_SIBLING), "Alice on PAH [TEER]"),
+            printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(KSM_FROM_SIBLING_PARACHAINS), "Alice on KAH [KSM]"),
+            printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(DOT_FROM_SIBLING_PARACHAINS), "Alice on PAH [DOT]"),
+            printLocationForeignAssetBalanceOn(kahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(DOT_FROM_COUSIN_PARACHAINS), "Alice on KAH [DOT]"),
+            printLocationForeignAssetBalanceOn(pahApi, XcmVersionedLocation.V5(ALICE_LOCAL), XcmVersionedLocation.V5(KSM_FROM_COUSIN_PARACHAINS), "Alice on PAH [KSM]"),
+        ])
+    }
 }
 
 async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, expectedBalance: bigint, label: string) {
@@ -268,6 +340,79 @@ async function checkAccountIdBalanceOn(api: any, accountId: string, expectedBala
     }
 }
 
+async function printLocationForeignAssetBalanceOn(api: any, account_location: XcmVersionedLocation, asset_location: XcmVersionedLocation, label: string) {
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(account_location);
+        if (accountIdResult.success) {
+            await printAccountIdForeignAssetBalanceOn(api, accountIdResult.value, asset_location, label);
+        } else {
+            console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+
+}
+
+async function printAccountIdForeignAssetBalanceOn(api: any, accountId: string, location: XcmVersionedLocation, label: string) {
+    try {
+        const assetBalanceResult = await api.query.ForeignAssets.Account.getValue(location.value, accountId);
+        console.log(`  ${label} (${accountId}) balance: ${assetBalanceResult?.balance ?? 0n}`);
+    } catch (error) {
+        console.log(`❌ ${label} (${accountId}) error:`, error?.message ?? error);
+    }
+}
+
+async function printLocationAssetBalanceOn(api: any, account_location: XcmVersionedLocation, asset_id: number, label: string) {
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(account_location);
+        if (accountIdResult.success) {
+            await printAccountIdAssetBalanceOn(api, accountIdResult.value, asset_id, label);
+        } else {
+            console.log(`❌ ${label} failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+
+}
+
+async function printAccountIdAssetBalanceOn(api: any, accountId: string, asset_id: number, label: string) {
+    try {
+        const assetBalanceResult = await api.query.Assets.Account.getValue(asset_id, accountId);
+        console.log(`  ${label} (${accountId}) balance: ${assetBalanceResult?.balance ?? 0n}`);
+    } catch (error) {
+        console.log(`❌ ${label} (${accountId}) error:`, error?.message ?? error);
+    }
+}
+
+async function printTotalNativeSupply(api: any, label: string) {
+    try {
+        const totalIssuance = await api.query.Balances.TotalIssuance.getValue();
+        console.log(`  ${label} total native supply: ${totalIssuance}`);
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
+async function printTotalNativeAssetSupply(api: any, assetId: number, label: string) {
+    try {
+        const assetData = await api.query.Assets.Asset.getValue(assetId);
+        console.log(`  ${label} total native asset supply: ${assetData.supply}`);
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
+async function printTotalForeignAssetSupply(api: any, location: any, label: string) {
+    try {
+        const assetData = await api.query.ForeignAssets.Asset.getValue(location);
+        console.log(`  ${label} total native asset supply: ${assetData.supply}`);
+    } catch (error) {
+        console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
 
 async function checkAssetConversions() {
     console.log("Checking asset conversions on various DEXes...");
@@ -283,6 +428,8 @@ async function checkAssetConversions() {
         checkAssetConversionOn(kahApi, ITK_FROM_SIBLING, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on KAH"),
         checkAssetConversionOn(kahApi, DOT_FROM_COUSIN_PARACHAINS, KSM_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerKsm / usdPerDot, Number(DOT_UNITS) / Number(KSM_UNITS), toleranceFactor, "DOT per KSM on KAH"),
         checkAssetConversionOn(pahApi, ITP_FROM_SIBLING, DOT_FROM_SIBLING_PARACHAINS, referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on PAH"),
+        checkAssetConversionOn(itpApi, Enum("Native"), Enum("WithId", 0), referenceAmount, usdPerDot / usdPerTeer, Number(TEER_UNITS) / Number(DOT_UNITS), toleranceFactor, "TEER PER DOT on ITP"),
+        checkAssetConversionOn(itkApi, Enum("Native"), Enum("WithId", 0), referenceAmount, usdPerKsm / usdPerTeer, Number(TEER_UNITS) / Number(KSM_UNITS), toleranceFactor, "TEER PER KSM on ITK"),
     ]);
 }
 
@@ -297,5 +444,18 @@ async function checkAssetConversionOn(api: any, inLocation: any, outLocation: an
         }
     } catch (error) {
         console.log(`❌ ${label} error:`, error?.message ?? error);
+    }
+}
+
+async function checkReasonablePorteerXcmFeeParams(api: any, label: string) {
+    try {
+        const fees = await api.query.Porteer.XcmFeeConfig.getValue();
+        if ((fees.hop1 > 0n) && (fees.hop2 > 0n) && (fees.hop3 > 0n) && (fees.local_equivalent_sum > 0n)) {
+            console.log(`✅ ${label}: hop1: ${fees.hop1.toString()}, hop2: ${fees.hop2.toString()}, hop3: ${fees.hop3.toString()}, local_equivalent_sum: ${fees.local_equivalent_sum.toString()}`);
+        } else {
+            console.log(`❌ ${label} has unreasonable values: hop1: ${fees.hop1.toString()}, hop2: ${fees.hop2.toString()}, hop3: ${fees.hop3.toString()}, local_equivalent_sum: ${fees.local_equivalent_sum.toString()}`)
+        }
+    } catch (e) {
+        console.error(e);
     }
 }

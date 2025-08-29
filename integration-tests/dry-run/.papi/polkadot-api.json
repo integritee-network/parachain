@@ -5,14 +5,14 @@
     "dot": {
       "wsUrl": "ws://localhost:9942",
       "metadata": ".papi/metadata/dot.scale",
-      "genesis": "0x5323f62f5d1406dc3a23a46a7afc38d4eb4ea0288a14f580dbc9dbeb8549bbb8",
-      "codeHash": "0x2705b8a8fc608fd44912d23ebea8c4fbb3a9817c5bfc38bd4c89ae2126a29d82"
+      "genesis": "0x6c8ab43473cd6b3a401ceea649ca9e00694894583c74b89010a56107485aee19",
+      "codeHash": "0xea6404a29b4e4f41fcd46c3a39b1b003c51ce2625a211e08ec0dd2c3da2cef9a"
     },
     "ksm": {
       "wsUrl": "ws://localhost:9945",
       "metadata": ".papi/metadata/ksm.scale",
-      "genesis": "0x4f72b7848b2d44cb8f64beb990e801f4be47cff8573872e1a9821d6693135d5b",
-      "codeHash": "0x4df2db32490f85e6ec69d135faa8d96e6fa8e7087a39deed70710af62bdfebac"
+      "genesis": "0x7174ab280914afc3cc722b2b77284aab1fa95618de256a0448b552898dfe1d30",
+      "codeHash": "0xf97c2a20fb37a81cc1d0a1a780a61525338d00f25a8a342b7dcec517feec0091"
     },
     "kah": {
       "wsUrl": "http://localhost:9010",
@@ -23,8 +23,8 @@
     "kbh": {
       "wsUrl": "ws://localhost:8945",
       "metadata": ".papi/metadata/kbh.scale",
-      "genesis": "0xcb80982f5b6756fc971d1ab6ea51011a57088452755ac6d7fb60ffc418b2bcfc",
-      "codeHash": "0xd5c30bef2c87523c97c7001fb90621cf85b5405389533a161138ae64378d0068"
+      "genesis": "0xb56732a5fe141d7c84327bbeefbdea752fd0930c859ed07451c7cd2a599ae764",
+      "codeHash": "0xe591592e3fda9169a1782c8102516e40cfc3ae6893bae4c51036961528d32c0e"
     },
     "pah": {
       "wsUrl": "http://localhost:9910",
@@ -35,24 +35,26 @@
     "pbh": {
       "wsUrl": "ws://localhost:8943",
       "metadata": ".papi/metadata/pbh.scale",
-      "genesis": "0x29ff5fc579dbf43266b9ed1461d4d5f27f099beaea4060948fffd1c9ba1553eb",
-      "codeHash": "0xa5a334094175d2ce1a3efc7bbd4a49ca86cc44cc143c93e6319c04d8cc0c93c8"
+      "genesis": "0x4dcd9d91db0055043c18e9000317c7eb0cfad7311859a6842720ba75c0b68624",
+      "codeHash": "0xc4a186b74f5f642d9d96b6ae8b61d79c7ab4c56647edb34c41f80ff902305b49"
     },
     "ppeople": {
       "chain": "polkadot_people",
-      "metadata": ".papi/metadata/ppeople.scale"
+      "metadata": ".papi/metadata/ppeople.scale",
+      "genesis": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
+      "codeHash": "0xd05d6b6d1a9bb0cdd0f472a6fab2685aa84fc5203911b7fab132fd10b1867562"
     },
     "itk": {
       "wsUrl": "http://localhost:9144",
       "metadata": ".papi/metadata/itk.scale",
-      "genesis": "0x99e8e379450ad3021e422b0b1cb26df426942f069a30806583b0371c9d45350d",
-      "codeHash": "0xa746f0c0ad4c49885d4d6e32abec9bb2a4ce3d94d9c7a4a98350d8eced197c15"
+      "genesis": "0x133ca424c3cbad393ca3e8eb5c8ad6776f54d39008e95f500b7887fdac41de81",
+      "codeHash": "0xbd9b74166900d1c9fb0a80a5345b2eb31337bcf4410f4e20853b3c86db220575"
     },
     "itp": {
       "wsUrl": "http://localhost:9244",
       "metadata": ".papi/metadata/itp.scale",
-      "genesis": "0xc805e01fb14bb05fc68175c566bf9f132c4f5e196b129499b1e52e5d383f352c",
-      "codeHash": "0x029bd0cd0630a09ef925f6d0c619bca3a73baaeca067bc6cf1a678b230f7cf1a"
+      "genesis": "0x88ad11886429dab31ef26cc16b9d1d93cad0be7c515beae79a26fa217182fa34",
+      "codeHash": "0xcbac0355ba6b8416bed82807bd65813fc3839046312ef02a1a6abc820067ef50"
     }
   }
 }

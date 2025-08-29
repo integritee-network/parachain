@@ -554,14 +554,14 @@ case "$1" in
               "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } }')" \
               $XCM_VERSION
       echo "Creating asset for KSM token on IntegriteeKusama"
-      # create sufficient asset for KSM token
+      # create sufficient asset for KSM token. we need Alice to own the asset for later minting
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9144" \
           --seed "//Alice" \
           --sudo \
           tx.assets.forceCreate \
               "0" \
-              "2L44Bkyt9uJDvu1HE71So8DiJcZxLzG6euhLBApX6TQK71kZ" \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH" \
               "true" \
               "$AHP_KSM_ED" \
       # force metadata KSM token
@@ -583,6 +583,13 @@ case "$1" in
           tx.assetRegistry.registerReserveAsset \
               "0" \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+      # create a TEER/DOT pool on IK
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          tx.assetConversion.createPool \
+              "$(jq --null-input '{ "Native" }')" \
+              "$(jq --null-input '{ "WithId": 0 }')" \
       # create a TEER/KSM pool on KAH
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9010" \
@@ -590,18 +597,40 @@ case "$1" in
           tx.assetConversion.createPool \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2015 }]}}')" \
-      # send 1000 KSM to IK Alice for initial fees and liq
-      limited_reserve_transfer_assets \
-          "ws://127.0.0.1:9010" \
-          "//Alice" \
-          "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2015 } ] } } }')" \
-          "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '1000000000000000' } } ] }')" \
-          0 \
-          "Unlimited"
-      # here we need to wait until funds arrive, not only until inBlock
-      echo "Waiting for funds to arrive on IK"
-      sleep 30
+#      # send 1000 KSM to IK Alice for initial fees and liq (this won't work due to a bootstrapping deadlock:
+#      ##      # we can't pay fees in DOT on ITP before filling the Pool, but we can't fill the pool without sendinfg DOT first
+#      limited_reserve_transfer_assets \
+#          "ws://127.0.0.1:9010" \
+#          "//Alice" \
+#          "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2015 } ] } } }')" \
+#          "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+#          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '1000000000000000' } } ] }')" \
+#          0 \
+#          "Unlimited"
+#      # here we need to wait until funds arrive, not only until inBlock
+#      echo "Waiting for funds to arrive on IK"
+#      sleep 30
+
+      # instead, mint 1000 KSM on IK for Alice to keep it simple
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          tx.assets.mint \
+              "0" \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH" \
+              "1000000000000000"
+      # provide liquidity to TEER/KSM pool on IK @ 50TEER = 1KSM (5000 TEER = 100KSM)
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9144" \
+          --seed "//Alice" \
+          tx.assetConversion.addLiquidity \
+              "$(jq --null-input '{ "Native" }')" \
+              "$(jq --null-input '{ "WithId": 0 }')" \
+              "5000000000000000" \
+              "100000000000000" \
+              "1" \
+              "1" \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"
       # send 9000 TEER to KAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9144" \
@@ -654,7 +683,7 @@ case "$1" in
           --seed "//Alice" \
           --sudo \
           tx.porteer.setXcmFeeParams \
-              "$(jq --null-input '{ "hop1": 33000000000000, "hop2": 3000000000000, "hop3": 1000000000000 }')"
+              "$(jq --null-input '{ "local_equivalent_sum": 42, "hop1": 33000000000000, "hop2": 3000000000000, "hop3": 1000000000000 }')"
       ;;
   init-integritee-polkadot-local)
       # SA of sibling asset hub pays for the inwards execution
@@ -701,14 +730,14 @@ case "$1" in
               "$(jq --null-input '{ "parents": 1, "interior": { "X1": [ { "Parachain": 1000 } ] } }')" \
               $XCM_VERSION
       echo "Creating asset for DOT token on IntegriteePolkadot"
-      # create sufficient asset for DOT token
+      # create sufficient asset for DOT token. we need Alice to own the asset for later minting
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9244" \
           --seed "//Alice" \
           --sudo \
           tx.assets.forceCreate \
               "0" \
-              "2Li4fsP2bHBbSwpa2rgaswP22Kpqpr4uLyzbuym2Kc82v6oG" \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH" \
               "true" \
               "$AHK_DOT_ED" \
       # force metadata DOT token
@@ -730,6 +759,13 @@ case "$1" in
           tx.assetRegistry.registerReserveAsset \
               "0" \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
+      # create a TEER/DOT pool on IP
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          tx.assetConversion.createPool \
+              "$(jq --null-input '{ "Native" }')" \
+              "$(jq --null-input '{ "WithId": 0 }')" \
       # create a TEER/DOT pool on PAH
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9910" \
@@ -737,18 +773,36 @@ case "$1" in
           tx.assetConversion.createPool \
               "$(jq --null-input '{ "parents": 1, "interior": "Here"}')" \
               "$(jq --null-input '{ "parents": 1, "interior": { "x1": [{ "parachain": 2039 }]}}')" \
-      # send 1000 DOT to IP Alice for initial fees and liq
-      limited_reserve_transfer_assets \
-          "ws://127.0.0.1:9910" \
-          "//Alice" \
-          "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } } }')" \
-          "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
-          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
-          0 \
-          "Unlimited"
-      # here we need to wait until funds arrive, not only until inBlock
-      echo "Waiting for funds to arrive on IP"
-      sleep 30
+#      # send 1000 DOT to IP Alice for initial fees and liq (this won't work due to a bootstrapping deadlock:
+#      # we can't pay fees in DOT on ITP before filling the Pool, but we can't fill the pool without sendinfg DOT first
+#      limited_reserve_transfer_assets \
+#          "ws://127.0.0.1:9910" \
+#          "//Alice" \
+#          "$(jq --null-input '{ "V4": { "parents": 1, "interior": { "X1": [ { "Parachain": 2039 } ] } } }')" \
+#          "$(jq --null-input '{ "V4": { "parents": 0, "interior": { "X1": [ { "AccountId32": { "id": [212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125] } } ] } } }')" \
+#          "$(jq --null-input '{ "V4": [ { "id": { "parents": 1, "interior": "Here" }, "fun": { "Fungible": '10000000000000' } } ] }')" \
+#          0 \
+#          "Unlimited"
+      # instead, mint 1000 DOT on IP for Alice to keep it simple
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          tx.assets.mint \
+              "0" \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH" \
+              "10000000000000"
+      # provide liquidity to TEER/DOT pool on IP @ 20TEER = 1 DOT (5000 TEER = 250 DOT)
+      call_polkadot_js_api \
+          --ws "ws://127.0.0.1:9244" \
+          --seed "//Alice" \
+          tx.assetConversion.addLiquidity \
+              "$(jq --null-input '{ "Native" }')" \
+              "$(jq --null-input '{ "WithId": 0 }')" \
+              "5000000000000000" \
+              "2500000000000" \
+              "1" \
+              "1" \
+              "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"
       # send 9000 TEER to PAH Alice for pool
       call_polkadot_js_api \
           --ws "ws://127.0.0.1:9244" \
@@ -801,7 +855,7 @@ case "$1" in
           --seed "//Alice" \
           --sudo \
           tx.porteer.setXcmFeeParams \
-              "$(jq --null-input '{ "hop1": 10000000000000, "hop2": 10000000000, "hop3": 200000000000 }')"
+              "$(jq --null-input '{ "local_equivalent_sum": 42, "hop1": 10000000000000, "hop2": 10000000000, "hop3": 200000000000 }')"
       ;;
   reserve-transfer-assets-from-asset-hub-polkadot-local)
       amount=$2
