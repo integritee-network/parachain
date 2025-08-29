@@ -58,8 +58,9 @@ const WATCHDOG_ACCOUNT = "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // 
 // if false, we assume zombienet
 const CHOPSTICKS: boolean = false;
 
-//const DIRECTION = "IK>IP";
-const DIRECTION = "IP>IK";
+const DIRECTION = "IK>IP";
+//const DIRECTION = "IP>IK";
+
 const DIRECT_FORWARD = true;
 // safety factor to account for price fluctuations in asset swaps
 const MARGIN = 1.2;
@@ -266,16 +267,24 @@ const portPlanP2K = {
 }
 
 // The whole execution of the script.
-if (DIRECTION === "IK>IP") {
-    main(portPlanK2P);
-} else {
-    main(portPlanP2K);
-}
-
+main();
 
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
-async function main(plan: any) {
+async function main() {
+    const plan = (DIRECTION === "IK>IP") ? portPlanK2P : portPlanP2K;
+    const forwardingLocation = DIRECT_FORWARD ? plan.destinationAH.native_from_sibling : undefined;
+    await run(plan, forwardingLocation);
+    // if we reach this point, the test was successful and the bridge is confirmed to be operational
+    const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
+    const signer = getWatchdogSigner();
+    console.log("sending watchdog heartbeat after successful test....")
+    const result = await heartbeatTx.signAndSubmit(signer);
+    console.dir(stringify(result.txHash));
+    await plan.destroy();
+}
+
+async function run(plan: any, forwardingLocation: any) {
     // The amount of TEER we wish to teleport besides paying fees.
     const transferAmount = 1000000000000n;
 
@@ -367,8 +376,6 @@ async function main(plan: any) {
     });
     console.log(`${plan.source.name} encoded suggested call to set updated fees on source chain (to propose to TC / PorteerAdmin): `, (await setFeesTx.getEncodedData()).asHex());
     console.log(`${plan.source.name} encoded proposal to TC (to submit as member of TC): `, (await setFeesProposalTx.getEncodedData()).asHex());
-
-    await plan.destroy();
 }
 
 // Helper function to convert bigints to strings and binaries to hex strings in objects.
@@ -732,20 +739,6 @@ async function estimateFees(
     return [equivalentRemoteFeesInTeer, sourceAHFeesInTeer, destinationAHFeesInSourceAHNative, destinationFeesInDestinationRelayNative + deliveryFeesToDestinationInDestinationAHNative];
 }
 
-// Just a helper function to get a signer for ALICE.
-function getAliceSigner(): PolkadotSigner {
-    const entropy = mnemonicToEntropy(DEV_PHRASE);
-    const miniSecret = entropyToMiniSecret(entropy);
-    const derive = sr25519CreateDerive(miniSecret);
-    const hdkdKeyPair = derive("//Alice");
-    const aliceSigner = getPolkadotSigner(
-        hdkdKeyPair.publicKey,
-        "Sr25519",
-        hdkdKeyPair.sign,
-    );
-    return aliceSigner;
-}
-
 function printEvents(events: any) {
     for (const event of events) {
         const type = event.type;
@@ -762,4 +755,17 @@ function printEvents(events: any) {
 
 function stringifyJsonWithBigInt(obj: any): string {
     return JSON.stringify(obj, (_, v) => typeof v === "bigint" ? v.toString() : v);
+}
+
+function getWatchdogSigner(): PolkadotSigner {
+    const entropy = mnemonicToEntropy(DEV_PHRASE);
+    const miniSecret = entropyToMiniSecret(entropy);
+    const derive = sr25519CreateDerive(miniSecret);
+    const hdkdKeyPair = derive("//Alice");
+    const aliceSigner = getPolkadotSigner(
+        hdkdKeyPair.publicKey,
+        "Sr25519",
+        hdkdKeyPair.sign,
+    );
+    return aliceSigner;
 }
