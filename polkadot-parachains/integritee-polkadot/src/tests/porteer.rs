@@ -15,20 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Integritee parachain.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{
-	porteer::IntegriteeKusamaLocation, xcm_config::XcmConfig, Balances,
-	IntegriteeKusamaSovereignAccount, Porteer, RuntimeCall, TEER,
-};
-use frame_support::{__private::sp_tracing, dispatch::RawOrigin, traits::Currency};
+use crate::{porteer::IntegriteeKusamaLocation, IntegriteeKusamaSovereignAccount, RuntimeCall};
 use integritee_parachains_common::porteer::integritee_runtime_porteer_mint;
-use pallet_porteer::PorteerConfig;
 use parity_scale_codec::{Decode, Encode};
-use xcm::{
-	latest::{Asset, AssetFilter, ExecuteXcm, Junctions, OriginKind, Weight, WildAsset, Xcm},
-	prelude::{DepositAsset, PayFees, RefundSurplus, SetAppendix, Transact, WithdrawAsset},
-	v5::Outcome,
-};
-use xcm_executor::{traits::ConvertLocation, XcmExecutor};
+use xcm_executor::traits::ConvertLocation;
 
 #[test]
 fn ik_porteer_sovereign_account_matches() {
