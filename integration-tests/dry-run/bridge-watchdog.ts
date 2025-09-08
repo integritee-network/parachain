@@ -56,10 +56,10 @@ const IP_PARA_ID = 2039;
 const WATCHDOG_ACCOUNT = "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // Alice
 
 // if false, we assume zombienet
-const CHOPSTICKS: boolean = false;
+const CHOPSTICKS: boolean = true;
 
-const DIRECTION = "IK>IP";
-//const DIRECTION = "IP>IK";
+//const DIRECTION = "IK>IP";
+const DIRECTION = "IP>IK";
 
 const DIRECT_FORWARD = true;
 // safety factor to account for price fluctuations in asset swaps
@@ -304,8 +304,8 @@ async function run(plan: any, forwardingLocation: any) {
     const teerPerSourceAHNative = Number(destinationAHFeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
     console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNative, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
 
-    const referenceAmountSourceAHNative = 100000000000n;
-    const destinationFeesHighEstimateSourceAHNativeConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountSourceAHNative, true);
+    const referenceAmountSourceAHNative = plan.sourceAH.native_units / 10n;
+    const destinationFeesHighEstimateSourceAHNativeConverted = await plan.destinationAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountSourceAHNative, true);
     const sourceAHNativePerDestinationAHNative = Number(destinationFeesHighEstimateSourceAHNativeConverted) / Number(referenceAmountSourceAHNative)
     console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, destinationFeesHighEstimateSourceAHNativeConverted, " in ", referenceAmountSourceAHNative, ` ${plan.sourceAH.native_symbol}. price: `, sourceAHNativePerDestinationAHNative / 100.0, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
 
@@ -758,6 +758,20 @@ function stringifyJsonWithBigInt(obj: any): string {
 }
 
 function getWatchdogSigner(): PolkadotSigner {
+    const entropy = mnemonicToEntropy(DEV_PHRASE);
+    const miniSecret = entropyToMiniSecret(entropy);
+    const derive = sr25519CreateDerive(miniSecret);
+    const hdkdKeyPair = derive("//Alice");
+    const aliceSigner = getPolkadotSigner(
+        hdkdKeyPair.publicKey,
+        "Sr25519",
+        hdkdKeyPair.sign,
+    );
+    return aliceSigner;
+}
+
+// Just a helper function to get a signer for ALICE.
+function getAliceSigner(): PolkadotSigner {
     const entropy = mnemonicToEntropy(DEV_PHRASE);
     const miniSecret = entropyToMiniSecret(entropy);
     const derive = sr25519CreateDerive(miniSecret);
