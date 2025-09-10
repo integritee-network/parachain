@@ -2,7 +2,7 @@
 name = "bridge-hub-ik-ip-integration-tests"
 authors.workspace = true
 edition.workspace = true
-version = "1.18.0"
+version = "1.18.2"
 license = "Apache-2.0"
 description = "Bridge Hub Kusama runtime integration tests with xcm-emulator"
 publish = false

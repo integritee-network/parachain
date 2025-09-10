@@ -1956,7 +1956,7 @@ dependencies = [
 
 [[package]]
 name = "bridge-hub-ik-ip-integration-tests"
-version = "1.18.0"
+version = "1.18.2"
 dependencies = [
  "bp-bridge-hub-kusama",
  "bp-messages",
@@ -2517,7 +2517,7 @@ dependencies = [
 [[package]]
 name = "claims-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "parity-scale-codec",
  "rustc-hex",
@@ -2663,7 +2663,7 @@ checksum = "2382f75942f4b3be3690fe4f86365e9c853c1587d6ee58212cebf6e2a9ccd101"
 [[package]]
 name = "common-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "derive_more 0.99.17",
  "parity-scale-codec",
@@ -4362,7 +4362,7 @@ dependencies = [
 [[package]]
 name = "enclave-bridge-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "common-primitives",
  "log",
@@ -4488,7 +4488,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -6361,7 +6361,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.18.1"
+version = "1.18.2"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -6425,7 +6425,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-kusama-emulated-chain"
-version = "1.18.0"
+version = "1.18.2"
 dependencies = [
  "cumulus-primitives-core",
  "emulated-integration-tests-common 21.1.0",
@@ -6443,7 +6443,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-kusama-runtime"
-version = "1.18.561"
+version = "1.18.562"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -6565,7 +6565,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-polkadot-emulated-chain"
-version = "1.18.0"
+version = "1.18.2"
 dependencies = [
  "cumulus-primitives-core",
  "emulated-integration-tests-common 21.1.0",
@@ -6583,7 +6583,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-polkadot-runtime"
-version = "1.18.561"
+version = "1.18.562"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -7003,7 +7003,7 @@ dependencies = [
 
 [[package]]
 name = "kusama-polkadot-system-emulated-network"
-version = "1.18.0"
+version = "1.18.2"
 dependencies = [
  "asset-hub-kusama-emulated-chain",
  "asset-hub-polkadot-emulated-chain",
@@ -8824,7 +8824,7 @@ dependencies = [
 [[package]]
 name = "pallet-asset-registry"
 version = "0.0.1"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -9174,7 +9174,7 @@ dependencies = [
 [[package]]
 name = "pallet-claims"
 version = "0.9.12"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "claims-primitives",
  "frame-benchmarking",
@@ -9339,7 +9339,7 @@ dependencies = [
 [[package]]
 name = "pallet-enclave-bridge"
 version = "0.12.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "enclave-bridge-primitives",
  "frame-benchmarking",
@@ -9725,7 +9725,7 @@ dependencies = [
 [[package]]
 name = "pallet-porteer"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -10008,7 +10008,7 @@ dependencies = [
 [[package]]
 name = "pallet-sidechain"
 version = "0.11.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "enclave-bridge-primitives",
  "frame-benchmarking",
@@ -10159,7 +10159,7 @@ dependencies = [
 [[package]]
 name = "pallet-teeracle"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -10185,7 +10185,7 @@ dependencies = [
 [[package]]
 name = "pallet-teerdays"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -10207,7 +10207,7 @@ dependencies = [
 [[package]]
 name = "pallet-teerex"
 version = "0.10.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -12724,7 +12724,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.10.5",
+ "itertools 0.11.0",
  "proc-macro2",
  "quote",
  "syn 2.0.98",
@@ -12877,7 +12877,7 @@ dependencies = [
  "once_cell",
  "socket2 0.5.10",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -13584,7 +13584,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -13597,7 +13597,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -15742,7 +15742,7 @@ dependencies = [
 [[package]]
 name = "sgx-verify"
 version = "0.1.4"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "base64 0.13.1",
  "chrono",
@@ -15850,7 +15850,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 [[package]]
 name = "sidechain-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -18180,7 +18180,7 @@ checksum = "1d2faeef5759ab89935255b1a4cd98e0baf99d1085e37d36599c625dac49ae8e"
 [[package]]
 name = "teeracle-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "common-primitives",
  "sp-std",
@@ -18190,7 +18190,7 @@ dependencies = [
 [[package]]
 name = "teerdays-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -18202,7 +18202,7 @@ dependencies = [
 [[package]]
 name = "teerex-primitives"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "common-primitives",
  "derive_more 0.99.17",
@@ -18256,7 +18256,7 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 [[package]]
 name = "test-utils"
 version = "0.1.0"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "log",
  "sgx-verify",
@@ -20278,7 +20278,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.0.1"
-source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#d38b4b0a67e921b74ba55f6260a2fcd0deaa2a39"
+source = "git+https://github.com/integritee-network/pallets.git?branch=polkadot-stable2503-6#c3ac6c138b180f310d7b8c01f36c72264d972745"
 dependencies = [
  "frame-support",
  "sp-runtime",

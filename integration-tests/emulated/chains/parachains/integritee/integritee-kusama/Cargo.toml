@@ -2,7 +2,7 @@
 name = "integritee-kusama-emulated-chain"
 authors.workspace = true
 edition.workspace = true
-version = "1.18.0"
+version = "1.18.2"
 license = "Apache-2.0"
 description = "Integritee Kusama emulated chain used for integration tests"
 publish = false
