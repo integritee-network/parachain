@@ -114,3 +114,11 @@ polkadot_dir=`cat $TEST_DIR/polkadot.env`
 kusama_dir=`cat $TEST_DIR/kusama.env`
 run_zndsl ../../tests/0001-polkadot-kusama-asset-transfer/ksm-reaches-polkadot.zndsl $polkadot_dir
 ```
+
+### AHM hacks
+
+While we're in lockdown for `transferAssets` for asset hub migration, the following calls must be executed manually to
+transfer TEER to AH:
+
+* [Alice sends 9000 TEER from IP to PAH](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9244#/extrinsics/decode/0x1f0d05010100a10f05080000000f0080faca73f91f0100000700e40b5402000501000205040d010000010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d00)
+* [and from IK to KAH](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9144#/extrinsics/decode/0x1f0d05010100a10f05080000000f0080faca73f91f0100000700e8764817000501000205040d010000010100d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d00)
