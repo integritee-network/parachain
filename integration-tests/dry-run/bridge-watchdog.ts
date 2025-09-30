@@ -30,6 +30,21 @@ import {
     XcmV5AssetFilter, XcmV5WildAsset
 } from "@polkadot-api/descriptors";
 import {
+    DOT_FROM_KUSAMA_PARACHAINS,
+    DOT_FROM_POLKADOT_PARACHAINS,
+    DOT_UNITS,
+    IK_PARA_ID, IP_PARA_ID,
+    ITK_FROM_COUSIN,
+    ITK_FROM_SIBLING,
+    ITP_FROM_COUSIN, ITP_FROM_SIBLING, KAH_FROM_KUSAMA_PARACHAINS,
+    KAH_FROM_POLKADOT_PARACHAINS, KAH_PARA_ID, KSM_FROM_KUSAMA_PARACHAINS, KSM_FROM_POLKADOT_PARACHAINS, KSM_UNITS,
+    PAH_FROM_KUSAMA_PARACHAINS,
+    PAH_FROM_POLKADOT_PARACHAINS,
+    PAH_PARA_ID,
+    TEER_FROM_SELF,
+    TEER_UNITS
+} from "./constants.ts";
+import {
     createClient,
     Enum,
     Binary,
@@ -93,10 +108,6 @@ const ENDPOINTS = argv.live ? LIVE : (argv.chopsticks ? CHOPSTICKS : ZOMBIENET);
 const WATCHDOG_MNEMONIC = argv.mnemonic || process.env.TEER_BRIDGE_WATCHDOG_MNEMONIC || DEV_PHRASE;
 
 // Useful constants.
-const KAH_PARA_ID = 1000;
-const PAH_PARA_ID = 1000;
-const IK_PARA_ID = 2015;
-const IP_PARA_ID = 2039;
 const WATCHDOG_ACCOUNT = (ENDPOINTS === LIVE)
     ? AccountId().dec(getWatchdogSigner().publicKey)
     : "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // Alice
@@ -129,74 +140,10 @@ const IP_WS_URL = ENDPOINTS === LIVE
         ? "ws://localhost:8003"
         : "ws://localhost:9244";
 
-const PAH_FROM_KAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-const KAH_FROM_PAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
 
 // XCM.
 const XCM_VERSION = 5;
 
-const TEER_UNITS = 1_000_000_000_000n;
-const KSM_UNITS = 1_000_000_000_000n;
-const DOT_UNITS = 10_000_000_000n;
-
-const KSM_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const KSM_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
-};
-const KAH_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
-};
-const KAH_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
-const DOT_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const DOT_FROM_KUSAMA_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
-};
-const PAH_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
-};
-const PAH_FROM_KUSAMA_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-const TEER_FROM_SELF = {
-    parents: 0,
-    interior: XcmV5Junctions.Here(),
-};
-const ITK_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
-};
-const ITK_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IK_PARA_ID)]),
-};
-const ITP_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
-};
-const ITP_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
-};
 
 // Setup clients...
 const pahClient = createClient(
