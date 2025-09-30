@@ -63,6 +63,9 @@ import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 import {startPrometheusMetrics, accountBalanceGauge} from "./prometheus";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const argv = yargs(hideBin(process.argv))
     .option("live", {type: "boolean", description: "Use live endpoints"})
