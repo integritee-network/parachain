@@ -7,6 +7,12 @@ export const accountBalanceGauge = new Gauge({
     labelNames: ["name", "address", "chain", "asset"],
 });
 
+export const assetSupplyGauge = new Gauge({
+    name: "asset_supply",
+    help: "total supply of an asset on a chain",
+    labelNames: ["chain", "asset"],
+});
+
 export const assetConversionGauge = new Gauge({
     name: "asset_conversion_price",
     help: "DEX price of a pair ona a chain",

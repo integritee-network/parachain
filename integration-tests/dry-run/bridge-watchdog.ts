@@ -62,7 +62,7 @@ import {
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
-import {startPrometheusMetrics, accountBalanceGauge, assetConversionGauge} from "./prometheus";
+import {startPrometheusMetrics, accountBalanceGauge, assetConversionGauge, assetSupplyGauge} from "./prometheus";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -842,6 +842,7 @@ async function collectBalanceMetrics(plan: any) {
         collectLocationNativeBalanceMetric(plan.sourceAH.api, `${plan.source.name} sovereign`, plan.source.native_symbol, plan.sourceAH.name, XcmVersionedLocation.V5(plan.source.native_from_sibling), XcmVersionedLocation.V5(plan.source.native_from_sibling)),
         collectLocationNativeBalanceMetric(plan.destinationAH.api, `${plan.source.name} sovereign`, plan.sourceAH.native_symbol, plan.destinationAH.name, XcmVersionedLocation.V5(plan.source.native_from_cousin), XcmVersionedLocation.V5(plan.sourceAH.native_from_cousin)),
         collectLocationNativeBalanceMetric(plan.destination.api, `${plan.source.name} sovereign`, plan.destinationAH.native_symbol, plan.destination.name, XcmVersionedLocation.V5(plan.source.native_from_cousin), undefined, 0),
+        collectSupplyMetrics(),
     ]);
 }
 
@@ -878,6 +879,38 @@ async function collectLocationNativeBalanceMetric(api: any, name: string, asset:
         } else {
             console.error(`❌ failed to convert location to account ID:`, accountIdResult);
         }
+    } catch (error) {
+        console.error(`❌ error:`, error?.message ?? error);
+    }
+}
+
+async function collectSupplyMetrics() {
+    try {
+        let chain = "ITK";
+        let asset = "TEER";
+        let totalIssuance = await itkApi.query.Balances.TotalIssuance.getValue();
+        let humanTotalIssuance = tokenBalanceToNumber(totalIssuance, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+        chain = "ITP";
+        totalIssuance = await itpApi.query.Balances.TotalIssuance.getValue();
+        humanTotalIssuance = tokenBalanceToNumber(totalIssuance, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+        chain = "KAH";
+        totalIssuance = await kahApi.query.ForeignAssets.Asset.getValue(ITK_FROM_SIBLING);
+        humanTotalIssuance = tokenBalanceToNumber(totalIssuance.supply, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+        chain = "PAH";
+        totalIssuance = await pahApi.query.ForeignAssets.Asset.getValue(ITP_FROM_SIBLING);
+        humanTotalIssuance = tokenBalanceToNumber(totalIssuance.supply, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
     } catch (error) {
         console.error(`❌ error:`, error?.message ?? error);
     }
