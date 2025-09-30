@@ -14,6 +14,7 @@
     "@polkadot-api/substrate-bindings": "0.14.0",
     "@polkadot-labs/hdkd": "^0.0.17",
     "@polkadot-labs/hdkd-helpers": "^0.0.17",
-    "polkadot-api": "^1.14.0"
+    "polkadot-api": "^1.14.0",
+    "yargs": "^18.0.0"
   }
 }

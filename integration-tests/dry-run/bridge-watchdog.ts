@@ -40,45 +40,94 @@ import {
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
 import {getPolkadotSigner} from "polkadot-api/signer";
+import {AccountId, SS58String} from "@polkadot-api/substrate-bindings";
 import {
     DEV_PHRASE,
     entropyToMiniSecret,
     mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
-import {take} from "rxjs"
+import yargs from "yargs";
+import {hideBin} from "yargs/helpers";
+
+const argv = yargs(hideBin(process.argv))
+    .option("live", {type: "boolean", description: "Use live endpoints"})
+    .option("chopsticks", {type: "boolean", description: "Use chopsticks endpoints"})
+    .option("zombienet", {type: "boolean", description: "Use zombienet endpoints"})
+    .option("margin", {
+        type: "number",
+        description: "Margin safety factor for price fluctuations in asset swaps",
+        default: 1.2
+    })
+    .option("direction", {
+        type: "string",
+        description: "Direction of transfer: IK>IP or IP>IK",
+        choices: ["K2P", "P2K"],
+        default: "K2P"
+    })
+    .option("mnemonic", {type: "string", description: "Mnemonic for watchdog account"})
+    .option("heartbeat", {
+        type: "boolean",
+        description: "Enable sending a heartbeat if bridging simulation is successful"
+    })
+    .conflicts({
+        live: ["chopsticks", "zombienet"],
+        chopsticks: ["live", "zombienet"],
+        zombienet: ["live", "chopsticks"]
+    })
+    .check((argv) => {
+        if (!argv.live && !argv.chopsticks && !argv.zombienet) {
+            throw new Error("One of --live, --chopsticks, or --zombienet must be specified");
+        }
+        return true;
+    })
+    .argv;
+
+const LIVE: number = 0;
+const CHOPSTICKS: number = 1;
+const ZOMBIENET: number = 2;
+const ENDPOINTS = argv.live ? LIVE : (argv.chopsticks ? CHOPSTICKS : ZOMBIENET);
+
+// Use ENDPOINTS and MNEMONIC in your logic below
+
+const WATCHDOG_MNEMONIC = argv.mnemonic || process.env.TEER_BRIDGE_WATCHDOG_MNEMONIC || DEV_PHRASE;
 
 // Useful constants.
 const KAH_PARA_ID = 1000;
 const PAH_PARA_ID = 1000;
 const IK_PARA_ID = 2015;
 const IP_PARA_ID = 2039;
-const WATCHDOG_ACCOUNT = "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // Alice
+const WATCHDOG_ACCOUNT = (ENDPOINTS === LIVE)
+    ? AccountId().dec(getWatchdogSigner().publicKey)
+    : "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // Alice
 
-// if false, we assume zombienet
-const CHOPSTICKS: boolean = true;
-
-//const DIRECTION = "IK>IP";
-const DIRECTION = "IP>IK";
+const DIRECTION = argv.direction
 
 const DIRECT_FORWARD = true;
-// safety factor to account for price fluctuations in asset swaps
-const MARGIN = 1.2;
 
-// We're running against chopsticks with wasm-override to get XCMv5 support.
-// `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
-const KAH_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8000"
-    : "ws://localhost:9010";
-const IK_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8001"
-    : "ws://localhost:9144"
-const PAH_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8002"
-    : "ws://localhost:9910"
-const IP_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8003"
-    : "ws://localhost:9244"
+// safety factor to account for price fluctuations in asset swaps
+const MARGIN = argv.margin ? argv.margin : 1.2;
+
+const KAH_WS_URL = ENDPOINTS === LIVE
+    ? "wss://sys.ibp.network/asset-hub-kusama"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8000"
+        : "ws://localhost:9010";
+const IK_WS_URL = ENDPOINTS === LIVE
+    ? "wss://kusama.api.integritee.network"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8001"
+        : "ws://localhost:9144";
+const PAH_WS_URL = ENDPOINTS === LIVE
+    ? "wss://sys.ibp.network/asset-hub-polkadot"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8002"
+        : "ws://localhost:9910";
+const IP_WS_URL = ENDPOINTS === LIVE
+    ? "wss://polkadot.api.integritee.network"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8003"
+        : "ws://localhost:9244";
 
 const PAH_FROM_KAH = {
     parents: 2,
@@ -272,23 +321,26 @@ main();
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
-    const plan = (DIRECTION === "IK>IP") ? portPlanK2P : portPlanP2K;
+    const plan = (DIRECTION === "K2P") ? portPlanK2P : portPlanP2K;
     const forwardingLocation = DIRECT_FORWARD ? plan.destinationAH.native_from_sibling : undefined;
+    console.log(`Simulate bridging TEER from ${plan.source.name} to ${plan.destination.name} via ${plan.sourceAH.name} and ${plan.destinationAH.name} using watchdog account ${WATCHDOG_ACCOUNT} and margin ${MARGIN}`);
     await run(plan, forwardingLocation);
-    // if we reach this point, the test was successful and the bridge is confirmed to be operational
-    const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
-    const signer = getWatchdogSigner();
-    console.log("sending watchdog heartbeat after successful test....")
-    const result = await heartbeatTx.signAndSubmit(signer);
-    console.dir(stringify(result.txHash));
+    if (argv.heartbeat) {
+        // if we reach this point, the test was successful and the bridge is confirmed to be operational
+        const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
+        const signer = getWatchdogSigner();
+        console.log("sending watchdog heartbeat after successful test....")
+        const result = await heartbeatTx.signAndSubmit(signer);
+        console.dir(stringify(result.txHash));
+    }
     await plan.destroy();
 }
 
 async function run(plan: any, forwardingLocation: any) {
-    // The amount of TEER we wish to teleport besides paying fees.
+    // The amount of TEER we wish to bridge/teleport besides paying fees.
     const transferAmount = 1000000000000n;
 
-    if (CHOPSTICKS) {
+    if (ENDPOINTS === CHOPSTICKS) {
         const stx = await plan.source.api.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
         const signer = getAliceSigner();
         await stx.signAndSubmit(signer);
@@ -299,7 +351,7 @@ async function run(plan: any, forwardingLocation: any) {
         await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
-    const referenceAmountTeer = 1000000000000n;
+    const referenceAmountTeer = 100000000000n;
     const destinationAHFeesHighEstimateTeerConverted = await plan.sourceAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.source.native_from_sibling, plan.sourceAH.native_from_sibling, referenceAmountTeer, true);
     const teerPerSourceAHNative = Number(destinationAHFeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
     console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNative, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
@@ -346,7 +398,7 @@ async function run(plan: any, forwardingLocation: any) {
     const watchdogTx = plan.source.api.tx.Porteer.watchdog_heartbeat([]);
     const calls = [watchdogTx.decodedCall, portTokensTx.decodedCall];
     const batchTx = plan.source.api.tx.Utility.batch({calls: calls});
-    // console.log("tentative call on source chain (e.g. to try with chopsticks): ", batchTx.decodedCall);
+    //console.log("tentative call on source chain (e.g. to try with chopsticks): ", batchTx.decodedCall);
 
     console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await batchTx.getEncodedData()).asHex());
 
@@ -758,19 +810,19 @@ function stringifyJsonWithBigInt(obj: any): string {
 }
 
 function getWatchdogSigner(): PolkadotSigner {
-    const entropy = mnemonicToEntropy(DEV_PHRASE);
+    const entropy = mnemonicToEntropy(WATCHDOG_MNEMONIC);
     const miniSecret = entropyToMiniSecret(entropy);
     const derive = sr25519CreateDerive(miniSecret);
-    const hdkdKeyPair = derive("//Alice");
-    const aliceSigner = getPolkadotSigner(
+    const hdkdKeyPair = derive("");
+    const watchdogSigner = getPolkadotSigner(
         hdkdKeyPair.publicKey,
         "Sr25519",
         hdkdKeyPair.sign,
     );
-    return aliceSigner;
+    return watchdogSigner;
 }
 
-// Just a helper function to get a signer for ALICE.
+// Just a helper function to get a signer for ALICE. only needed for chopsticks
 function getAliceSigner(): PolkadotSigner {
     const entropy = mnemonicToEntropy(DEV_PHRASE);
     const miniSecret = entropyToMiniSecret(entropy);
