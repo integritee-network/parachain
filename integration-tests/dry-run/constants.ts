@@ -15,6 +15,12 @@ export const TEER_UNITS = 1_000_000_000_000n;
 export const KSM_UNITS = 1_000_000_000_000n;
 export const DOT_UNITS = 10_000_000_000n;
 
+export const tokenDecimals = {
+    TEER: 12,
+    KSM: 12,
+    DOT: 10,
+}
+
 export const KAH_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),

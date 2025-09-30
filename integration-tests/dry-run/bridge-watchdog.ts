@@ -42,16 +42,14 @@ import {
     PAH_FROM_SIBLING,
     PAH_PARA_ID,
     TEER_FROM_SELF,
-    TEER_UNITS
-} from "./constants.ts";
+    TEER_UNITS, tokenDecimals
+} from "./constants";
 import {
     createClient,
     Enum,
     Binary,
     type PolkadotSigner,
 } from "polkadot-api";
-// import from "polkadot-api/ws-provider/node"
-// if you are running in a NodeJS environment
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
 import {getPolkadotSigner} from "polkadot-api/signer";
@@ -64,6 +62,7 @@ import {
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
+import {startPrometheusMetrics, accountBalanceGauge} from "./prometheus";
 
 const argv = yargs(hideBin(process.argv))
     .option("live", {type: "boolean", description: "Use live endpoints"})
@@ -85,6 +84,8 @@ const argv = yargs(hideBin(process.argv))
         type: "boolean",
         description: "Enable sending a heartbeat if bridging simulation is successful"
     })
+    .option("prometheus-port", {type: "number", description: "Port to expose Prometheus metrics on", default: 9464})
+    .option("interval", {type: "number", description: "Interval between simulations in seconds"})
     .conflicts({
         live: ["chopsticks", "zombienet"],
         chopsticks: ["live", "zombienet"],
@@ -106,6 +107,7 @@ const ENDPOINTS = argv.live ? LIVE : (argv.chopsticks ? CHOPSTICKS : ZOMBIENET);
 // Use ENDPOINTS and MNEMONIC in your logic below
 
 const WATCHDOG_MNEMONIC = argv.mnemonic || process.env.TEER_BRIDGE_WATCHDOG_MNEMONIC || DEV_PHRASE;
+const INTERVAL = Number(argv.interval || process.env.TEER_BRIDGE_WATCHDOG_INTERVAL || 1620);
 
 // Useful constants.
 const WATCHDOG_ACCOUNT = (ENDPOINTS === LIVE)
@@ -166,6 +168,8 @@ const itpClient = createClient(
 );
 const itpApi = itpClient.getTypedApi(itp);
 
+startPrometheusMetrics(argv.prometheusPort);
+
 const portPlanK2P = {
     source: {
         api: itkApi,
@@ -203,6 +207,7 @@ const portPlanK2P = {
         name: "ITP",
         para_id: IP_PARA_ID,
         native_units: TEER_UNITS,
+        native_symbol: "TEER",
     },
     destroy: () => {
         return Promise.all([
@@ -251,6 +256,7 @@ const portPlanP2K = {
         name: "ITK",
         para_id: IK_PARA_ID,
         native_units: TEER_UNITS,
+        native_symbol: "TEER",
     },
     destroy: () => {
         return Promise.all([
@@ -270,15 +276,26 @@ main();
 async function main() {
     const plan = (DIRECTION === "K2P") ? portPlanK2P : portPlanP2K;
     const forwardingLocation = DIRECT_FORWARD ? plan.destinationAH.native_from_sibling : undefined;
-    console.log(`Simulate bridging TEER from ${plan.source.name} to ${plan.destination.name} via ${plan.sourceAH.name} and ${plan.destinationAH.name} using watchdog account ${WATCHDOG_ACCOUNT} and margin ${MARGIN}`);
-    await run(plan, forwardingLocation);
-    if (argv.heartbeat) {
-        // if we reach this point, the test was successful and the bridge is confirmed to be operational
-        const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
-        const signer = getWatchdogSigner();
-        console.log("sending watchdog heartbeat after successful test....")
-        const result = await heartbeatTx.signAndSubmit(signer);
-        console.dir(stringify(result.txHash));
+    while (true) {
+        console.log(`Simulate bridging TEER from ${plan.source.name} to ${plan.destination.name} via ${plan.sourceAH.name} and ${plan.destinationAH.name} using watchdog account ${WATCHDOG_ACCOUNT} and margin ${MARGIN}`);
+        try {
+            await collectBalanceMetrics(plan);
+            await run(plan, forwardingLocation);
+            if (argv.heartbeat) {
+                // if we reach this point, the test was successful and the bridge is confirmed to be operational
+                const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
+                const signer = getWatchdogSigner();
+                console.log("sending watchdog heartbeat after successful test....")
+                const result = await heartbeatTx.signAndSubmit(signer);
+                console.dir(stringify(result.txHash));
+            } else {
+                console.warn("heartbeat disabled, not sending heartbeat extrinsic");
+            }
+        } catch (error) {
+            console.error("Error during bridging simulation: ", error);
+        }
+        console.log(`Next watchdog simulation in ${INTERVAL} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, INTERVAL * 1000));
     }
     await plan.destroy();
 }
@@ -781,4 +798,64 @@ function getAliceSigner(): PolkadotSigner {
         hdkdKeyPair.sign,
     );
     return aliceSigner;
+}
+
+async function collectBalanceMetrics(plan: any) {
+    await Promise.all([
+        collectLocationNativeBalanceMetric(plan.source.api, `watchdog`, plan.source.native_symbol, plan.source.name, XcmVersionedLocation.V5({
+            parents: 0,
+            interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(getWatchdogSigner().publicKey)}))
+        })),
+        // sovereign account native balances
+        collectLocationNativeBalanceMetric(plan.source.api, `${plan.source.name} sovereign`, plan.source.native_symbol, plan.source.name, XcmVersionedLocation.V5(plan.source.sovereign_self)),
+        collectLocationNativeBalanceMetric(plan.sourceAH.api, `${plan.source.name} sovereign`, plan.sourceAH.native_symbol, plan.sourceAH.name, XcmVersionedLocation.V5(plan.source.native_from_sibling)),
+        collectLocationNativeBalanceMetric(plan.destinationAH.api, `${plan.source.name} sovereign`, plan.destinationAH.native_symbol, plan.destinationAH.name, XcmVersionedLocation.V5(plan.source.native_from_cousin)),
+        collectLocationNativeBalanceMetric(plan.destination.api, `${plan.source.name} sovereign`, plan.destination.native_symbol, plan.destination.name, XcmVersionedLocation.V5(plan.source.native_from_cousin)),
+        // sovereign account also check swapped assets on all hops
+        collectLocationNativeBalanceMetric(plan.sourceAH.api, `${plan.source.name} sovereign`, plan.source.native_symbol, plan.sourceAH.name, XcmVersionedLocation.V5(plan.source.native_from_sibling), XcmVersionedLocation.V5(plan.source.native_from_sibling)),
+        collectLocationNativeBalanceMetric(plan.destinationAH.api, `${plan.source.name} sovereign`, plan.sourceAH.native_symbol, plan.destinationAH.name, XcmVersionedLocation.V5(plan.source.native_from_cousin), XcmVersionedLocation.V5(plan.sourceAH.native_from_cousin)),
+        collectLocationNativeBalanceMetric(plan.destination.api, `${plan.source.name} sovereign`, plan.destinationAH.native_symbol, plan.destination.name, XcmVersionedLocation.V5(plan.source.native_from_cousin), undefined, 0),
+    ]);
+}
+
+async function collectLocationNativeBalanceMetric(api: any, name: string, asset: string, chain: string, location: XcmVersionedLocation, assetLocation?: XcmVersionedLocation, assetId?: number) {
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(location);
+        if (accountIdResult.success) {
+            const accountId = accountIdResult.value;
+            const address = accountId.toString();
+            if (assetId !== undefined) {
+                const assetBalanceResult = await api.query.Assets.Account.getValue(assetId, accountId);
+                const balance = assetBalanceResult?.balance ?? 0n;
+                const humanBalance = tokenBalanceToNumber(balance, asset);
+                accountBalanceGauge.set({name, address, chain, asset}, humanBalance);
+                console.log(`✅ ${name} balance on ${chain} (${address}): ${humanBalance} ${asset}`);
+            } else if (assetLocation) {
+                const assetBalanceResult = await api.query.ForeignAssets.Account.getValue(assetLocation.value, accountId);
+                const balance = assetBalanceResult?.balance ?? 0n;
+                const humanBalance = tokenBalanceToNumber(balance, asset);
+                accountBalanceGauge.set({name, address, chain, asset}, humanBalance);
+                console.log(`✅ ${name} balance on ${chain} (${address}): ${humanBalance} ${asset}`);
+
+            } else {
+                const accountInfoResult = await api.query.System.Account.getValue(accountId);
+                if (accountInfoResult.data) {
+                    const balance = accountInfoResult.data.free || 0n;
+                    const humanBalance = tokenBalanceToNumber(balance, asset);
+                    accountBalanceGauge.set({name, address, chain, asset}, humanBalance);
+                    console.log(`✅ ${name} balance on ${chain} (${address}): ${humanBalance} ${asset}`);
+                } else {
+                    console.error(`❌ Account Info not found`);
+                }
+            }
+        } else {
+            console.error(`❌ failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.error(`❌ error:`, error?.message ?? error);
+    }
+}
+
+function tokenBalanceToNumber(balance: bigint, asset: string, precision = 4): number {
+    return Number(balance / 10n ** BigInt(tokenDecimals[asset] - precision)) / 10 ** precision;
 }

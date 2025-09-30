@@ -255,7 +255,6 @@ async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, 
     } catch (error) {
         console.log(`❌ ${label} error:`, error?.message ?? error);
     }
-
 }
 
 async function checkAccountIdBalanceOn(api: any, accountId: string, expectedBalance: bigint, label: string) {
