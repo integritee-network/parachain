@@ -122,7 +122,7 @@ const DIRECTION = argv.direction
 const DIRECT_FORWARD = true;
 
 // safety factor to account for price fluctuations in asset swaps
-const MARGIN = argv.margin ? argv.margin : 1.2;
+const MARGIN = Number(argv.margin || process.env.TEER_BRIDGE_WATCHDOG_MARGIN || 1.2);
 
 const KAH_WS_URL = ENDPOINTS === LIVE
     ? "wss://sys.ibp.network/asset-hub-kusama"
