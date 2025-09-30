@@ -341,6 +341,17 @@ async function run(plan: any, forwardingLocation: any) {
         chain: plan.destinationAH.name
     }, sourceAHNativePerDestinationAHNativeHuman);
 
+    const referenceAmountDestinationAHNative = plan.destinationAH.native_units / 10n;
+    const destinationFeesHighEstimateDestinationAHNativeConverted = await plan.destination.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(Enum("WithId", 0), Enum("Native"), referenceAmountDestinationAHNative, true);
+    const destinationAHNativePerDestinationNative = Number(destinationFeesHighEstimateDestinationAHNativeConverted) / Number(referenceAmountDestinationAHNative)
+    const destinationAHNativePerDestinationNativeHuman = destinationAHNativePerDestinationNative * 10 ** (tokenDecimals[plan.destination.native_symbol] - tokenDecimals[plan.destinationAH.native_symbol]);
+    console.log(`Current AssetConversion quote for ${plan.destination.name} account: out: `, destinationFeesHighEstimateDestinationAHNativeConverted, " in ", referenceAmountDestinationAHNative, ` ${plan.destinationAH.native_symbol}. price: `, destinationAHNativePerDestinationNativeHuman, ` ${plan.destinationAH.native_symbol} per ${plan.destination.native_symbol}`);
+    assetConversionGauge.set({
+        base_asset: plan.destination.native_symbol,
+        quote_asset: plan.destinationAH.native_symbol,
+        chain: plan.destination.name
+    }, destinationAHNativePerDestinationNativeHuman);
+
     // We can now query the root account on the source chain.
     const rootAccountLocal = await plan.source.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.sovereign_self))
     if (!rootAccountLocal.success) {
