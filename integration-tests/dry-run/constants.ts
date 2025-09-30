@@ -15,14 +15,6 @@ export const TEER_UNITS = 1_000_000_000_000n;
 export const KSM_UNITS = 1_000_000_000_000n;
 export const DOT_UNITS = 10_000_000_000n;
 
-export const PAH_FROM_KAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-export const KAH_FROM_PAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
 export const KAH_FROM_SIBLING = {
     parents: 1,
     interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
@@ -39,17 +31,13 @@ export const PAH_FROM_COUSIN = {
     parents: 2,
     interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
 };
-export const KSM_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-export const KSM_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
-};
 export const KSM_FROM_COUSIN_PARACHAINS = {
     parents: 2,
     interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
+};
+export const KSM_FROM_SIBLING_PARACHAINS = {
+    parents: 1,
+    interior: XcmV5Junctions.Here(),
 };
 export const DOT_FROM_COUSIN_PARACHAINS = {
     parents: 2,
@@ -58,34 +46,6 @@ export const DOT_FROM_COUSIN_PARACHAINS = {
 export const DOT_FROM_SIBLING_PARACHAINS = {
     parents: 1,
     interior: XcmV5Junctions.Here(),
-};
-export const KSM_FROM_SIBLING_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-export const KAH_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
-};
-export const KAH_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
-export const DOT_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-export const DOT_FROM_KUSAMA_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
-};
-export const PAH_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
-};
-export const PAH_FROM_KUSAMA_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
 };
 export const TEER_FROM_SELF = {
     parents: 0,

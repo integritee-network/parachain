@@ -30,16 +30,16 @@ import {
     XcmV5AssetFilter, XcmV5WildAsset
 } from "@polkadot-api/descriptors";
 import {
-    DOT_FROM_KUSAMA_PARACHAINS,
-    DOT_FROM_POLKADOT_PARACHAINS,
+    DOT_FROM_COUSIN_PARACHAINS,
+    DOT_FROM_SIBLING_PARACHAINS,
     DOT_UNITS,
     IK_PARA_ID, IP_PARA_ID,
     ITK_FROM_COUSIN,
     ITK_FROM_SIBLING,
-    ITP_FROM_COUSIN, ITP_FROM_SIBLING, KAH_FROM_KUSAMA_PARACHAINS,
-    KAH_FROM_POLKADOT_PARACHAINS, KAH_PARA_ID, KSM_FROM_KUSAMA_PARACHAINS, KSM_FROM_POLKADOT_PARACHAINS, KSM_UNITS,
-    PAH_FROM_KUSAMA_PARACHAINS,
-    PAH_FROM_POLKADOT_PARACHAINS,
+    ITP_FROM_COUSIN, ITP_FROM_SIBLING, KAH_FROM_SIBLING,
+    KAH_FROM_COUSIN, KAH_PARA_ID, KSM_FROM_SIBLING_PARACHAINS, KSM_FROM_COUSIN_PARACHAINS, KSM_UNITS,
+    PAH_FROM_COUSIN,
+    PAH_FROM_SIBLING,
     PAH_PARA_ID,
     TEER_FROM_SELF,
     TEER_UNITS
@@ -55,7 +55,7 @@ import {
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
 import {getPolkadotSigner} from "polkadot-api/signer";
-import {AccountId, SS58String} from "@polkadot-api/substrate-bindings";
+import {AccountId} from "@polkadot-api/substrate-bindings";
 import {
     DEV_PHRASE,
     entropyToMiniSecret,
@@ -183,9 +183,9 @@ const portPlanK2P = {
         para_id: KAH_PARA_ID,
         native_units: KSM_UNITS,
         native_symbol: "KSM",
-        native_from_sibling: KSM_FROM_KUSAMA_PARACHAINS,
-        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS,
-        self_from_cousin: KAH_FROM_POLKADOT_PARACHAINS
+        native_from_sibling: KSM_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: KSM_FROM_COUSIN_PARACHAINS,
+        self_from_cousin: KAH_FROM_COUSIN
     },
     destinationAH: {
         api: pahApi,
@@ -193,10 +193,10 @@ const portPlanK2P = {
         para_id: PAH_PARA_ID,
         native_units: DOT_UNITS,
         native_symbol: "DOT",
-        native_from_sibling: DOT_FROM_POLKADOT_PARACHAINS,
-        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS,
-        self_from_sibling: PAH_FROM_POLKADOT_PARACHAINS,
-        self_from_cousin: PAH_FROM_KUSAMA_PARACHAINS,
+        native_from_sibling: DOT_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: DOT_FROM_COUSIN_PARACHAINS,
+        self_from_sibling: PAH_FROM_SIBLING,
+        self_from_cousin: PAH_FROM_COUSIN,
     },
     destination: {
         api: itpApi,
@@ -231,9 +231,9 @@ const portPlanP2K = {
         para_id: PAH_PARA_ID,
         native_units: DOT_UNITS,
         native_symbol: "DOT",
-        native_from_sibling: DOT_FROM_POLKADOT_PARACHAINS,
-        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS,
-        self_from_cousin: PAH_FROM_KUSAMA_PARACHAINS
+        native_from_sibling: DOT_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: DOT_FROM_COUSIN_PARACHAINS,
+        self_from_cousin: PAH_FROM_COUSIN
     },
     destinationAH: {
         api: kahApi,
@@ -241,10 +241,10 @@ const portPlanP2K = {
         para_id: KAH_PARA_ID,
         native_units: KSM_UNITS,
         native_symbol: "KSM",
-        native_from_sibling: KSM_FROM_KUSAMA_PARACHAINS,
-        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS,
-        self_from_sibling: KAH_FROM_KUSAMA_PARACHAINS,
-        self_from_cousin: KAH_FROM_POLKADOT_PARACHAINS
+        native_from_sibling: KSM_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: KSM_FROM_COUSIN_PARACHAINS,
+        self_from_sibling: KAH_FROM_SIBLING,
+        self_from_cousin: KAH_FROM_COUSIN
     },
     destination: {
         api: itkApi,
