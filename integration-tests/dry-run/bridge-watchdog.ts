@@ -62,7 +62,7 @@ import {
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
-import {startPrometheusMetrics, accountBalanceGauge} from "./prometheus";
+import {startPrometheusMetrics, accountBalanceGauge, assetConversionGauge} from "./prometheus";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -87,7 +87,7 @@ const argv = yargs(hideBin(process.argv))
         type: "boolean",
         description: "Enable sending a heartbeat if bridging simulation is successful"
     })
-    .option("prometheus-port", {type: "number", description: "Port to expose Prometheus metrics on", default: 9464})
+    .option("prometheus-port", {type: "number", description: "Port to expose Prometheus metrics on"})
     .option("interval", {type: "number", description: "Interval between simulations in seconds"})
     .conflicts({
         live: ["chopsticks", "zombienet"],
@@ -123,6 +123,7 @@ const DIRECT_FORWARD = true;
 
 // safety factor to account for price fluctuations in asset swaps
 const MARGIN = Number(argv.margin || process.env.TEER_BRIDGE_WATCHDOG_MARGIN || 1.2);
+const PROMETHEUS_PORT = Number(argv.prometheusPort || process.env.TEER_BRIDGE_WATCHDOG_PROMETHEUS_PORT || 9464);
 
 const KAH_WS_URL = ENDPOINTS === LIVE
     ? "wss://sys.ibp.network/asset-hub-kusama"
@@ -171,7 +172,7 @@ const itpClient = createClient(
 );
 const itpApi = itpClient.getTypedApi(itp);
 
-startPrometheusMetrics(argv.prometheusPort);
+startPrometheusMetrics(PROMETHEUS_PORT);
 
 const portPlanK2P = {
     source: {
@@ -321,12 +322,24 @@ async function run(plan: any, forwardingLocation: any) {
     const referenceAmountTeer = 100000000000n;
     const destinationAHFeesHighEstimateTeerConverted = await plan.sourceAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.source.native_from_sibling, plan.sourceAH.native_from_sibling, referenceAmountTeer, true);
     const teerPerSourceAHNative = Number(destinationAHFeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
-    console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNative, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
+    const teerPerSourceAHNativeHuman = teerPerSourceAHNative * 10 ** (tokenDecimals[plan.sourceAH.native_symbol] - tokenDecimals[plan.source.native_symbol]);
+    console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNativeHuman, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
+    assetConversionGauge.set({
+        base_asset: plan.sourceAH.native_symbol,
+        quote_asset: plan.source.native_symbol,
+        chain: plan.sourceAH.name
+    }, teerPerSourceAHNativeHuman);
 
     const referenceAmountSourceAHNative = plan.sourceAH.native_units / 10n;
     const destinationFeesHighEstimateSourceAHNativeConverted = await plan.destinationAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountSourceAHNative, true);
     const sourceAHNativePerDestinationAHNative = Number(destinationFeesHighEstimateSourceAHNativeConverted) / Number(referenceAmountSourceAHNative)
-    console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, destinationFeesHighEstimateSourceAHNativeConverted, " in ", referenceAmountSourceAHNative, ` ${plan.sourceAH.native_symbol}. price: `, sourceAHNativePerDestinationAHNative / 100.0, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
+    const sourceAHNativePerDestinationAHNativeHuman = sourceAHNativePerDestinationAHNative * 10 ** (tokenDecimals[plan.destinationAH.native_symbol] - tokenDecimals[plan.sourceAH.native_symbol]);
+    console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, destinationFeesHighEstimateSourceAHNativeConverted, " in ", referenceAmountSourceAHNative, ` ${plan.sourceAH.native_symbol}. price: `, sourceAHNativePerDestinationAHNativeHuman, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
+    assetConversionGauge.set({
+        base_asset: plan.destinationAH.native_symbol,
+        quote_asset: plan.sourceAH.native_symbol,
+        chain: plan.destinationAH.name
+    }, sourceAHNativePerDestinationAHNativeHuman);
 
     // We can now query the root account on the source chain.
     const rootAccountLocal = await plan.source.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.sovereign_self))
