@@ -752,7 +752,7 @@ async function estimateFees(
         return;
     }
     const destinationFeesInDestinationRelayNative = resultDestinationFeesInDestinationRelayNative.value;
-    console.log(`########### SUMMARY OF FEES ###########`);
+    console.log(`########### SUMMARY OF FEES from ${plan.source.name} to ${plan.destination.name} ###########`);
     console.log(`API: localExecutionFees (virtual) [TEER]: `, localExecutionFees);
     console.log(`API: delivery fees to ${plan.sourceAH.name}         [TEER]: `, deliveryFeesToSourceAHInTeer);
     console.log(`API: ${plan.sourceAH.name} fees*                     [${plan.sourceAH.native_symbol}]: `, sourceAHFeesInNative.value);
