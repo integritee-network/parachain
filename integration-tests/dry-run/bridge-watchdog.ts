@@ -62,7 +62,13 @@ import {
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
-import {startPrometheusMetrics, accountBalanceGauge, assetConversionGauge, assetSupplyGauge} from "./prometheus";
+import {
+    startPrometheusMetrics,
+    accountBalanceGauge,
+    assetConversionGauge,
+    assetSupplyGauge,
+    activeFeeGauge, suggestedFeeGauge, lastWatchdogHeartbeatSentGauge, simulationResultGauge
+} from "./prometheus";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -275,6 +281,8 @@ const portPlanP2K = {
 // The whole execution of the script.
 main();
 
+let lastHeartbeatSent = new Date(0);
+
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
@@ -285,21 +293,41 @@ async function main() {
         try {
             await collectBalanceMetrics(plan);
             await run(plan, forwardingLocation);
-            if (argv.heartbeat) {
+            if (argv.heartbeat && (new Date().getTime() - lastHeartbeatSent.getTime()) > INTERVAL * 1000) {
                 // if we reach this point, the test was successful and the bridge is confirmed to be operational
                 const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
                 const signer = getWatchdogSigner();
                 console.log("sending watchdog heartbeat after successful test....")
                 const result = await heartbeatTx.signAndSubmit(signer);
-                console.dir(stringify(result.txHash));
+                if (result?.ok) {
+                    lastHeartbeatSent = new Date();
+                    console.dir(stringify(result.txHash));
+                    lastWatchdogHeartbeatSentGauge.set({
+                        chain: plan.source.name,
+                    }, lastHeartbeatSent.getTime());
+                } else {
+                    console.error("Error sending heartbeat: ", result);
+                }
             } else {
-                console.warn("heartbeat disabled, not sending heartbeat extrinsic");
+                console.warn("heartbeat not due or disabled, not sending heartbeat extrinsic");
             }
+            simulationResultGauge.set({
+                    from_chain: plan.source.name,
+                    to_chain: plan.destination.name,
+                    direct_forward: String(DIRECT_FORWARD),
+                }
+                , 1);
         } catch (error) {
             console.error("Error during bridging simulation: ", error);
+            simulationResultGauge.set({
+                    from_chain: plan.source.name,
+                    to_chain: plan.destination.name,
+                    direct_forward: String(DIRECT_FORWARD),
+                }
+                , 0);
         }
-        console.log(`Next watchdog simulation in ${INTERVAL} seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, INTERVAL * 1000));
+        console.log(`Next watchdog simulation in 10 seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
     }
     await plan.destroy();
 }
@@ -373,6 +401,22 @@ async function run(plan: any, forwardingLocation: any) {
 
     const currentFees = await plan.source.api.query.Porteer.XcmFeeConfig.getValue();
     console.log("Current fees config on source chain: ", stringifyJsonWithBigInt(currentFees));
+    activeFeeGauge.set({
+        component: "local_equivalent_sum",
+        asset: "TEER", chain: plan.source.name,
+    }, Number(currentFees.local_equivalent_sum) / 10 ** tokenDecimals["TEER"]);
+    activeFeeGauge.set({
+        component: "hop1",
+        asset: "TEER", chain: plan.sourceAH.name,
+    }, Number(currentFees.hop1) / 10 ** tokenDecimals["TEER"]);
+    activeFeeGauge.set({
+        component: "hop2",
+        asset: plan.sourceAH.native_symbol, chain: plan.destinationAH.name,
+    }, Number(currentFees.hop2) / 10 ** tokenDecimals[plan.sourceAH.native_symbol]);
+    activeFeeGauge.set({
+        component: "hop3",
+        asset: plan.destinationAH.native_symbol, chain: plan.destination.name,
+    }, Number(currentFees.hop3) / 10 ** tokenDecimals[plan.destinationAH.native_symbol]);
 
     // the actual extrinsic we would send to bridge TEER from IK to IP
     const portTokensTx = plan.source.api.tx.Porteer.port_tokens({
@@ -401,6 +445,23 @@ async function run(plan: any, forwardingLocation: any) {
     console.log(`Remote 1 fees estimate [TEER]: `, sourceAHFeesEstimate);
     console.log(`Remote 2 fees estimate  [${plan.sourceAH.native_symbol}]: `, destinationAHFeesEstimateSourceAHNative);
     console.log(`Remote 3 fees estimate  [${plan.destinationAH.native_symbol}]: `, destinationFeesEstimateDestinationAHNative);
+
+    suggestedFeeGauge.set({
+        component: "local_equivalent_sum",
+        asset: "TEER", chain: plan.source.name,
+    }, Number(localEquivalentFeesEstimate) / 10 ** tokenDecimals["TEER"]);
+    suggestedFeeGauge.set({
+        component: "hop1",
+        asset: "TEER", chain: plan.sourceAH.name,
+    }, Number(sourceAHFeesEstimate) / 10 ** tokenDecimals["TEER"]);
+    suggestedFeeGauge.set({
+        component: "hop2",
+        asset: plan.sourceAH.native_symbol, chain: plan.destinationAH.name,
+    }, Number(destinationAHFeesEstimateSourceAHNative) / 10 ** tokenDecimals[plan.sourceAH.native_symbol]);
+    suggestedFeeGauge.set({
+        component: "hop3",
+        asset: plan.destinationAH.native_symbol, chain: plan.destination.name,
+    }, Number(destinationFeesEstimateDestinationAHNative) / 10 ** tokenDecimals[plan.destinationAH.native_symbol]);
 
     const setFeesTx = plan.source.api.tx.Porteer.set_xcm_fee_params({
         fees: {
@@ -801,6 +862,9 @@ function stringifyJsonWithBigInt(obj: any): string {
 }
 
 function getWatchdogSigner(): PolkadotSigner {
+    if (ENDPOINTS === CHOPSTICKS) {
+        return getAliceSigner()
+    }
     const entropy = mnemonicToEntropy(WATCHDOG_MNEMONIC);
     const miniSecret = entropyToMiniSecret(entropy);
     const derive = sr25519CreateDerive(miniSecret);
