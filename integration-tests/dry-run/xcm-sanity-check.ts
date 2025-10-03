@@ -14,7 +14,22 @@ import {
     XcmVersionedLocation, XcmV3JunctionBodyId, XcmV2JunctionBodyPart
 } from "@polkadot-api/descriptors";
 import {
-    createClient, FixedSizeBinary, Enum, AccountId, Binary
+    ALICE_LOCAL,
+    DOT_FROM_COUSIN_PARACHAINS,
+    DOT_FROM_SIBLING_PARACHAINS,
+    DOT_UNITS,
+    ITK_FROM_COUSIN,
+    ITK_FROM_SIBLING,
+    ITP_FROM_COUSIN, ITP_FROM_SIBLING, KAH_FROM_COUSIN,
+    KAH_FROM_SIBLING,
+    KSM_FROM_COUSIN_PARACHAINS,
+    KSM_FROM_SIBLING_PARACHAINS, KSM_UNITS, PAH_FROM_COUSIN,
+    PAH_FROM_SIBLING,
+    TEER_FROM_SELF,
+    TEER_UNITS, TREASURY_KAH, TREASURY_LOCAL, TREASURY_PAH
+} from "./constants";
+import {
+    createClient, Enum,
 } from "polkadot-api";
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
@@ -33,7 +48,7 @@ const CHOPSTICKS: number = 1;
 const ZOMBIENET: number = 2;
 
 // use this constant to select your endpoint set
-const ENDPOINTS = ZOMBIENET;
+const ENDPOINTS = LIVE;
 
 const KAH_WS_URL = ENDPOINTS === LIVE
     ? "wss://sys.ibp.network/asset-hub-kusama"
@@ -65,89 +80,6 @@ const DOT_WS_URL = ENDPOINTS === LIVE
     : ENDPOINTS === CHOPSTICKS
         ? "skipped"
         : "ws://localhost:9942";
-
-// Useful constants.
-const KAH_PARA_ID = 1000;
-const PAH_PARA_ID = 1000;
-const IK_PARA_ID = 2015;
-const IP_PARA_ID = 2039;
-
-const TEER_UNITS = 1_000_000_000_000n;
-const KSM_UNITS = 1_000_000_000_000n;
-const DOT_UNITS = 10_000_000_000n;
-
-const KSM_FROM_COUSIN_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
-};
-const DOT_FROM_COUSIN_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
-};
-const DOT_FROM_SIBLING_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const KSM_FROM_SIBLING_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const TEER_FROM_SELF = {
-    parents: 0,
-    interior: XcmV5Junctions.Here(),
-};
-const KAH_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
-};
-const PAH_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
-};
-const KAH_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
-const PAH_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-const ITK_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
-};
-const ITK_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IK_PARA_ID)]),
-};
-const ITP_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
-};
-const ITP_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
-};
-const ALICE_PUB = FixedSizeBinary.fromHex("0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"); // well-known alice account
-const ALICE_LOCAL = {
-    parents: 0,
-    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: ALICE_PUB}))
-}
-const palletId = Buffer.from("modlpy/trsry", "utf8"); // 8 bytes
-const padded = Buffer.concat([palletId, Buffer.alloc(32 - palletId.length, 0)]);
-const treasuryAccount = FixedSizeBinary.fromHex(padded.toHex());
-const TREASURY_LOCAL = {
-    parents: 0,
-    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: treasuryAccount}))
-}
-const TREASURY_PAH = {
-    parents: 0,
-    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("14xmwinmCEz6oRrFdczHKqHgWNMiCysE2KrA4jXXAAM1Eogk"))}))
-}
-const TREASURY_KAH = {
-    parents: 0,
-    interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(AccountId().enc("HWZmQq6zMMk7TxixHfseFT2ewicT6UofPa68VCn3gkXrdJF"))}))
-}
 
 // Setup clients...
 const pahClient = createClient(
@@ -182,7 +114,7 @@ const dotApi = dotClient.getTypedApi(dot);
 
 main();
 
-async function main() {
+export async function main() {
     switch (ENDPOINTS) {
         case LIVE:
             console.log("Running against live chains...");
@@ -269,7 +201,7 @@ async function checkBalances() {
         checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITK_FROM_SIBLING), 5n * KSM_UNITS, "ITK Sovereign on KAH [KSM]"),
         checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITK_FROM_COUSIN), 5n * DOT_UNITS, "ITK Sovereign on PAH [DOT]"),
         // ITP sovereign
-        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 5n * TEER_UNITS, "ITP Sovereign Local on ITK [TEER]"),
+        checkLocationBalanceOn(itpApi, XcmVersionedLocation.V5(TEER_FROM_SELF), 5n * TEER_UNITS, "ITP Sovereign Local on ITP [TEER]"),
         checkLocationBalanceOn(pahApi, XcmVersionedLocation.V5(ITP_FROM_SIBLING), 5n * DOT_UNITS, "ITP Sovereign on PAH [DOT]"),
         checkLocationBalanceOn(kahApi, XcmVersionedLocation.V5(ITP_FROM_COUSIN), 5n * KSM_UNITS, "ITP Sovereign on KAH [KSM]"),
         // AH sovereign
@@ -323,7 +255,6 @@ async function checkLocationBalanceOn(api: any, location: XcmVersionedLocation, 
     } catch (error) {
         console.log(`❌ ${label} error:`, error?.message ?? error);
     }
-
 }
 
 async function checkAccountIdBalanceOn(api: any, accountId: string, expectedBalance: bigint, label: string) {

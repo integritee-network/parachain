@@ -30,124 +30,132 @@ import {
     XcmV5AssetFilter, XcmV5WildAsset
 } from "@polkadot-api/descriptors";
 import {
+    DOT_FROM_COUSIN_PARACHAINS,
+    DOT_FROM_SIBLING_PARACHAINS,
+    DOT_UNITS,
+    IK_PARA_ID, IP_PARA_ID,
+    ITK_FROM_COUSIN,
+    ITK_FROM_SIBLING,
+    ITP_FROM_COUSIN, ITP_FROM_SIBLING, KAH_FROM_SIBLING,
+    KAH_FROM_COUSIN, KAH_PARA_ID, KSM_FROM_SIBLING_PARACHAINS, KSM_FROM_COUSIN_PARACHAINS, KSM_UNITS,
+    PAH_FROM_COUSIN,
+    PAH_FROM_SIBLING,
+    PAH_PARA_ID,
+    TEER_FROM_SELF,
+    TEER_UNITS, tokenDecimals
+} from "./constants";
+import {
     createClient,
     Enum,
     Binary,
     type PolkadotSigner,
 } from "polkadot-api";
-// import from "polkadot-api/ws-provider/node"
-// if you are running in a NodeJS environment
 import {getWsProvider} from "polkadot-api/ws-provider/node";
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat";
 import {getPolkadotSigner} from "polkadot-api/signer";
+import {AccountId} from "@polkadot-api/substrate-bindings";
 import {
     DEV_PHRASE,
     entropyToMiniSecret,
     mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
 import {sr25519CreateDerive} from "@polkadot-labs/hdkd";
-import {take} from "rxjs"
+import yargs from "yargs";
+import {hideBin} from "yargs/helpers";
+import {
+    startPrometheusMetrics,
+    accountBalanceGauge,
+    assetConversionGauge,
+    assetSupplyGauge,
+    activeFeeGauge, suggestedFeeGauge, lastWatchdogHeartbeatSentGauge, simulationResultGauge
+} from "./prometheus";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const argv = yargs(hideBin(process.argv))
+    .option("live", {type: "boolean", description: "Use live endpoints"})
+    .option("chopsticks", {type: "boolean", description: "Use chopsticks endpoints"})
+    .option("zombienet", {type: "boolean", description: "Use zombienet endpoints"})
+    .option("margin", {
+        type: "number",
+        description: "Margin safety factor for price fluctuations in asset swaps",
+        default: 1.2
+    })
+    .option("direction", {
+        type: "string",
+        description: "Direction of transfer: IK>IP or IP>IK",
+        choices: ["K2P", "P2K"],
+        default: "K2P"
+    })
+    .option("mnemonic", {type: "string", description: "Mnemonic for watchdog account"})
+    .option("heartbeat", {
+        type: "boolean",
+        description: "Enable sending a heartbeat if bridging simulation is successful"
+    })
+    .option("prometheus-port", {type: "number", description: "Port to expose Prometheus metrics on"})
+    .option("interval", {type: "number", description: "Interval between simulations in seconds"})
+    .conflicts({
+        live: ["chopsticks", "zombienet"],
+        chopsticks: ["live", "zombienet"],
+        zombienet: ["live", "chopsticks"]
+    })
+    .check((argv) => {
+        if (!argv.live && !argv.chopsticks && !argv.zombienet) {
+            throw new Error("One of --live, --chopsticks, or --zombienet must be specified");
+        }
+        return true;
+    })
+    .argv;
+
+const LIVE: number = 0;
+const CHOPSTICKS: number = 1;
+const ZOMBIENET: number = 2;
+const ENDPOINTS = argv.live ? LIVE : (argv.chopsticks ? CHOPSTICKS : ZOMBIENET);
+
+// Use ENDPOINTS and MNEMONIC in your logic below
+
+const WATCHDOG_MNEMONIC = argv.mnemonic || process.env.TEER_BRIDGE_WATCHDOG_MNEMONIC || DEV_PHRASE;
+const INTERVAL = Number(argv.interval || process.env.TEER_BRIDGE_WATCHDOG_INTERVAL || 1620);
 
 // Useful constants.
-const KAH_PARA_ID = 1000;
-const PAH_PARA_ID = 1000;
-const IK_PARA_ID = 2015;
-const IP_PARA_ID = 2039;
-const WATCHDOG_ACCOUNT = "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // Alice
+const WATCHDOG_ACCOUNT = (ENDPOINTS === LIVE)
+    ? AccountId().dec(getWatchdogSigner().publicKey)
+    : "2P2pRoXYwZAWVPXXtR6is5o7L34Me72iuNdiMZxeNV2BkgsH"; // Alice
 
-// if false, we assume zombienet
-const CHOPSTICKS: boolean = false;
-
-const DIRECTION = "IK>IP";
-//const DIRECTION = "IP>IK";
+const DIRECTION = argv.direction
 
 const DIRECT_FORWARD = true;
+
 // safety factor to account for price fluctuations in asset swaps
-const MARGIN = 1.2;
+const MARGIN = Number(argv.margin || process.env.TEER_BRIDGE_WATCHDOG_MARGIN || 1.2);
+const PROMETHEUS_PORT = Number(argv.prometheusPort || process.env.TEER_BRIDGE_WATCHDOG_PROMETHEUS_PORT || 9464);
 
-// We're running against chopsticks with wasm-override to get XCMv5 support.
-// `npx @acala-network/chopsticks@latest xcm --p=kusama-asset-hub --p=./configs/integritee-kusama.yml`
-const KAH_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8000"
-    : "ws://localhost:9010";
-const IK_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8001"
-    : "ws://localhost:9144"
-const PAH_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8002"
-    : "ws://localhost:9910"
-const IP_WS_URL = CHOPSTICKS
-    ? "ws://localhost:8003"
-    : "ws://localhost:9244"
+const KAH_WS_URL = ENDPOINTS === LIVE
+    ? "wss://sys.ibp.network/asset-hub-kusama"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8000"
+        : "ws://localhost:9010";
+const IK_WS_URL = ENDPOINTS === LIVE
+    ? "wss://kusama.api.integritee.network"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8001"
+        : "ws://localhost:9144";
+const PAH_WS_URL = ENDPOINTS === LIVE
+    ? "wss://sys.ibp.network/asset-hub-polkadot"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8002"
+        : "ws://localhost:9910";
+const IP_WS_URL = ENDPOINTS === LIVE
+    ? "wss://polkadot.api.integritee.network"
+    : ENDPOINTS === CHOPSTICKS
+        ? "ws://localhost:8003"
+        : "ws://localhost:9244";
 
-const PAH_FROM_KAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-const KAH_FROM_PAH = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
 
 // XCM.
 const XCM_VERSION = 5;
 
-const TEER_UNITS = 1_000_000_000_000n;
-const KSM_UNITS = 1_000_000_000_000n;
-const DOT_UNITS = 10_000_000_000n;
-
-const KSM_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const KSM_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama())),
-};
-const KAH_FROM_KUSAMA_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(KAH_PARA_ID)),
-};
-const KAH_FROM_POLKADOT_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(KAH_PARA_ID)]),
-};
-const DOT_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.Here(),
-};
-const DOT_FROM_KUSAMA_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X1(XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot())),
-};
-const PAH_FROM_POLKADOT_PARACHAINS = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(PAH_PARA_ID)),
-};
-const PAH_FROM_KUSAMA_PARACHAINS = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(PAH_PARA_ID)]),
-};
-const TEER_FROM_SELF = {
-    parents: 0,
-    interior: XcmV5Junctions.Here(),
-};
-const ITK_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IK_PARA_ID)),
-};
-const ITK_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Kusama()), XcmV5Junction.Parachain(IK_PARA_ID)]),
-};
-const ITP_FROM_SIBLING = {
-    parents: 1,
-    interior: XcmV5Junctions.X1(XcmV5Junction.Parachain(IP_PARA_ID)),
-};
-const ITP_FROM_COUSIN = {
-    parents: 2,
-    interior: XcmV5Junctions.X2([XcmV5Junction.GlobalConsensus(XcmV5NetworkId.Polkadot()), XcmV5Junction.Parachain(IP_PARA_ID)]),
-};
 
 // Setup clients...
 const pahClient = createClient(
@@ -170,6 +178,8 @@ const itpClient = createClient(
 );
 const itpApi = itpClient.getTypedApi(itp);
 
+startPrometheusMetrics(PROMETHEUS_PORT);
+
 const portPlanK2P = {
     source: {
         api: itkApi,
@@ -187,9 +197,9 @@ const portPlanK2P = {
         para_id: KAH_PARA_ID,
         native_units: KSM_UNITS,
         native_symbol: "KSM",
-        native_from_sibling: KSM_FROM_KUSAMA_PARACHAINS,
-        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS,
-        self_from_cousin: KAH_FROM_POLKADOT_PARACHAINS
+        native_from_sibling: KSM_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: KSM_FROM_COUSIN_PARACHAINS,
+        self_from_cousin: KAH_FROM_COUSIN
     },
     destinationAH: {
         api: pahApi,
@@ -197,16 +207,17 @@ const portPlanK2P = {
         para_id: PAH_PARA_ID,
         native_units: DOT_UNITS,
         native_symbol: "DOT",
-        native_from_sibling: DOT_FROM_POLKADOT_PARACHAINS,
-        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS,
-        self_from_sibling: PAH_FROM_POLKADOT_PARACHAINS,
-        self_from_cousin: PAH_FROM_KUSAMA_PARACHAINS,
+        native_from_sibling: DOT_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: DOT_FROM_COUSIN_PARACHAINS,
+        self_from_sibling: PAH_FROM_SIBLING,
+        self_from_cousin: PAH_FROM_COUSIN,
     },
     destination: {
         api: itpApi,
         name: "ITP",
         para_id: IP_PARA_ID,
         native_units: TEER_UNITS,
+        native_symbol: "TEER",
     },
     destroy: () => {
         return Promise.all([
@@ -235,9 +246,9 @@ const portPlanP2K = {
         para_id: PAH_PARA_ID,
         native_units: DOT_UNITS,
         native_symbol: "DOT",
-        native_from_sibling: DOT_FROM_POLKADOT_PARACHAINS,
-        native_from_cousin: DOT_FROM_KUSAMA_PARACHAINS,
-        self_from_cousin: PAH_FROM_KUSAMA_PARACHAINS
+        native_from_sibling: DOT_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: DOT_FROM_COUSIN_PARACHAINS,
+        self_from_cousin: PAH_FROM_COUSIN
     },
     destinationAH: {
         api: kahApi,
@@ -245,16 +256,17 @@ const portPlanP2K = {
         para_id: KAH_PARA_ID,
         native_units: KSM_UNITS,
         native_symbol: "KSM",
-        native_from_sibling: KSM_FROM_KUSAMA_PARACHAINS,
-        native_from_cousin: KSM_FROM_POLKADOT_PARACHAINS,
-        self_from_sibling: KAH_FROM_KUSAMA_PARACHAINS,
-        self_from_cousin: KAH_FROM_POLKADOT_PARACHAINS
+        native_from_sibling: KSM_FROM_SIBLING_PARACHAINS,
+        native_from_cousin: KSM_FROM_COUSIN_PARACHAINS,
+        self_from_sibling: KAH_FROM_SIBLING,
+        self_from_cousin: KAH_FROM_COUSIN
     },
     destination: {
         api: itkApi,
         name: "ITK",
         para_id: IK_PARA_ID,
         native_units: TEER_UNITS,
+        native_symbol: "TEER",
     },
     destroy: () => {
         return Promise.all([
@@ -269,26 +281,62 @@ const portPlanP2K = {
 // The whole execution of the script.
 main();
 
+let lastHeartbeatSent = new Date(0);
+
 // We'll teleport KSM from Asset Hub to People.
 // Using the XcmPaymentApi and DryRunApi, we'll estimate the XCM fees accurately.
 async function main() {
-    const plan = (DIRECTION === "IK>IP") ? portPlanK2P : portPlanP2K;
+    const plan = (DIRECTION === "K2P") ? portPlanK2P : portPlanP2K;
     const forwardingLocation = DIRECT_FORWARD ? plan.destinationAH.native_from_sibling : undefined;
-    await run(plan, forwardingLocation);
-    // if we reach this point, the test was successful and the bridge is confirmed to be operational
-    const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
-    const signer = getWatchdogSigner();
-    console.log("sending watchdog heartbeat after successful test....")
-    const result = await heartbeatTx.signAndSubmit(signer);
-    console.dir(stringify(result.txHash));
+    while (true) {
+        console.log(`Simulate bridging TEER from ${plan.source.name} to ${plan.destination.name} via ${plan.sourceAH.name} and ${plan.destinationAH.name} using watchdog account ${WATCHDOG_ACCOUNT} and margin ${MARGIN}`);
+        try {
+            await collectBalanceMetrics(plan);
+            await run(plan, forwardingLocation);
+            if (argv.heartbeat && (new Date().getTime() - lastHeartbeatSent.getTime()) > INTERVAL * 1000) {
+                // if we reach this point, the test was successful and the bridge is confirmed to be operational
+                const heartbeatTx = await plan.source.api.tx.Porteer.watchdog_heartbeat([])
+                const signer = getWatchdogSigner();
+                console.log("sending watchdog heartbeat after successful test....")
+                const result = await heartbeatTx.signAndSubmit(signer);
+                if (result?.ok) {
+                    lastHeartbeatSent = new Date();
+                    console.dir(stringify(result.txHash));
+                    lastWatchdogHeartbeatSentGauge.set({
+                        chain: plan.source.name,
+                    }, lastHeartbeatSent.getTime());
+                } else {
+                    console.error("Error sending heartbeat: ", result);
+                }
+            } else {
+                console.warn("heartbeat not due or disabled, not sending heartbeat extrinsic");
+            }
+            simulationResultGauge.set({
+                    from_chain: plan.source.name,
+                    to_chain: plan.destination.name,
+                    direct_forward: String(DIRECT_FORWARD),
+                }
+                , 1);
+        } catch (error) {
+            console.error("Error during bridging simulation: ", error);
+            simulationResultGauge.set({
+                    from_chain: plan.source.name,
+                    to_chain: plan.destination.name,
+                    direct_forward: String(DIRECT_FORWARD),
+                }
+                , 0);
+        }
+        console.log(`Next watchdog simulation in 10 seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+    }
     await plan.destroy();
 }
 
 async function run(plan: any, forwardingLocation: any) {
-    // The amount of TEER we wish to teleport besides paying fees.
+    // The amount of TEER we wish to bridge/teleport besides paying fees.
     const transferAmount = 1000000000000n;
 
-    if (CHOPSTICKS) {
+    if (ENDPOINTS === CHOPSTICKS) {
         const stx = await plan.source.api.tx.System.remark_with_event({remark: Binary.fromText("Let's trigger state migration")})
         const signer = getAliceSigner();
         await stx.signAndSubmit(signer);
@@ -299,15 +347,38 @@ async function run(plan: any, forwardingLocation: any) {
         await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
-    const referenceAmountTeer = 1000000000000n;
+    const referenceAmountTeer = 100000000000n;
     const destinationAHFeesHighEstimateTeerConverted = await plan.sourceAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.source.native_from_sibling, plan.sourceAH.native_from_sibling, referenceAmountTeer, true);
     const teerPerSourceAHNative = Number(destinationAHFeesHighEstimateTeerConverted) / Number(referenceAmountTeer)
-    console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNative, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
+    const teerPerSourceAHNativeHuman = teerPerSourceAHNative * 10 ** (tokenDecimals[plan.sourceAH.native_symbol] - tokenDecimals[plan.source.native_symbol]);
+    console.log(`Current AssetConversion quote on ${plan.sourceAH.name}: out: `, destinationAHFeesHighEstimateTeerConverted, " in ", referenceAmountTeer, ` ${plan.source.native_symbol}. price: `, teerPerSourceAHNativeHuman, ` ${plan.source.native_symbol} per ${plan.sourceAH.native_symbol}`);
+    assetConversionGauge.set({
+        base_asset: plan.sourceAH.native_symbol,
+        quote_asset: plan.source.native_symbol,
+        chain: plan.sourceAH.name
+    }, teerPerSourceAHNativeHuman);
 
-    const referenceAmountSourceAHNative = 100000000000n;
-    const destinationFeesHighEstimateSourceAHNativeConverted = await pahApi.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountSourceAHNative, true);
+    const referenceAmountSourceAHNative = plan.sourceAH.native_units / 10n;
+    const destinationFeesHighEstimateSourceAHNativeConverted = await plan.destinationAH.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(plan.sourceAH.native_from_cousin, plan.destinationAH.native_from_sibling, referenceAmountSourceAHNative, true);
     const sourceAHNativePerDestinationAHNative = Number(destinationFeesHighEstimateSourceAHNativeConverted) / Number(referenceAmountSourceAHNative)
-    console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, destinationFeesHighEstimateSourceAHNativeConverted, " in ", referenceAmountSourceAHNative, ` ${plan.sourceAH.native_symbol}. price: `, sourceAHNativePerDestinationAHNative / 100.0, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
+    const sourceAHNativePerDestinationAHNativeHuman = sourceAHNativePerDestinationAHNative * 10 ** (tokenDecimals[plan.destinationAH.native_symbol] - tokenDecimals[plan.sourceAH.native_symbol]);
+    console.log(`Current AssetConversion quote for ${plan.destinationAH.name} account: out: `, destinationFeesHighEstimateSourceAHNativeConverted, " in ", referenceAmountSourceAHNative, ` ${plan.sourceAH.native_symbol}. price: `, sourceAHNativePerDestinationAHNativeHuman, ` ${plan.sourceAH.native_symbol} per ${plan.destinationAH.native_symbol}`);
+    assetConversionGauge.set({
+        base_asset: plan.destinationAH.native_symbol,
+        quote_asset: plan.sourceAH.native_symbol,
+        chain: plan.destinationAH.name
+    }, sourceAHNativePerDestinationAHNativeHuman);
+
+    const referenceAmountDestinationAHNative = plan.destinationAH.native_units / 10n;
+    const destinationFeesHighEstimateDestinationAHNativeConverted = await plan.destination.api.apis.AssetConversionApi.quote_price_tokens_for_exact_tokens(Enum("WithId", 0), Enum("Native"), referenceAmountDestinationAHNative, true);
+    const destinationAHNativePerDestinationNative = Number(destinationFeesHighEstimateDestinationAHNativeConverted) / Number(referenceAmountDestinationAHNative)
+    const destinationAHNativePerDestinationNativeHuman = destinationAHNativePerDestinationNative * 10 ** (tokenDecimals[plan.destination.native_symbol] - tokenDecimals[plan.destinationAH.native_symbol]);
+    console.log(`Current AssetConversion quote for ${plan.destination.name} account: out: `, destinationFeesHighEstimateDestinationAHNativeConverted, " in ", referenceAmountDestinationAHNative, ` ${plan.destinationAH.native_symbol}. price: `, destinationAHNativePerDestinationNativeHuman, ` ${plan.destinationAH.native_symbol} per ${plan.destination.native_symbol}`);
+    assetConversionGauge.set({
+        base_asset: plan.destination.native_symbol,
+        quote_asset: plan.destinationAH.native_symbol,
+        chain: plan.destination.name
+    }, destinationAHNativePerDestinationNativeHuman);
 
     // We can now query the root account on the source chain.
     const rootAccountLocal = await plan.source.api.apis.LocationToAccountApi.convert_location(XcmVersionedLocation.V5(plan.source.sovereign_self))
@@ -330,6 +401,22 @@ async function run(plan: any, forwardingLocation: any) {
 
     const currentFees = await plan.source.api.query.Porteer.XcmFeeConfig.getValue();
     console.log("Current fees config on source chain: ", stringifyJsonWithBigInt(currentFees));
+    activeFeeGauge.set({
+        component: "local_equivalent_sum",
+        asset: "TEER", chain: plan.source.name,
+    }, Number(currentFees.local_equivalent_sum) / 10 ** tokenDecimals["TEER"]);
+    activeFeeGauge.set({
+        component: "hop1",
+        asset: "TEER", chain: plan.sourceAH.name,
+    }, Number(currentFees.hop1) / 10 ** tokenDecimals["TEER"]);
+    activeFeeGauge.set({
+        component: "hop2",
+        asset: plan.sourceAH.native_symbol, chain: plan.destinationAH.name,
+    }, Number(currentFees.hop2) / 10 ** tokenDecimals[plan.sourceAH.native_symbol]);
+    activeFeeGauge.set({
+        component: "hop3",
+        asset: plan.destinationAH.native_symbol, chain: plan.destination.name,
+    }, Number(currentFees.hop3) / 10 ** tokenDecimals[plan.destinationAH.native_symbol]);
 
     // the actual extrinsic we would send to bridge TEER from IK to IP
     const portTokensTx = plan.source.api.tx.Porteer.port_tokens({
@@ -346,7 +433,7 @@ async function run(plan: any, forwardingLocation: any) {
     const watchdogTx = plan.source.api.tx.Porteer.watchdog_heartbeat([]);
     const calls = [watchdogTx.decodedCall, portTokensTx.decodedCall];
     const batchTx = plan.source.api.tx.Utility.batch({calls: calls});
-    // console.log("tentative call on source chain (e.g. to try with chopsticks): ", batchTx.decodedCall);
+    //console.log("tentative call on source chain (e.g. to try with chopsticks): ", batchTx.decodedCall);
 
     console.log("encoded tentative call on source chain (e.g. to try with chopsticks): ", (await batchTx.getEncodedData()).asHex());
 
@@ -358,6 +445,23 @@ async function run(plan: any, forwardingLocation: any) {
     console.log(`Remote 1 fees estimate [TEER]: `, sourceAHFeesEstimate);
     console.log(`Remote 2 fees estimate  [${plan.sourceAH.native_symbol}]: `, destinationAHFeesEstimateSourceAHNative);
     console.log(`Remote 3 fees estimate  [${plan.destinationAH.native_symbol}]: `, destinationFeesEstimateDestinationAHNative);
+
+    suggestedFeeGauge.set({
+        component: "local_equivalent_sum",
+        asset: "TEER", chain: plan.source.name,
+    }, Number(localEquivalentFeesEstimate) / 10 ** tokenDecimals["TEER"]);
+    suggestedFeeGauge.set({
+        component: "hop1",
+        asset: "TEER", chain: plan.sourceAH.name,
+    }, Number(sourceAHFeesEstimate) / 10 ** tokenDecimals["TEER"]);
+    suggestedFeeGauge.set({
+        component: "hop2",
+        asset: plan.sourceAH.native_symbol, chain: plan.destinationAH.name,
+    }, Number(destinationAHFeesEstimateSourceAHNative) / 10 ** tokenDecimals[plan.sourceAH.native_symbol]);
+    suggestedFeeGauge.set({
+        component: "hop3",
+        asset: plan.destinationAH.native_symbol, chain: plan.destination.name,
+    }, Number(destinationFeesEstimateDestinationAHNative) / 10 ** tokenDecimals[plan.destinationAH.native_symbol]);
 
     const setFeesTx = plan.source.api.tx.Porteer.set_xcm_fee_params({
         fees: {
@@ -709,7 +813,7 @@ async function estimateFees(
         return;
     }
     const destinationFeesInDestinationRelayNative = resultDestinationFeesInDestinationRelayNative.value;
-    console.log(`########### SUMMARY OF FEES ###########`);
+    console.log(`########### SUMMARY OF FEES from ${plan.source.name} to ${plan.destination.name} ###########`);
     console.log(`API: localExecutionFees (virtual) [TEER]: `, localExecutionFees);
     console.log(`API: delivery fees to ${plan.sourceAH.name}         [TEER]: `, deliveryFeesToSourceAHInTeer);
     console.log(`API: ${plan.sourceAH.name} fees*                     [${plan.sourceAH.native_symbol}]: `, sourceAHFeesInNative.value);
@@ -758,6 +862,23 @@ function stringifyJsonWithBigInt(obj: any): string {
 }
 
 function getWatchdogSigner(): PolkadotSigner {
+    if (ENDPOINTS === CHOPSTICKS) {
+        return getAliceSigner()
+    }
+    const entropy = mnemonicToEntropy(WATCHDOG_MNEMONIC);
+    const miniSecret = entropyToMiniSecret(entropy);
+    const derive = sr25519CreateDerive(miniSecret);
+    const hdkdKeyPair = derive("");
+    const watchdogSigner = getPolkadotSigner(
+        hdkdKeyPair.publicKey,
+        "Sr25519",
+        hdkdKeyPair.sign,
+    );
+    return watchdogSigner;
+}
+
+// Just a helper function to get a signer for ALICE. only needed for chopsticks
+function getAliceSigner(): PolkadotSigner {
     const entropy = mnemonicToEntropy(DEV_PHRASE);
     const miniSecret = entropyToMiniSecret(entropy);
     const derive = sr25519CreateDerive(miniSecret);
@@ -768,4 +889,97 @@ function getWatchdogSigner(): PolkadotSigner {
         hdkdKeyPair.sign,
     );
     return aliceSigner;
+}
+
+async function collectBalanceMetrics(plan: any) {
+    await Promise.all([
+        collectLocationNativeBalanceMetric(plan.source.api, `watchdog`, plan.source.native_symbol, plan.source.name, XcmVersionedLocation.V5({
+            parents: 0,
+            interior: XcmV5Junctions.X1(XcmV5Junction.AccountId32({id: Binary.fromBytes(getWatchdogSigner().publicKey)}))
+        })),
+        // sovereign account native balances
+        collectLocationNativeBalanceMetric(plan.source.api, `${plan.source.name} sovereign`, plan.source.native_symbol, plan.source.name, XcmVersionedLocation.V5(plan.source.sovereign_self)),
+        collectLocationNativeBalanceMetric(plan.sourceAH.api, `${plan.source.name} sovereign`, plan.sourceAH.native_symbol, plan.sourceAH.name, XcmVersionedLocation.V5(plan.source.native_from_sibling)),
+        collectLocationNativeBalanceMetric(plan.destinationAH.api, `${plan.source.name} sovereign`, plan.destinationAH.native_symbol, plan.destinationAH.name, XcmVersionedLocation.V5(plan.source.native_from_cousin)),
+        collectLocationNativeBalanceMetric(plan.destination.api, `${plan.source.name} sovereign`, plan.destination.native_symbol, plan.destination.name, XcmVersionedLocation.V5(plan.source.native_from_cousin)),
+        // sovereign account also check swapped assets on all hops
+        collectLocationNativeBalanceMetric(plan.sourceAH.api, `${plan.source.name} sovereign`, plan.source.native_symbol, plan.sourceAH.name, XcmVersionedLocation.V5(plan.source.native_from_sibling), XcmVersionedLocation.V5(plan.source.native_from_sibling)),
+        collectLocationNativeBalanceMetric(plan.destinationAH.api, `${plan.source.name} sovereign`, plan.sourceAH.native_symbol, plan.destinationAH.name, XcmVersionedLocation.V5(plan.source.native_from_cousin), XcmVersionedLocation.V5(plan.sourceAH.native_from_cousin)),
+        collectLocationNativeBalanceMetric(plan.destination.api, `${plan.source.name} sovereign`, plan.destinationAH.native_symbol, plan.destination.name, XcmVersionedLocation.V5(plan.source.native_from_cousin), undefined, 0),
+        collectSupplyMetrics(),
+    ]);
+}
+
+async function collectLocationNativeBalanceMetric(api: any, name: string, asset: string, chain: string, location: XcmVersionedLocation, assetLocation?: XcmVersionedLocation, assetId?: number) {
+    try {
+        const accountIdResult = await api.apis.LocationToAccountApi.convert_location(location);
+        if (accountIdResult.success) {
+            const accountId = accountIdResult.value;
+            const address = accountId.toString();
+            if (assetId !== undefined) {
+                const assetBalanceResult = await api.query.Assets.Account.getValue(assetId, accountId);
+                const balance = assetBalanceResult?.balance ?? 0n;
+                const humanBalance = tokenBalanceToNumber(balance, asset);
+                accountBalanceGauge.set({name, address, chain, asset}, humanBalance);
+                console.log(`✅ ${name} balance on ${chain} (${address}): ${humanBalance} ${asset}`);
+            } else if (assetLocation) {
+                const assetBalanceResult = await api.query.ForeignAssets.Account.getValue(assetLocation.value, accountId);
+                const balance = assetBalanceResult?.balance ?? 0n;
+                const humanBalance = tokenBalanceToNumber(balance, asset);
+                accountBalanceGauge.set({name, address, chain, asset}, humanBalance);
+                console.log(`✅ ${name} balance on ${chain} (${address}): ${humanBalance} ${asset}`);
+
+            } else {
+                const accountInfoResult = await api.query.System.Account.getValue(accountId);
+                if (accountInfoResult.data) {
+                    const balance = accountInfoResult.data.free || 0n;
+                    const humanBalance = tokenBalanceToNumber(balance, asset);
+                    accountBalanceGauge.set({name, address, chain, asset}, humanBalance);
+                    console.log(`✅ ${name} balance on ${chain} (${address}): ${humanBalance} ${asset}`);
+                } else {
+                    console.error(`❌ Account Info not found`);
+                }
+            }
+        } else {
+            console.error(`❌ failed to convert location to account ID:`, accountIdResult);
+        }
+    } catch (error) {
+        console.error(`❌ error:`, error?.message ?? error);
+    }
+}
+
+async function collectSupplyMetrics() {
+    try {
+        let chain = "ITK";
+        let asset = "TEER";
+        let totalIssuance = await itkApi.query.Balances.TotalIssuance.getValue();
+        let humanTotalIssuance = tokenBalanceToNumber(totalIssuance, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+        chain = "ITP";
+        totalIssuance = await itpApi.query.Balances.TotalIssuance.getValue();
+        humanTotalIssuance = tokenBalanceToNumber(totalIssuance, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+        chain = "KAH";
+        totalIssuance = await kahApi.query.ForeignAssets.Asset.getValue(ITK_FROM_SIBLING);
+        humanTotalIssuance = tokenBalanceToNumber(totalIssuance.supply, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+        chain = "PAH";
+        totalIssuance = await pahApi.query.ForeignAssets.Asset.getValue(ITP_FROM_SIBLING);
+        humanTotalIssuance = tokenBalanceToNumber(totalIssuance.supply, asset);
+        assetSupplyGauge.set({chain, asset}, humanTotalIssuance);
+        console.log(`✅ total issuance on ${chain}: ${humanTotalIssuance} [${asset}]`);
+
+    } catch (error) {
+        console.error(`❌ error:`, error?.message ?? error);
+    }
+}
+
+function tokenBalanceToNumber(balance: bigint, asset: string, precision = 4): number {
+    return Number(balance / 10n ** BigInt(tokenDecimals[asset] - precision)) / 10 ** precision;
 }
