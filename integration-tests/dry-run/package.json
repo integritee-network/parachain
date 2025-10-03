@@ -1,6 +1,7 @@
 {
   "name": "dry-run",
   "module": "index.ts",
+  "version": "0.2.0",
   "type": "module",
   "private": true,
   "devDependencies": {
