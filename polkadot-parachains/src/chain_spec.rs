@@ -216,6 +216,9 @@ fn integritee_genesis_config(
 		"technicalCommittee": {
 			"members": vec![root_key.clone()]
 		},
+		"sudo": {
+			"key": root_key.clone()
+		},
 	})
 }
 

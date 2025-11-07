@@ -6361,7 +6361,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-collator"
-version = "1.18.2"
+version = "1.18.3"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -6443,7 +6443,7 @@ dependencies = [
 
 [[package]]
 name = "integritee-kusama-runtime"
-version = "1.18.562"
+version = "1.18.563"
 dependencies = [
  "assets-common",
  "cumulus-pallet-aura-ext",
@@ -6492,6 +6492,7 @@ dependencies = [
  "pallet-scheduler",
  "pallet-session",
  "pallet-sidechain",
+ "pallet-sudo",
  "pallet-teeracle",
  "pallet-teerdays",
  "pallet-teerex",
