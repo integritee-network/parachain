@@ -94,15 +94,15 @@ struct IntegriteeKeys;
 
 impl IntegriteeKeys {
 	fn root() -> AccountId {
-		pub_sr25519("2JcYbKMfEGidntYP1LpPWsCMxFvUbjaPyipRViat4Sn5nuqm").into()
+		pub_sr25519("2LbX62auYSYpQEXc7fuLTUGE4TFUDNBrrfV5Q9UACLAtkx9K").into()
 	}
 	fn authorities() -> Vec<AccountId> {
 		vec![
-			pub_sr25519("5GZJjbPPD9u6NDgK1ApYmbyGs7EBX4HeEz2y2CD38YJxjvQH").into(),
-			pub_sr25519("5CcSd1GZus6Jw7rP47LLqMMmtr2KeXCH6W11ZKk1LbCQ9dPY").into(),
-			pub_sr25519("5FsECrDjBXrh5hXmN4PhQfNPbjYYwwW7edu2UQ8G5LR1JFuH").into(),
-			pub_sr25519("5HBdSEnswkqm6eoHzzX5PCeKoC15CCy88vARrT8XMaRRuyaE").into(),
-			pub_sr25519("5GGxVLYTXS7JZAwVzisdXbsugHSD6gtDb3AT3MVzih9jTLQT").into(),
+			pub_sr25519("5DRUaCDxuYgWjwQTFweNjaa9vDV2BLdfUQnQmH2ZcE9ApEyo").into(),
+			pub_sr25519("5DFGrJHNmkBBzpWejJsiJuiFuLigMnwBb633yYPWZj22b4WY").into(),
+			pub_sr25519("5GKrMfoMxvNWYVpsrdgQWWFWWNWjyoWNKffKSKh1HZN3PNnU").into(),
+			pub_sr25519("5FUDAMxi5oysjMxaQxvgWyKKPD1xVP1NNEE4asXxqpP25VkK").into(),
+			pub_sr25519("5FBkLxk3U8StVnJfXbqoBRtN9qxwsPMWhaRWY3uUpEnQQQhz").into(),
 		]
 	}
 }
